@@ -1,5 +1,4 @@
 #include "foo.h"
-#pragma newpragma
 typedef unsigned char uint8_t;
 typedef unsigned int int16_t;
 
