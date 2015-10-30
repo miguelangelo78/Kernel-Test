@@ -1,12 +1,13 @@
 cls
 @echo off
 
-printf "STEP 1 - Building ksharp_stage2.asm...\n\n"
+printf "STEP 1 - Building Stage 2 (ksharp_stage2.asm)...\n\n"
 toolchain\Tools\NASM\nasm.exe -g -f elf -o build\ksharp_stage2.o src\arch\x86\ksharp_stage2.asm
 if ERRORLEVEL 1 ( call:errorhandle "Assembling ksharp_stage2.asm" )
 
 printf "STEP 2 - Compiling and Linking...\n\n"
-toolchain\Tools\Cross\i686-elf\bin\i686-elf-g++.exe build\ksharp_stage2.o src\kmain.cpp -o iso\ksharp.bin -T toolchain\linker.ld -nostartfiles -nostdlib
+make -f toolchain\makefile.mak
+@rem toolchain\Tools\Cross\i686-elf\bin\i686-elf-g++.exe build\ksharp_stage2.o src\kmain.cpp -o iso\ksharp.bin -T toolchain\linker.ld -nostartfiles -nostdlib
 if ERRORLEVEL 1 ( call:errorhandle "Compiling and Linking" )
 
 printf "\nSTEP 3 - Creating disk (ISO9660)...\n\n"
