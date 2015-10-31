@@ -3,12 +3,13 @@ cls = lambda: os.system('cls')
 cls()
 
 # File formats that will be added to the makefile project:
-formats = ["c", "cpp", "s"]
+formats = ["c", "cpp", "s", "asm"]
 
 # These are the compilers which will be used. In this script, it'll be adjusted for OSDeving purpose
 compiler_cpp = "$(TOOLCH)\Tools\Cross\i686-elf\\bin\i686-elf-g++.exe"
-compiler_cpp = "$(TOOLCH)\Tools\Cross\i686-elf\\bin\i686-elf-gcc.exe"
+compiler_c = "$(TOOLCH)\Tools\Cross\i686-elf\\bin\i686-elf-gcc.exe"
 assembler = "$(TOOLCH)\Tools\Cross\i686-elf\\bin\i686-elf-as.exe"
+assembler_nasm = "$(TOOLCH)\Tools\NASM\\nasm.exe"
 
 # Makefile's data: (this data should be inputted through the user, but this time it'll be constant for my OSDeving)
 top_path = "src" # The top path where the source files are
@@ -19,9 +20,14 @@ main_make_path = "toolchain" # Where the final makefile.mak will go
 execname = "ksharp.bin" # Final executable/file that will be outputted by the linker
 linker = "linker.ld" # The linker that will be used while linking the final binary file
 cflags = "-T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas" # C/C++ flags
+asmflags = ""
+nasmflags = "-g -f elf" # Flags for the nasm assembler
 
 # Special constants for OSDeving:
 stage2obj = "$(BOUT)\ksharp_stage2.o" # This will be linked with the kernel and is built with NASM
+
+def parse_sourcefile(source_content):
+	return ["", "", ""] # Injection of: flags, dependencies (objects) and misc (respectively)
 
 # Scans the top_path for files with formats that belong to 'formats' list
 def scan_tree():
@@ -59,21 +65,50 @@ def gen_make(tree):
 
 		# Add target:
 		i = 0
+
 		customflags = ""
+		deps = ""
+		injection = ""
 		for ffile in dir:
-			# TODO: Parse the source file and add custom flags
-			# to this makefile (if any match is found)
-			#source = open(file).read()
-		
+			# Parse the source file and add custom flags
+			# to this makefile (if any match is found):
+			src_file_content = open(ffile)
+			src_file_meta = parse_sourcefile(src_file_content.read())
+			src_file_content.close()
+
+			# Collect the metadata and inject it into the subdir.mk
+			customflags = src_file_meta[0]
+			deps = src_file_meta[1]
+			injection = src_file_meta[2]
+
+			#Decide what compiler/assembler/other tool to use for this file:
+			fformat = ffile[ffile.index('.'):]
+			toolname = "Cross i686-elf GCC Compiler"
+			compiler_to_use = "CXX" # C++ by default
+			flags_to_use = "CFLAGS"
+			is_asm = "-c" # If the file is an assembly file then we must remove the '-c' option, which will only work for C/C++
+			if fformat == '.c':
+				compiler_to_use = "CC"
+			elif fformat == '.s' or fformat == '.S':
+				toolname = "Cross i686-elf GCC Assembler"
+				compiler_to_use = 'AS'
+				flags_to_use = 'ASFLAGS'
+				is_asm = ""
+			elif fformat == '.asm' or fformat == '.ASM':
+				toolname = "NASM Assembler"
+				compiler_to_use = 'NAS'
+				flags_to_use = 'NASFLAGS'
+				is_asm = ""
+
 			subdirmk.write('\n$(BOUT)\\'+files[i]+'.o: '+ffile+'\n\
 	@echo \'>> Building file $<\'\n\
-	@echo \'>> Invoking Cross i686-elf GCC Compiler\'\n\
-	$(CXX) $(CFLAGS) ' + customflags + ' -o $@ -c $<\n\
+	@echo \'>> Invoking ' + toolname + '\'\n\
+	$(' + compiler_to_use  + ') $(' + flags_to_use + ') ' + customflags + ' -o $@ '+is_asm+' $< '+ deps + ' '+ injection +'\n\
 	@echo \'>> Finished building: $<\'\n\
 	@echo \' \'\n')
 			i+=1
 
-		subdirmk.close()
+		subdirmk.close() # Subdir.mk file done for this directory
 
 	# Now build the main makefile.mak:
 	makefile = open(main_make_path+"\\makefile.mak", "wb")
@@ -81,7 +116,12 @@ def gen_make(tree):
 TOOLCH = " + main_make_path + "\n\
 LINKER = " + linker + "\n\
 CXX = " + compiler_cpp + "\n\
+CC = " + compiler_c + "\n\
+AS = " + assembler + "\n\
+NAS = " + assembler_nasm + "\n\
 CFLAGS = " + cflags + "\n\n\
+ASFLAGS = " + asmflags + "\n\
+NASFLAGS = " + nasmflags + "\n\
 # Output constants (filenames and paths)\n\
 DISKPATH = "+runnable_path+"\n\
 BOUT = "+build_path+"\n\
@@ -97,7 +137,7 @@ kernel-link: $(OBJS)\n\
 	@echo '----------'\n\
 	@echo '>>>> Linking Kernel <<<<'\n\
 	@echo '>>>> Invoking: Cross i686-elf GCC Linker <<<<'\n\
-	$(CXX) $(CFLAGS) -o $(DISKPATH)\$(KOUT) $(STAGE2OBJ) $(OBJS)\n\
+	$(CXX) $(CFLAGS) -o $(DISKPATH)\$(KOUT) $(OBJS)\n\
 	@echo '>>>> Finished building target: $@ <<<<'\n\
 	@echo '----------'\n\n\
 clean:\n\
