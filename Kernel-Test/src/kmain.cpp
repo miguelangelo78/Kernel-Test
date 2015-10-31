@@ -1,16 +1,10 @@
-/* $FLAGS(-O2) */
-
-typedef unsigned char uint8_t;
-typedef unsigned int int16_t;
+#include "console.h"
 
 void kmain() {
-	uint8_t bg = 0xA;
-	uint8_t fg = 0x0;
-	uint8_t Colour = ((bg << 4) & 0xF0) | (fg & 0x0F);
-	unsigned short* DisplayMemoryPtr = (unsigned short*)0xB8000;
-	int16_t  DisplaySize = 2000;
-	while (DisplaySize--)	
-		DisplayMemoryPtr[DisplaySize] = (((unsigned short)Colour) << 8) | 'A';
-
+	Console terminal;
+	terminal.clear();
+	for(int i=0;i<100;i++)
+		terminal.writestr("Hi Bro  ", COLOR(0x0, 0xF));
+	
 	for(;;);
 }

@@ -8,6 +8,7 @@ formats = ["c", "cpp", "s", "asm"]
 # These are the compilers which will be used. In this script, it'll be adjusted for OSDeving purpose
 compiler_cpp = "$(TOOLCH)\Tools\Cross\i686-elf\\bin\i686-elf-g++.exe"
 compiler_c = "$(TOOLCH)\Tools\Cross\i686-elf\\bin\i686-elf-gcc.exe"
+linker_c_cpp = "$(TOOLCH)\Tools\Cross\i686-elf\\bin\i686-elf-ld.exe"
 assembler = "$(TOOLCH)\Tools\Cross\i686-elf\\bin\i686-elf-as.exe"
 assembler_nasm = "$(TOOLCH)\Tools\NASM\\nasm.exe"
 
@@ -19,7 +20,7 @@ main_make_path = "toolchain" # Where the final makefile.mak will go
 
 execname = "ksharp.bin" # Final executable/file that will be outputted by the linker
 linker = "linker.ld" # The linker that will be used while linking the final binary file
-cflags = "-T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas" # C/C++ flags
+cflags = "-T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas -std=c++11 -fno-exceptions" # C/C++ flags
 asmflags = ""
 nasmflags = "-g -f elf" # Flags for the nasm assembler
 
