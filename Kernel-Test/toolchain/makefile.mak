@@ -1,9 +1,8 @@
 # Tools, tools' path and flags
 TOOLCH = toolchain
-SRCPATH = src
 LINKER = linker.ld
-CXX = $(TOOLCH)\Tools\Cross\i686-elf\bin\i686-elf-g++.exe
-CFLAGS = -T  $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas
+CXX = $(TOOLCH)\Tools\Cross\i686-elf\bin\i686-elf-gcc.exe
+CFLAGS = -T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas
 
 # Output constants (filenames and paths)
 DISKPATH = iso
