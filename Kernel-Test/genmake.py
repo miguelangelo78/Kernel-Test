@@ -1,4 +1,4 @@
-import os, fnmatch
+import os, fnmatch, re
 cls = lambda: os.system('cls')
 cls()
 
@@ -26,8 +26,23 @@ nasmflags = "-g -f elf" # Flags for the nasm assembler
 # Special constants for OSDeving:
 stage2obj = "$(BOUT)\ksharp_stage2.o" # This will be linked with the kernel and is built with NASM
 
+# Parses one source file and injects into the makefile some flags, dependencies or something else that the programmer wants
 def parse_sourcefile(source_content):
-	return ["", "", ""] # Injection of: flags, dependencies (objects) and misc (respectively)
+	inj_flags = ""
+	inj_deps = ""
+	inj_misc = ""
+	
+	# Search for flag injection:
+	match_flags = re.search(r'\$FLAGS\(((?:.|\n)+?)\)', source_content, re.M)
+	if match_flags:
+		inj_flags = match_flags.group(1)
+	match_deps = re.search(r'\$DEPS\(((?:.|\n)+?)\)', source_content, re.M)
+	if match_deps:
+		inj_deps = match_deps.group(1)
+	match_misc = re.search(r'\$INJ\(((?:.|\n)+?)\)', source_content, re.M)
+	if match_misc:
+		inj_misc = match_misc.group(1)
+	return [inj_flags, inj_deps, inj_misc] # Injection of: flags, dependencies (objects) and misc (respectively)
 
 # Scans the top_path for files with formats that belong to 'formats' list
 def scan_tree():
