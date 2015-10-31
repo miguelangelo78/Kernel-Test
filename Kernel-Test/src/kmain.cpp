@@ -1,10 +1,11 @@
 #include "console.h"
 
 void kmain() {
-	Console terminal;
-	terminal.clear();
-	for(int i=0;i<100;i++)
-		terminal.writestr("Hi Bro  ", COLOR(0x0, 0xF));
+	Console term;
+	term.clear();
 	
+	for(int i=0;i<300;i++)
+	term.puts(" Test " , COLOR(0x1, 0xF));
+
 	for(;;);
 }
