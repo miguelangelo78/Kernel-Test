@@ -1,82 +1,149 @@
 #include "console.h"
+#include "stdint.h"
 
-typedef unsigned int uint16_t;
-typedef unsigned char uint8_t;
+#define asm __asm__
+#define volatile __volatile__
+#define attribute(attr) __attribute__((attr))
 
-#define ENTRY_PER_PAGETABLE 1024 // There is always 1024 pages (4KiB/Page)
-#define PAGE_TABLE_COUNT 1024 
+void * memset(void * dest, int c, size_t n) {
+	unsigned char *ptr = (unsigned char*)dest;
+	for(size_t i = 0 ; i < n; i++)
+		ptr[i] = c;
+	return dest;
+}
 
-/* # of entries/page table * total # of page tables
-actual size = 4194304 bytes = 4MiB, represents 4GiB in physical memory (size of unsigned int = 4 bytes)
-ie. each 4 byte entry represent 4 KiB in physical memory */
-extern uint16_t Page_Table1[ENTRY_PER_PAGETABLE * PAGE_TABLE_COUNT]; 
+namespace HAL {
+	namespace IDT {
+		#define IDTENTRY(entry) idt.entries[(entry)]
 
-extern uint16_t Page_Directory[PAGE_TABLE_COUNT]; // # of pages tables * # of directory (4096 bytes = 4 KiB)
+		/* ISR */
+		enum ISR_IVT {
+			ISR_DIVBY0,
+			ISR_RESERVED0,
+			ISR_NMI,
+			ISR_BREAK,
+			ISR_OVERFLOW,
+			ISR_BOUNDS,
+			ISR_INVOPCODE,
+			ISR_DEVICEUN,
+			ISR_DOUBLEFAULT,
+			ISR_COPROC,
+			ISR_INVTSS,
+			ISR_SEG_FAULT,
+			ISR_STACKSEG_FAULT,
+			ISR_GENERALPROT,
+			ISR_PAGEFAULT,
+			ISR_RESERVED1,
+			ISR_FPU,
+			ISR_ALIGNCHECK,
+			ISR_SIMD_FPU,
+			ISR_RESERVED2,
+			ISR_USR
+		};
+		
+		typedef struct {
+			uint16_t base_low;
+			uint16_t sel;
+			uint8_t zero;
+			uint8_t flags;
+			uint16_t base_high;
+		} attribute(packed) idt_entry_t;
 
-#define KERNEL_VIRTUAL_BASE 0xC0000000 // Constant declaring base of Higher-half kernel (from Kernel.asm)		 
-#define KERNEL_PAGE_TABLE (KERNEL_VIRTUAL_BASE >> 22) // Constant declaring Page Table index in virtual memory (from Kernel.asm)
+		typedef struct {
+			uint16_t limit;
+			uintptr_t base;
+		} attribute(packed) idt_ptr_t;
 
-namespace Memory {
-	namespace Kernel_Memory {
-		namespace Paging {
-			static void paging_init() {
-				uint16_t PhysicalAddressAndFlags = 0b111; // Setting Page Table flags (Present: ON, Read/Write: ON, User/Supervisor: ON)
-				uint16_t NoOfPageTables = 4; // 4 is arbitrary to cover 16MiB
-				uint16_t StartPageTableEntryIndex = 0;
-				uint16_t SizeOfPageTables = NoOfPageTables * ENTRY_PER_PAGETABLE;
+		static struct {
+			idt_entry_t entries[256];
+			idt_ptr_t ptr;
+		} idt attribute(used);
 
-				uint16_t * Page_Table1_Physical = (uint16_t*)((uint16_t)Page_Table1 - KERNEL_VIRTUAL_BASE);
-				uint16_t* Page_Directory_Physical = (uint16_t*)((uint16_t)Page_Directory - KERNEL_VIRTUAL_BASE);
+		typedef void (*idt_gate_t)(void);
 
-				/* Setting up identity mapping */
-				for(uint16_t i = 0; i < (SizeOfPageTables + StartPageTableEntryIndex); i++) 
-				{
-					Page_Table1_Physical[i] = PhysicalAddressAndFlags;
-					PhysicalAddressAndFlags += 4096;
-				}
+		void idt_set_gate(uint8_t num, idt_gate_t base, uint16_t sel, uint8_t flags) {
+			IDTENTRY(num).base_low = ((uintptr_t)base & 0xFFFF);
+			IDTENTRY(num).base_high = ((uintptr_t)base >> 16) & 0xFFFF;
+			IDTENTRY(num).sel = sel;
+			IDTENTRY(num).zero = 0;
+			IDTENTRY(num).flags = flags | 0x60;
+		}
 
-				PhysicalAddressAndFlags = 0b111;
-				StartPageTableEntryIndex = (KERNEL_PAGE_TABLE * 1024);
-					
-				for(uint16_t i = (KERNEL_PAGE_TABLE*1024); i < (SizeOfPageTables + StartPageTableEntryIndex); i++) 
-				{
-					Page_Table1_Physical[i] = PhysicalAddressAndFlags;
-					PhysicalAddressAndFlags += 4096;
-				}
+		void init() {
+			/* Set up IDT pointer: */
+			idt_ptr_t * idt_ptr = &idt.ptr;
+			idt_ptr->limit = sizeof(idt.entries - 1);
+			idt_ptr->base = (uintptr_t)&IDTENTRY(0);
+			memset(&IDTENTRY(0), 0 ,sizeof(idt.entries));
 
-				PhysicalAddressAndFlags = (unsigned int)&Page_Table1_Physical[0];
-				PhysicalAddressAndFlags |= 0b111; // Setting Page Table flags (Present: ON, Read/Write: ON, User/Supervisor: ON)
+			/* Install IDT: */
+			asm volatile("mov 4(%esp), %eax; lidt (%eax);");
+		}
+	}
+	
+	namespace ISR {
+		#define ISR_COUNT 32
 
-				uint16_t EntriesOfPageDirectory = 1024;
-				for(uint16_t i = 0;i<EntriesOfPageDirectory;i++)
-				{
-					Page_Directory_Physical[i] = PhysicalAddressAndFlags; // Move to next entry in Page Directory (4 bytes down)
-					PhysicalAddressAndFlags += 4096; // Update physical address to which to set the next Page Directory entry to (4 KiB down)
-				}
+		typedef void(*irq_handler_t) (struct regs *);
 
-				/* Set virtual addressing via control register CR3 
-				 high 20 bits is Page directory Base Register i.e physical address of first page directory entry */
-				__asm__(
-					"lea ECX, [Page_Directory - 0xC0000000]\n" // 0xC0000000 = KERNEL_VIRTUAL_BASE
-					"mov CR3, ECX\n"
-				);
-				
-				// Switch on paging via control register CR0
-				__asm__(
-					"mov ECX, CR0\n"
-					"or ECX, 0x80000000\n" // Set PG bit in CR0 to enable paging.
-					"mov CR0, ECX\n"
-				);
-				
-				// At only this point we are in physical higher-half mode
+		static struct {
+			size_t index;
+			void (*stub)(void);
+		} isrs[32 + 1] attribute(used);
+
+		static irq_handler_t isr_routines[256];
+
+		static const char *exception_messages[32] = {
+			"Division by zero",
+			"Debug",
+			"Non-maskable interrupt",
+			"Breakpoint",
+			"Detected overflow",
+			"Out-of-bounds",
+			"Invalid opcode",
+			"No coprocessor",
+			"Double fault",
+			"Coprocessor segment overrun",
+			"Bad TSS",
+			"Segment not present",
+			"Stack fault",
+			"General protection fault",
+			"Page fault",
+			"Unknown interrupt",
+			"Coprocessor fault",
+			"Alignment check",
+			"Machine check",
+			"Reserved",
+			"Reserved",
+			"Reserved",
+			"Reserved",
+			"Reserved",
+			"Reserved",
+			"Reserved",
+			"Reserved",
+			"Reserved",
+			"Reserved",
+			"Reserved",
+			"Reserved",
+			"Reserved"
+		};
+
+		void isr_install(void) {
+
+		}
+
+		/*void fault_handler(struct regs * r) {
+			irq_handler_t handler = isr_routines[r->int_no];
+			if (handler) {
+				handler(r);
+			} else {
+				// Kernel BSOD
 			}
-		}
+		}*/
+	}
+	
+	namespace IRQ {
 
-		void Memory_Initialize() {
-			/* Initializes all memory related stuff */
-			Memory::Kernel_Memory::Paging::paging_init(); /* First thing's first, set up Paging */
-
-		}
 	}
 }
 
@@ -85,19 +152,29 @@ namespace Kernel {
 	#define DEBUGC(msg, color) term.puts((char*)msg, color);
 
 	void kinit() {
-		Memory::Kernel_Memory::Memory_Initialize();
 		Console term;
+		DEBUG(">> Initializing Kernel <<\n\n");
 
-		DEBUG(">> Initializing Kernel <<\n");
-		DEBUG("Setting up paging - "); DEBUGC("DONE\n", COLOR(VIDGreen, VIDYellow));
+		/* These features were already initialized on the stage 2 bootloader: */
+		DEBUG("> Checking Multiboot - "); DEBUGC(" VALID \n", COLOR(VIDGreen, VIDWhite));
+		DEBUG("> Installing GDT - "); DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
+		DEBUG("> Switching to Protected Mode (32 bits) - "); DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
+		DEBUG("> Moving Stack Pointer up - "); DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
+		DEBUG("> Setting up Paging and jumping to Higher Half kernel - "); DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
+		
+		/* From now on, the initializations will happen here instead:  */
+		DEBUG("> Installing IDT - "); 
+		HAL::IDT::init();
+		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
+		
+		DEBUG("> Setting up ISRs - "); 
+		HAL::ISR::isr_install();
+		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
+
 	}
 }
 
-//char buff[] = "AAAA";
-//int x;
-
 void kmain() {
 	Kernel::kinit();
-	
 	for(;;);
 }

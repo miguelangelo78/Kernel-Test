@@ -11,7 +11,7 @@ BITS 32
 GLOBAL _Kernel_Start:function
 EXTERN _Z5kmainv
 
-KERNEL_VIRTUAL_BASE equ 0xC0000000					; Constant declaring base of Higher-half kernel 
+KERNEL_VIRTUAL_BASE equ 0xC0000000					; Constant declaring base of Higher-half kernel
 KERNEL_PAGE_TABLE equ (KERNEL_VIRTUAL_BASE >> 22)	; Constant declaring Page Table index in virtual memory
 
 SECTION .text
@@ -39,7 +39,7 @@ Kernel_Stack_Start:
 ; This is the GDT table pre-filled with the entries we want
 GDT_Contents:
 ;	Code and data selectors first then TSS
-db 0, 0, 0, 0, 0, 0, 0, 0			; Offset: 0  - Null selector - required 
+db 0, 0, 0, 0, 0, 0, 0, 0	; Offset: 0  - Null selector - required
 db 255, 255, 0, 0, 0, 0x9A, 0xCF, 0	; Offset: 8  - KM Code selector - covers the entire 4GiB address range
 db 255, 255, 0, 0, 0, 0x92, 0xCF, 0	; Offset: 16 - KM Data selector - covers the entire 4GiB address range
 db 255, 255, 0, 0, 0, 0xFA, 0xCF, 0	; Offset: 24 - UM Code selector - covers the entire 4GiB address range
@@ -49,6 +49,11 @@ db 255, 255, 0, 0, 0, 0xF2, 0xCF, 0	; Offset: 32 - UM Data selector - covers the
 ; Size = Total bytes in GDT - 1
 GDT_Pointer db 39, 0, 0, 0, 0, 0
 ; END - GDT allocations
+
+; BEGIN - IDT Allocations
+IDT_Contents: TIMES 2048 db 0
+IDT_Pointer db 0xFF, 0x7, 0, 0, 0, 0
+; END - IDT Allocations
 
 ;;;;; FUNCTIONS ;;;;;
 
@@ -79,7 +84,7 @@ GDTInstall:
 	ret
 
 GDTFlush:
-	jmp Kernel_Start_Init_Done
+	jmp SegmentSetDone
 
 SegmentSet:
 	mov dword EAX, 0x10
@@ -90,6 +95,55 @@ SegmentSet:
 	mov word SS, EAX
 	jmp 8:(GDTFlush - KERNEL_VIRTUAL_BASE)
 	ret
+
+SetVirtualMemory:
+	; Step 1: Map virtual memory for physical address execution
+	lea EAX, [Page_Table1 - KERNEL_VIRTUAL_BASE]
+	mov EBX, 0b111
+	mov ECX, (4 * 1024) ; (# of Page Tables) * (# of entries per Page Table)
+	.Loop1:
+	mov [EAX], EBX
+	add EAX, 4 ; Move to the next entry in the Page Table (4 bytes down)
+	add EBX, 0x1000 ; Update physical address to which to set the next Page Table entry to (4 KiB down)
+	loop .Loop1
+
+	lea EAX, [Page_Table1 - KERNEL_VIRTUAL_BASE]
+	add EAX, (KERNEL_PAGE_TABLE * 1024 * 4)
+	mov EBX, 0b111 ; 0b111 - Setting Page Table flags (Present: ON, Read/Write: ON, User/Supervisor: ON)
+	mov ECX, (4 * 1024) ; (# of Page Tables) * (# of entries per Page Table)
+	.Loop2:
+	mov [EAX], EBX
+	add EAX, 4 ; Move to the next entry in the Page Table (4 bytes down)
+	add EBX, 0x1000 ; Update physical address to which to set the next Page Table entry to (4 KiB down)
+	loop .Loop2
+
+	lea EBX, [Page_Table1 - KERNEL_VIRTUAL_BASE]
+	lea EDX, [Page_Directory - KERNEL_VIRTUAL_BASE]
+	or EBX, 0b111 ; 0b111 - Setting Page Table flags (Present: ON, Read/Write: ON, User/Supervisor: ON)
+	mov ECX, 1024 ; (# of Page Tables) * (# of entries per Page Table)
+	.Loop3:
+	mov [EDX], EBX
+	add EDX, 4 ; Move to the next entry in the Page Table (4 bytes down)
+	add EBX, 0x1000 ; Update physical address to which to set the next Page Table entry to (4 KiB down)
+	loop .Loop3
+
+	; Step 2: Set page directory
+	; This requires us to load the physical address of the page directory
+	; then move it into CR3
+
+	lea ECX, [Page_Directory - KERNEL_VIRTUAL_BASE]
+	mov CR3, ECX
+
+	; Step 3: Enable Paging
+	; This requires us to enable paging by setting CR0
+	mov ECX, CR0
+	or ECX, 0x80000000 ; Set PG bit in CR0 to enable paging.
+	mov CR0, ECX ; Enable it!
+
+	; At this point, paging should be enabled
+
+	lea ECX, [Kernel_Start_HigherHalf]
+	jmp ECX
 
 ; ****************************
 ; ****** KERNEL START ********
@@ -103,7 +157,11 @@ _Kernel_Start:
 	call SwitchProtected
 	mov dword ESP, (Kernel_Stack_Start - KERNEL_VIRTUAL_BASE) ; Set stack pointer
 	call SegmentSet
-	Kernel_Start_Init_Done:	 ; We're done initializing. We will initialize the rest with C code.
+	SegmentSetDone:
+	call SetVirtualMemory
+
+	Kernel_Start_HigherHalf: ; We're done initializing. We will initialize the rest with C code.
+	nop
 	lea EAX, [_Z5kmainv - KERNEL_VIRTUAL_BASE]
 	call EAX
 	jmp KernelExit
@@ -122,7 +180,7 @@ HndNoMultiboot:
 	mov dword ECX, 26
 	mov dword EAX, 0xB8000
 	mov dword EBX, 0
-	.PrintNoMulti: 
+	.PrintNoMulti:
 	mov byte DL, [NoMultibootMsg+EBX]
 	mov byte [EAX], DL
 	add EAX, 2
@@ -143,7 +201,7 @@ KernelExit:
 	mov dword ECX, 38
 	mov dword EAX, 0xB8000
 	mov dword EBX, 0
-	.PrintNoMulti: 
+	.PrintNoMulti:
 	mov byte DL, [KernelExitMsg+EBX]
 	mov byte [EAX], DL
 	add EAX, 2
@@ -158,12 +216,8 @@ Halt:
 NoMultibootMsg: db "PANIC: No multiboot found!", 0
 KernelExitMsg: db "INFO: The Kernel has exited. Halting...", 0
 
-SECTION .bss
+SECTION .paging_sect
 
-; Paging data:
-GLOBAL Page_Table1:data
-GLOBAL Page_Directory:data
-
-align 4096
-Page_Table1: resb(1024 * 1024) ; Reserve uninitialized space for paging table
+align 0x1000
+Page_Table1: resb(1024 * 1024 * 4) ; Reserve uninitialized space for paging table
 Page_Directory: resb(1024 * 4) ; Reserve uninitialized space for paging directory

@@ -20,7 +20,7 @@ main_make_path = "toolchain" # Where the final makefile.mak will go
 
 execname = "ksharp.bin" # Final executable/file that will be outputted by the linker
 linker = "linker.ld" # The linker that will be used while linking the final binary file
-cflags = "-T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas -std=c++11 -fno-exceptions -masm=intel" # C/C++ flags
+cflags = "-T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas -std=c++11 -fno-exceptions" # C/C++ flags
 asmflags = ""
 nasmflags = "-g -f elf" # Flags for the nasm assembler
 
@@ -32,7 +32,7 @@ def parse_sourcefile(source_content):
 	inj_flags = ""
 	inj_deps = ""
 	inj_misc = ""
-	
+
 	# Search for flag injection:
 	match_flags = re.search(r'\$FLAGS\(((?:.|\n)+?)\)', source_content, re.M)
 	if match_flags:
@@ -73,7 +73,7 @@ def gen_make(tree):
 		files = [] # File without extension nor path
 		for ffile in dir:
 			files.append(ffile[ffile.rfind('\\')+1:ffile.rfind('.')])
-			
+
 			# Append objects to $(OBJS):
 			subdirmk.write(' \\\n$(BOUT)\\'+files[-1]+'.o')
 
