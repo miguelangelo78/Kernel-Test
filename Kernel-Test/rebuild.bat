@@ -3,7 +3,6 @@ cls
 
 printf "Cleaning built objects\n"
 make -f toolchain\makefile.mak clean
-if ERRORLEVEL 1 ( call:errorhandle "Object cleaning" )
 
 python genmake.py
 if ERRORLEVEL 1 ( call:errorhandle "Generating makefiles" )

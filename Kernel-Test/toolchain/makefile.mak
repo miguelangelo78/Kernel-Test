@@ -5,7 +5,7 @@ CXX = $(TOOLCH)\Tools\Cross\i686-elf\bin\i686-elf-g++.exe
 CC = $(TOOLCH)\Tools\Cross\i686-elf\bin\i686-elf-gcc.exe
 AS = $(TOOLCH)\Tools\Cross\i686-elf\bin\i686-elf-as.exe
 NAS = $(TOOLCH)\Tools\NASM\nasm.exe
-CFLAGS = -T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas -std=c++11 -fno-exceptions
+CFLAGS = -T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas -std=c++11 -fno-exceptions -masm=intel
 
 ASFLAGS = 
 NASFLAGS = -g -f elf

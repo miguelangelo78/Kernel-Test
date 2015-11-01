@@ -20,7 +20,7 @@ main_make_path = "toolchain" # Where the final makefile.mak will go
 
 execname = "ksharp.bin" # Final executable/file that will be outputted by the linker
 linker = "linker.ld" # The linker that will be used while linking the final binary file
-cflags = "-T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas -std=c++11 -fno-exceptions" # C/C++ flags
+cflags = "-T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas -std=c++11 -fno-exceptions -masm=intel" # C/C++ flags
 asmflags = ""
 nasmflags = "-g -f elf" # Flags for the nasm assembler
 
