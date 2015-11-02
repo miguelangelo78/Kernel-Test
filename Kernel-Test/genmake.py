@@ -34,15 +34,18 @@ def parse_sourcefile(source_content):
 	inj_misc = ""
 
 	# Search for flag injection:
-	match_flags = re.search(r'\$FLAGS\(((?:.|\n)+?)\)', source_content, re.M)
+	match_flags = re.search(r'\$FLAGS\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_flags:
 		inj_flags = match_flags.group(1)
-	match_deps = re.search(r'\$DEPS\(((?:.|\n)+?)\)', source_content, re.M)
+	match_deps = re.search(r'\$DEPS\(((?:\w|\n|,)+?)\)', source_content, re.M)
 	if match_deps:
-		inj_deps = match_deps.group(1)
-	match_misc = re.search(r'\$INJ\(((?:.|\n)+?)\)', source_content, re.M)
+		deps = match_deps.group(1).split(',')
+		for dep in deps:
+			inj_deps += build_path + "\\" + dep + ".o "
+	match_misc = re.search(r'\$INJ\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_misc:
 		inj_misc = match_misc.group(1)
+		
 	return [inj_flags, inj_deps, inj_misc] # Injection of: flags, dependencies (objects) and misc (respectively)
 
 # Scans the top_path for files with formats that belong to 'formats' list
@@ -116,7 +119,7 @@ def gen_make(tree):
 				flags_to_use = 'NASFLAGS'
 				is_asm = ""
 
-			subdirmk.write('\n$(BOUT)\\'+files[i]+'.o: '+ffile+'\n\
+			subdirmk.write('\n$(BOUT)\\'+files[i]+'.o: '+ffile+' ' + deps + '\n\
 	@echo \'>> Building file $<\'\n\
 	@echo \'>> Invoking ' + toolname + '\'\n\
 	$(' + compiler_to_use  + ') $(' + flags_to_use + ') ' + customflags + ' -o $@ '+is_asm+' $< '+ deps + ' '+ injection +'\n\
