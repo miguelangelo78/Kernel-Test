@@ -56,7 +56,7 @@ ISR_NOERR 127
 .extern _ZN6Kernel3CPU3ISR13fault_handlerEPNS0_6regs_tE
 .type _ZN6Kernel3CPU3ISR13fault_handlerEPNS0_6regs_tE, @function
 
-isr_common:
+isr_common: // All interrupts will lead here
     /* Push all registers */
     pusha
 

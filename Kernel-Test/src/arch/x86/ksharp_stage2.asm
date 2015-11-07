@@ -33,6 +33,7 @@ mboot:
 
 [GLOBAL start]
 [EXTERN _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj]
+[EXTERN _ZN6Kernel5kexitEv]
 
 start:
     push esp
@@ -40,5 +41,6 @@ start:
     push ebx
 
     cli
-    call _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj
-	jmp $
+    call _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj ; Call Kernel Main function
+	call _ZN6Kernel5kexitEv ; Call Kernel Exit function
+	jmp $ ; It is impossible to reach this, but, just in case

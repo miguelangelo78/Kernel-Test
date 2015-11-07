@@ -1,9 +1,6 @@
 cls
 @echo off
 
-printf "Cleaning built objects\n"
-make -f toolchain\makefile.mak clean
-
 printf "Generating symbols from Kernel\n"
 python gensym.py > src\symbols.s
 if ERRORLEVEL 1 ( call:errorhandle "Generating symbols")
@@ -11,7 +8,11 @@ if ERRORLEVEL 1 ( call:errorhandle "Generating symbols")
 python genmake.py
 if ERRORLEVEL 1 ( call:errorhandle "Generating makefiles" )
 
-call build.bat
+@REM calling rebuild.bat for the 1st time
+IF [%1]==[] ( call build.bat 0 )
+
+@REM calling rebuild.bat FROM build.bat
+call build.bat %1
 exit
 
 :errorhandle

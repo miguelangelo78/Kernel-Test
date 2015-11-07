@@ -2,21 +2,31 @@
 #include "stdint.h"
 
 void * memset(void * dest, int c, size_t n) {
-	unsigned char *ptr = (unsigned char*)dest;
-	for(size_t i = 0 ; i < n; i++)
-		ptr[i] = c;
+	uint8_t *ptr = (uint8_t*)dest;
+	for(size_t i = 0; i < n; i++)
+		ptr[i] = (uint8_t)c;
 	return dest;
 }
 
 namespace Kernel {
 	#define asm __asm__
 	#define volatile __volatile__
-	#define attribute(attr) __attribute__((attr))
 
 	#define DEBUG(msg) term.puts((char*)msg, DEFAULT_COLOR);
 	#define DEBUGC(msg, color) term.puts((char*)msg, color);
 
+	#define KERNEL_STOP() for(;;) { asm("cli"); asm("hlt"); }
+
 	Console term; /* Used only for debugging to the screen */
+
+	namespace Error {
+		void panic(const char * msg, int errcode) {
+			term.fill(VIDRed);
+			term.puts((char*)"!! KERNEL PANIC !!\n\n - ", COLOR(VIDRed, VIDWhite));
+			term.puts(msg, COLOR(VIDRed, VIDWhite));
+			KERNEL_STOP();
+		}
+	}
 
 	 /* All CPU Related components, such as GDT, 
 		IDT (which includes ISR and PIC / IRQ) and registers */
@@ -29,15 +39,68 @@ namespace Kernel {
 		} regs_t;
 
 		namespace GDT {
+			extern "C" { void gdt_flush(uintptr_t); }
+
+			typedef struct {
+				/* Limits */
+				uint16_t limit_low;
+				/* Segment address */
+				uint16_t base_low;
+				uint8_t base_middle;
+				/* Access modes */
+				uint8_t access;
+				uint8_t granularity;
+				uint8_t base_high;
+			} __attribute__((packed)) gdt_entry_t;
+
+			typedef struct {
+				uint16_t limit;
+				uintptr_t base;
+			} __attribute__((packed)) gdt_pointer_t;
+
+			static struct {
+				gdt_entry_t entries[6];
+				gdt_pointer_t pointer;
+			//xxx tss_entry_t tss;
+			} gdt __attribute__((used));
+
+			void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran) {
+				/* Base Address */
+				gdt.entries[num].base_low = (base & 0xFFFF);
+				gdt.entries[num].base_middle = (base >> 16) & 0xFF;
+				gdt.entries[num].base_high = (base >> 24) & 0xFF;
+				/* Limits */
+				gdt.entries[num].limit_low = (limit & 0xFFFF);
+				gdt.entries[num].granularity = (limit >> 16) & 0X0F;
+				/* Granularity */
+				gdt.entries[num].granularity |= (gran & 0xF0);
+				/* Access flags */
+				gdt.entries[num].access = access;
+			}
+
 			void gdt_init(void) {
-				
+				gdt_pointer_t *gdtp = &gdt.pointer;
+				gdtp->limit = sizeof gdt.entries - 1;
+				gdtp->base = (uintptr_t)&gdt.entries[0];
+
+				gdt_set_gate(0, 0, 0, 0, 0);                /* NULL segment */
+				gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment */
+				gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Data segment */
+				gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* 	User code 	*/
+				gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* 	User data 	*/
+
+				// xxx write_tss(5, 0x10, 0x0);
+
+				/* Go go go */
+				gdt_flush((uintptr_t)gdtp);
+				//xxx tss_flush();
 			}
 		}
 
 		namespace IDT {
-			#define IDTENTRY(entry) idt.entries[(entry)]
-
 			typedef void(*idt_gate_t)(void);
+
+			extern "C" { void idt_flush(uintptr_t); }
 
 			typedef struct {
 				uint16_t base_low;
@@ -45,39 +108,35 @@ namespace Kernel {
 				uint8_t zero;
 				uint8_t flags;
 				uint16_t base_high;
-			} attribute(packed) idt_entry_t;
+			} __attribute__((packed)) idt_entry_t;
 
 			typedef struct {
 				uint16_t limit;
 				uintptr_t base;
-			} attribute(packed) idt_ptr_t;
+			} __attribute__((packed)) idt_pointer_t;
 
 			static struct {
 				idt_entry_t entries[256];
-				idt_ptr_t ptr;
-			} idt attribute(used);
+				idt_pointer_t pointer;
+			} idt __attribute__((used));
 
-			void idt_set_gate(uint8_t num, idt_gate_t base, uint16_t sel, uint8_t flags) {
-				IDTENTRY(num).base_low = ((uintptr_t)base & 0xFFFF);
-				IDTENTRY(num).base_high = ((uintptr_t)base >> 16) & 0xFFFF;
-				IDTENTRY(num).sel = sel;
-				IDTENTRY(num).zero = 0;
-				IDTENTRY(num).flags = flags | 0x60;
+			void idt_set_gate(uint8_t num, idt_gate_t isr_addr, uint16_t sel, uint8_t flags) {
+				idt.entries[num].base_low = ((uintptr_t)isr_addr & 0xFFFF);
+				idt.entries[num].base_high = ((uintptr_t)isr_addr >> 16) & 0xFFFF;
+				idt.entries[num].sel = sel;
+				idt.entries[num].zero = 0;
+				idt.entries[num].flags = flags | 0x60;
 			}
 
-			void idt_flush() {
-				asm volatile("mov 4(%esp), %eax; lidt (%eax);");
-			}
-
-			void init() {
+			void idt_init() {
 				/* Set up IDT pointer: */
-				idt_ptr_t * idt_ptr = &idt.ptr;
-				idt_ptr->limit = sizeof(idt.entries - 1);
-				idt_ptr->base = (uintptr_t)&IDTENTRY(0);
-				memset(&IDTENTRY(0), 0 ,sizeof(idt.entries));
+				idt_pointer_t * idt_ptr = &idt.pointer;
+				idt_ptr->limit = sizeof idt.entries - 1;
+				idt_ptr->base = (uintptr_t)&idt.entries[0];
+				memset(&idt.entries[0], 0 , sizeof idt.entries);
 
 				/* Install IDT: */
-				idt_flush();
+				idt_flush((uintptr_t)idt_ptr);
 			}
 		}
 	
@@ -138,7 +197,7 @@ namespace Kernel {
 			#pragma endregion
 
 			/* ISR Messages: */
-			static const char *exception_messages[ISR_COUNT] = {
+			static const char *exception_msgs[ISR_COUNT] = {
 				"Division by zero",
 				"Debug",
 				"Non-maskable interrupt",
@@ -203,7 +262,7 @@ namespace Kernel {
 			static struct {
 				size_t index;
 				void (*stub)(void);
-			} isrs[32 + 1] attribute(used);
+			} isrs[32 + 1] __attribute__((used));
 
 			static irq_handler_t isr_routines[256];
 
@@ -241,18 +300,17 @@ namespace Kernel {
 				IDT::idt_set_gate(0x1E, _isr30, 0x08, 0x8E);
 				IDT::idt_set_gate(0x1F, _isr31, 0x08, 0x8E);
 			}
-
+			
+			void foo(int){}
+			
 			void fault_handler(CPU::regs_t * r) {
-				for(;;);
+			foo(1);
 				irq_handler_t handler = isr_routines[r->int_no];
 				if (handler) {
 					handler(r);
 				} else {
 					// Kernel BSOD
-					char * vid = (char*)0xB8000;
-					vid[0]='a';
-				
-					for(;;);
+					Error::panic(exception_msgs[r->err_code], r->err_code);
 				}
 			}
 		}
@@ -260,6 +318,7 @@ namespace Kernel {
 		namespace IRQ {
 
 		}
+
 	}
 
 	/* Initialization data goes here, like the Multiboot, for example: */
@@ -288,7 +347,7 @@ namespace Kernel {
 		* this structure, the multiboot magic number and the initial
 		* stack.
 		*/
-		typedef struct 
+		struct multiboot_t
 		{
 			uint32_t flags;
 			uint32_t mem_lower;
@@ -323,12 +382,13 @@ namespace Kernel {
 				uint32_t interface_off;
 				uint32_t interface_len;
 			} vbe;
-		} multiboot_t attribute(packed);
+		} __attribute__((packed));
 	}
 
-	int kmain(Init::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
+	int kmain(struct Init::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
-		/* Initialize everything: */
+		/******* Initialize everything: *******/
+
 		term.init();
 		
 		DEBUG(">> Initializing Kernel <<\n\n");
@@ -341,13 +401,13 @@ namespace Kernel {
 			for(;;);
 		}
 		DEBUGC(" VALID \n", COLOR(VIDGreen, VIDWhite));
-			
+		
 		DEBUG("> Installing GDT - ");
 		CPU::GDT::gdt_init();
 		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
 		
 		DEBUG("> Installing IDT - ");
-		CPU::IDT::init();
+		CPU::IDT::idt_init();
 		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
 
 		DEBUG("> Installing ISRs - ");
@@ -358,11 +418,20 @@ namespace Kernel {
 		
 		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
 
-		for (;;);
-
 		int j = 0,x = 1;
 		term.putc(x/j, 0);
 		 
 		for(;;);
+
+		return 1;
+	}
+
+	void kexit() {
+		term.fill(VIDBlue);
+		term.puts((char*)"!! The Kernel has exited !!", COLOR(VIDBlue, VIDWhite));
+		for(;;) { 
+			asm("cli");
+			asm("hlt");
+		}
 	}
 }

@@ -20,7 +20,7 @@ main_make_path = "toolchain" # Where the final makefile.mak will go
 
 execname = "ksharp.bin" # Final executable/file that will be outputted by the linker
 linker = "linker.ld" # The linker that will be used while linking the final binary file
-cflags = "-T $(TOOLCH)\$(LINKER) -nostartfiles -nostdlib -Wall -Wno-unknown-pragmas -std=c++11 -fno-exceptions" # C/C++ flags
+cflags = "-T $(TOOLCH)\$(LINKER) -O2 -finline-functions -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions" # C/C++ flags
 asmflags = ""
 nasmflags = "-g -f elf" # Flags for the nasm assembler
 
@@ -45,7 +45,7 @@ def parse_sourcefile(source_content):
 	match_misc = re.search(r'\$INJ\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_misc:
 		inj_misc = match_misc.group(1)
-		
+
 	return [inj_flags, inj_deps, inj_misc] # Injection of: flags, dependencies (objects) and misc (respectively)
 
 # Scans the top_path for files with formats that belong to 'formats' list

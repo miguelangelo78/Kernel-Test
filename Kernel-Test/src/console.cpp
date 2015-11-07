@@ -8,7 +8,7 @@ void Console::init() {
 	clear();
 }
 
-void Console::putc(char chr, char color) {
+void Console::putc(const char chr, char color) {
 	if(chr=='\n') { cursor_y++; cursor_x = 0; return; }
 	int loc = VID_CALC_POS(cursor_x, cursor_y);
 	vidmem[loc * 2] = chr;
@@ -16,7 +16,7 @@ void Console::putc(char chr, char color) {
 	cursor_x ++;
 }
 
-void Console::puts(char * str, char color) {
+void Console::puts(const char * str, char color) {
 	while (*str) putc(*str++, color);
 }
 

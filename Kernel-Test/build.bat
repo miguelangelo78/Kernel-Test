@@ -1,9 +1,11 @@
 cls
 @echo off
 
+set arg=%1
+
 printf "STEP 1 - Compiling and Linking...\n\n"
 make -f toolchain\makefile.mak all
-if ERRORLEVEL 1 ( call:errorhandle "Compiling and Linking" )
+if ERRORLEVEL 1 ( call:error_compile "Compiling and Linking" )
 
 printf "\nSTEP 2 - Creating disk (ISO9660)...\n\n"
 del iso\KernelSharp.iso
@@ -18,4 +20,9 @@ exit
 printf "****\nERROR: %~1\n****\n"
 pause
 exit
-GOTO:EOF
+
+:error_compile
+printf "****\nERROR: %~1\n****\n"
+IF [%arg%] == [1] (call:errorhandle)
+printf "**** Trying again by rebuilding (due to outdated symbols)... ****\n"
+call rebuild.bat %arg%+1

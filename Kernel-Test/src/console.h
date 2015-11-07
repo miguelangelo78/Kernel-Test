@@ -34,8 +34,8 @@ class Console {
 	public:
 		Console();
 		void init(void);
-		void putc(char chr, char color);
-		void puts(char * str, char color);
+		void putc(const char chr, char color);
+		void puts(const char * str, char color);
 		void clear(void);
 		void fill(char color);
 		void reset_cursor(void);
