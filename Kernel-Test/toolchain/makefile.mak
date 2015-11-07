@@ -20,6 +20,7 @@ STAGE2OBJ = $(BOUT)\ksharp_stage2.o
 
 include src\subdir.mk
 include src\arch\x86\subdir.mk
+include src\arch\x86\isr\subdir.mk
 
 ############### Main targets ###############
 

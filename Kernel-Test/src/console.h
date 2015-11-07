@@ -33,10 +33,12 @@ enum VIDColor {
 class Console {
 	public:
 		Console();
+		void init(void);
 		void putc(char chr, char color);
 		void puts(char * str, char color);
-		void clear();
-		void reset_cursor();
+		void clear(void);
+		void fill(char color);
+		void reset_cursor(void);
 	private:
 		int cursor_x, cursor_y;
 		char * vidmem;
