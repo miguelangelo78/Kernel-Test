@@ -162,30 +162,6 @@
 .extern _Z9vasprintfPcPKcS_
 .type _Z9vasprintfPcPKcS_, @function
 
-.extern _ZN6Kernel2IO7inportbEt
-.type _ZN6Kernel2IO7inportbEt, @function
-
-.extern _ZN6Kernel2IO7inportlEt
-.type _ZN6Kernel2IO7inportlEt, @function
-
-.extern _ZN6Kernel2IO7inportsEt
-.type _ZN6Kernel2IO7inportsEt, @function
-
-.extern _ZN6Kernel2IO8inportsmEtPhm
-.type _ZN6Kernel2IO8inportsmEtPhm, @function
-
-.extern _ZN6Kernel2IO8outportbEth
-.type _ZN6Kernel2IO8outportbEth, @function
-
-.extern _ZN6Kernel2IO8outportlEtj
-.type _ZN6Kernel2IO8outportlEtj, @function
-
-.extern _ZN6Kernel2IO8outportsEtt
-.type _ZN6Kernel2IO8outportsEtt, @function
-
-.extern _ZN6Kernel2IO9outportsmEtPhm
-.type _ZN6Kernel2IO9outportsmEtPhm, @function
-
 .extern _ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh
 .type _ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh, @function
 
@@ -222,8 +198,17 @@
 .extern _ZN6Kernel5Error13infinite_idleEPKc
 .type _ZN6Kernel5Error13infinite_idleEPKc, @function
 
+.extern _ZN6Kernel5Error5panicEPKc
+.type _ZN6Kernel5Error5panicEPKc, @function
+
 .extern _ZN6Kernel5Error5panicEPKci
 .type _ZN6Kernel5Error5panicEPKci, @function
+
+.extern _ZN6Kernel5Error5panicEPKciS2_i
+.type _ZN6Kernel5Error5panicEPKciS2_i, @function
+
+.extern _ZN6Kernel5Error5panicEv
+.type _ZN6Kernel5Error5panicEv, @function
 
 .extern _ZN6Kernel5kexitEv
 .type _ZN6Kernel5kexitEv, @function
@@ -231,17 +216,11 @@
 .extern _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj
 .type _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj, @function
 
-.extern _ZN6Module11symbol_callEPKc
-.type _ZN6Module11symbol_callEPKc, @function
-
-.extern _ZN6Module11symbol_callEPKcPv
-.type _ZN6Module11symbol_callEPKcPv, @function
-
-.extern _ZN6Module11symbol_findEPKc
-.type _ZN6Module11symbol_findEPKc, @function
-
 .extern _ZN7Console12reset_cursorEv
 .type _ZN7Console12reset_cursorEv, @function
+
+.extern _ZN7Console20hide_textmode_cursorEv
+.type _ZN7Console20hide_textmode_cursorEv, @function
 
 .extern _ZN7Console4fillEc
 .type _ZN7Console4fillEc, @function
@@ -462,30 +441,6 @@ kernel_symbols_start:
 .long _Z9vasprintfPcPKcS_
 .asciz "_Z9vasprintfPcPKcS_"
 
-.long _ZN6Kernel2IO7inportbEt
-.asciz "_ZN6Kernel2IO7inportbEt"
-
-.long _ZN6Kernel2IO7inportlEt
-.asciz "_ZN6Kernel2IO7inportlEt"
-
-.long _ZN6Kernel2IO7inportsEt
-.asciz "_ZN6Kernel2IO7inportsEt"
-
-.long _ZN6Kernel2IO8inportsmEtPhm
-.asciz "_ZN6Kernel2IO8inportsmEtPhm"
-
-.long _ZN6Kernel2IO8outportbEth
-.asciz "_ZN6Kernel2IO8outportbEth"
-
-.long _ZN6Kernel2IO8outportlEtj
-.asciz "_ZN6Kernel2IO8outportlEtj"
-
-.long _ZN6Kernel2IO8outportsEtt
-.asciz "_ZN6Kernel2IO8outportsEtt"
-
-.long _ZN6Kernel2IO9outportsmEtPhm
-.asciz "_ZN6Kernel2IO9outportsmEtPhm"
-
 .long _ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh
 .asciz "_ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh"
 
@@ -522,8 +477,17 @@ kernel_symbols_start:
 .long _ZN6Kernel5Error13infinite_idleEPKc
 .asciz "_ZN6Kernel5Error13infinite_idleEPKc"
 
+.long _ZN6Kernel5Error5panicEPKc
+.asciz "_ZN6Kernel5Error5panicEPKc"
+
 .long _ZN6Kernel5Error5panicEPKci
 .asciz "_ZN6Kernel5Error5panicEPKci"
+
+.long _ZN6Kernel5Error5panicEPKciS2_i
+.asciz "_ZN6Kernel5Error5panicEPKciS2_i"
+
+.long _ZN6Kernel5Error5panicEv
+.asciz "_ZN6Kernel5Error5panicEv"
 
 .long _ZN6Kernel5kexitEv
 .asciz "_ZN6Kernel5kexitEv"
@@ -531,17 +495,11 @@ kernel_symbols_start:
 .long _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj
 .asciz "_ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj"
 
-.long _ZN6Module11symbol_callEPKc
-.asciz "_ZN6Module11symbol_callEPKc"
-
-.long _ZN6Module11symbol_callEPKcPv
-.asciz "_ZN6Module11symbol_callEPKcPv"
-
-.long _ZN6Module11symbol_findEPKc
-.asciz "_ZN6Module11symbol_findEPKc"
-
 .long _ZN7Console12reset_cursorEv
 .asciz "_ZN7Console12reset_cursorEv"
+
+.long _ZN7Console20hide_textmode_cursorEv
+.asciz "_ZN7Console20hide_textmode_cursorEv"
 
 .long _ZN7Console4fillEc
 .asciz "_ZN7Console4fillEc"

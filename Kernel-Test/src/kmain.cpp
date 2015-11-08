@@ -13,7 +13,7 @@ namespace Module {
 		char name[];
 	} kernel_sym_t;
 	
-	void * symbol_find(const char * name) {
+	inline void * symbol_find(const char * name) {
 		kernel_sym_t * k = (kernel_sym_t *)&kernel_symbols_start;
 		while ((uintptr_t)k < (uintptr_t)&kernel_symbols_end) {
 			if (strcmp(k->name, name)) {
@@ -25,14 +25,14 @@ namespace Module {
 		return NULL;
 	}
 
-	void * symbol_call(const char * name, void * params) {
+	inline void * symbol_call(const char * name, void * params) {
 		typedef void * (*cback)(void*);
 		cback fptr = (cback)Module::symbol_find(name);
 		if(fptr) return fptr(params);
 		else return NULL;
 	}
 
-	void * symbol_call(const char * name) {
+	inline void * symbol_call(const char * name) {
 		typedef void * (*cback)(void);
 		cback fptr = (cback)Module::symbol_find(name);
 		if (fptr) return fptr();
@@ -46,58 +46,48 @@ namespace Kernel {
 	#define DEBUGOK() DEBUGC(" OK \n", COLOR_GOOD);
 	#define DEBUGVALID() DEBUGC(" VALID \n", COLOR_GOOD);
 
+	#define ASSERT(cond, msg) { if(!cond) { char buff[256]; sprintf(buff, "Assert: %s", msg); Error::panic(buff, __LINE__, __FILE__, 0); } }
+
 	#define KERNEL_PAUSE()   { asm volatile ("hlt"); }
 	#define KERNEL_FULL_STOP() while (1) { KERNEL_PAUSE(); }
-
-	#define SYSCALL_VECTOR 0x7F
-
+	
 	Console term; /* Used only for debugging to the screen */
 
-	namespace IO {
-		uint16_t inports(uint16_t _port) {
-			uint16_t rv;
-			asm volatile ("inw %1, %0" : "=a" (rv) : "dN" (_port));
-			return rv;
-		}
-
-		void outports(uint16_t _port, uint16_t _data) {
-			asm volatile ("outw %1, %0" : : "dN" (_port), "a" (_data));
-		}
-
-		unsigned int inportl(uint16_t _port) {
-			unsigned int rv;
-			asm volatile ("inl %%dx, %%eax" : "=a" (rv) : "dN" (_port));
-			return rv;
-		}
-
-		void outportl(uint16_t _port, unsigned int _data) {
-			asm volatile ("outl %%eax, %%dx" : : "dN" (_port), "a" (_data));
-		}
-
-		unsigned char inportb(uint16_t _port) {
-			unsigned char rv;
-			asm volatile ("inb %1, %0" : "=a" (rv) : "dN" (_port));
-			return rv;
-		}
-
-		void outportb(uint16_t _port, unsigned char _data) {
-			asm volatile ("outb %1, %0" : : "dN" (_port), "a" (_data));
-		}
-
-		void outportsm(uint16_t port, unsigned char * data, unsigned long size) {
-			asm volatile ("rep outsw" : "+S" (data), "+c" (size) : "d" (port));
-		}
-
-		void inportsm(uint16_t port, unsigned char * data, unsigned long size) {
-			asm volatile ("rep insw" : "+D" (data), "+c" (size) : "d" (port) : "memory");
-		}
-	}
-
 	namespace Error {
-		void panic(const char * msg, int intno) {
+		
+		/* Many ways to panic: */
+
+		void panic(const char * msg, const int line, const char * file, int intno) {
+			char buff[256];
+			sprintf(buff, "!!KERNEL PANIC !!\n\n - %s (At line %d @ %s - int: %d)", msg, line, file, intno);
+
 			term.fill(VIDRed);
-			term.puts((char*)"!! KERNEL PANIC !!\n\n - ", COLOR_BAD);
+			term.puts(buff, COLOR_BAD);
+			
+			KERNEL_FULL_STOP();
+		}
+
+		void panic(const char * msg, int intno) {
+			char buff[256];
+			sprintf(buff, "!!KERNEL PANIC !!\n\n - %s (int: %d)", msg, intno);
+			
+			term.fill(VIDRed);
+			term.puts(buff, COLOR_BAD);
+
+			KERNEL_FULL_STOP();
+		}
+
+		void panic(const char * msg) {
+			term.fill(VIDRed);
+			term.puts("!!KERNEL PANIC !!\n\n - ", COLOR_BAD);
 			term.puts(msg, COLOR_BAD);
+			
+			KERNEL_FULL_STOP();
+		}
+
+		void panic(void) {
+			term.fill(VIDRed);
+			term.puts("!!KERNEL PANIC !!", COLOR_BAD);
 			KERNEL_FULL_STOP();
 		}
 
@@ -282,7 +272,8 @@ namespace Kernel {
 				ISR_ALIGNCHECK,
 				ISR_SIMD_FPU,
 				ISR_RESERVED2,
-				ISR_USR
+				ISR_USR,
+				SYSCALL_VECTOR = 0x7F
 			};
 
 			typedef void(*irq_handler_t) (CPU::regs_t *);
@@ -309,10 +300,14 @@ namespace Kernel {
 			
 			void fault_handler(CPU::regs_t * r) {
 				irq_handler_t handler = isr_routines[r->int_no];
-				if (handler)
+				if (handler) {
 					handler(r);
-				else /* Kernel BSOD */
-					Error::panic(exception_msgs[r->int_no], r->int_no);
+				} else { 
+					/* Kernel RSOD (aka BSOD) */
+					char msg_fmt[256];
+					sprintf(msg_fmt, "Fault handler: %s", exception_msgs[r->int_no]);
+					Error::panic(msg_fmt, __LINE__, __FILE__, r->int_no);
+				}
 			}
 		}
 
@@ -400,14 +395,13 @@ namespace Kernel {
 	
 		/* Multiboot Validate: */
 		DEBUG(">> Initializing Kernel <<\n\n> Checking Multiboot...");
-		if (magic != MULTIBOOT_HEADER_MAGIC)
-			Error::panic("ERROR: Multiboot is not valid!", -1);
-		DEBUGC(" VALID \n", COLOR_GOOD);
+		ASSERT(magic == MULTIBOOT_HEADER_MAGIC, "ERROR: Multiboot is not valid!");
+		DEBUGVALID();
 		
 		/* Install GDT: */
 		DEBUG("> Installing GDT - ");
 		CPU::GDT::gdt_init();
-		DEBUGVALID();
+		DEBUGOK();
 
 		/* Install IDT: */
 		DEBUG("> Installing IDT - ");
@@ -423,7 +417,7 @@ namespace Kernel {
 		DEBUG("> Installing IRQs (PIC) - ");
 		CPU::IRQ::irq_install();
 		DEBUGOK();
-	
+		
 		for(;;);
 
 		return 0;

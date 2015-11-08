@@ -1,11 +1,22 @@
 #include "console.h"
+#include "IO.h"
+
+using namespace Kernel::IO;
 
 Console::Console() { }
 
 void Console::init() {
 	cursor_x = cursor_y = 0;
 	vidmem = (char*)0xB8000;
+	hide_textmode_cursor();
 	clear();
+}
+
+void Console::hide_textmode_cursor() {
+	outb(0x3D4, 14);
+	outb(0x3D5, 0xFF);
+	outb(0x3D4, 15);
+	outb(0x3D5, 0xFF);
 }
 
 void Console::putc(const char chr, char color) {

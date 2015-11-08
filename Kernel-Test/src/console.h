@@ -44,6 +44,7 @@ class Console {
 		void fill(char color);
 		void reset_cursor(void);
 	private:
+		void hide_textmode_cursor(void);
 		int cursor_x, cursor_y;
 		char * vidmem;
 };
