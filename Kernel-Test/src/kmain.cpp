@@ -1,44 +1,9 @@
 #include "system.h"
-
-namespace Module {
-	extern "C" { void kernel_symbols_start(void); }
-	extern "C" { void kernel_symbols_end(void); }
-
-	typedef struct {
-		uintptr_t addr;
-		char name[];
-	} kernel_sym_t;
-	
-	inline void * symbol_find(const char * name) {
-		kernel_sym_t * k = (kernel_sym_t *)&kernel_symbols_start;
-		while ((uintptr_t)k < (uintptr_t)&kernel_symbols_end) {
-			if (strcmp(k->name, name)) {
-				k = (kernel_sym_t *)((uintptr_t)k + sizeof *k + strlen(k->name) + 1);
-				continue;
-			}
-			return (void*)k->addr;
-		}
-		return NULL;
-	}
-
-	inline void * symbol_call(const char * name, void * params) {
-		typedef void * (*cback)(void*);
-		cback fptr = (cback)Module::symbol_find(name);
-		if(fptr) return fptr(params);
-		else return NULL;
-	}
-
-	inline void * symbol_call(const char * name) {
-		typedef void * (*cback)(void);
-		cback fptr = (cback)Module::symbol_find(name);
-		if (fptr) return fptr();
-		else return NULL;
-	}
-}
+#include "module.h"
 
 namespace Kernel {
 	Terminal term;
-
+	
 	 /* All CPU Related components, such as GDT, 
 		IDT (which includes ISR and PIC / IRQ) and registers */
 	namespace CPU {
@@ -155,7 +120,7 @@ namespace Kernel {
 
 			static struct {
 				idt_entry_t entries[256];
-				idt_pointer_t pointer;
+				idt_pointer_t * pointer;
 			} idt __attribute__((used));
 
 			void idt_set_gate(uint8_t num, idt_gate_t isr_addr, uint16_t sel, uint8_t flags) {
@@ -168,7 +133,7 @@ namespace Kernel {
 
 			void idt_init() {
 				/* Set up IDT pointer: */
-				idt_pointer_t * idt_ptr = &idt.pointer;
+				idt_pointer_t * idt_ptr = idt.pointer;
 				idt_ptr->limit = sizeof idt.entries - 1;
 				idt_ptr->base = (uintptr_t)&idt.entries[0];
 				memset(&idt.entries[0], 0 , sizeof idt.entries);
@@ -333,7 +298,7 @@ namespace Kernel {
 		
 		term.init();
 	
-		/* Multiboot Validate: */
+		/* Validate Multiboot: */
 		DEBUG(">> Initializing Kernel <<\n\n> Checking Multiboot...");
 		ASSERT(magic == MULTIBOOT_HEADER_MAGIC, "Multiboot is not valid!");
 		DEBUGVALID();

@@ -1,5 +1,4 @@
-#include "terminal.h"
-#include "IO.h"
+#include "system.h"
 
 using namespace Kernel::IO;
 

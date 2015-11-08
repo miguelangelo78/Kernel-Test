@@ -2,6 +2,7 @@
 
 #include "terminal.h"
 #include "libc.h"
+#include "io.h"
 
 #define asm __asm__
 #define volatile __volatile__
