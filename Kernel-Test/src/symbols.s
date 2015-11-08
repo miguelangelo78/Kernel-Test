@@ -216,32 +216,32 @@
 .extern _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj
 .type _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj, @function
 
-.extern _ZN7Console12reset_cursorEv
-.type _ZN7Console12reset_cursorEv, @function
+.extern _ZN8Terminal12reset_cursorEv
+.type _ZN8Terminal12reset_cursorEv, @function
 
-.extern _ZN7Console20hide_textmode_cursorEv
-.type _ZN7Console20hide_textmode_cursorEv, @function
+.extern _ZN8Terminal20hide_textmode_cursorEv
+.type _ZN8Terminal20hide_textmode_cursorEv, @function
 
-.extern _ZN7Console4fillEc
-.type _ZN7Console4fillEc, @function
+.extern _ZN8Terminal4fillEc
+.type _ZN8Terminal4fillEc, @function
 
-.extern _ZN7Console4initEv
-.type _ZN7Console4initEv, @function
+.extern _ZN8Terminal4initEv
+.type _ZN8Terminal4initEv, @function
 
-.extern _ZN7Console4putcEcc
-.type _ZN7Console4putcEcc, @function
+.extern _ZN8Terminal4putcEcc
+.type _ZN8Terminal4putcEcc, @function
 
-.extern _ZN7Console4putsEPKcc
-.type _ZN7Console4putsEPKcc, @function
+.extern _ZN8Terminal4putsEPKcc
+.type _ZN8Terminal4putsEPKcc, @function
 
-.extern _ZN7Console5clearEv
-.type _ZN7Console5clearEv, @function
+.extern _ZN8Terminal5clearEv
+.type _ZN8Terminal5clearEv, @function
 
-.extern _ZN7ConsoleC1Ev
-.type _ZN7ConsoleC1Ev, @function
+.extern _ZN8TerminalC1Ev
+.type _ZN8TerminalC1Ev, @function
 
-.extern _ZN7ConsoleC2Ev
-.type _ZN7ConsoleC2Ev, @function
+.extern _ZN8TerminalC2Ev
+.type _ZN8TerminalC2Ev, @function
 
 .extern bss
 .type bss, @function
@@ -495,32 +495,32 @@ kernel_symbols_start:
 .long _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj
 .asciz "_ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj"
 
-.long _ZN7Console12reset_cursorEv
-.asciz "_ZN7Console12reset_cursorEv"
+.long _ZN8Terminal12reset_cursorEv
+.asciz "_ZN8Terminal12reset_cursorEv"
 
-.long _ZN7Console20hide_textmode_cursorEv
-.asciz "_ZN7Console20hide_textmode_cursorEv"
+.long _ZN8Terminal20hide_textmode_cursorEv
+.asciz "_ZN8Terminal20hide_textmode_cursorEv"
 
-.long _ZN7Console4fillEc
-.asciz "_ZN7Console4fillEc"
+.long _ZN8Terminal4fillEc
+.asciz "_ZN8Terminal4fillEc"
 
-.long _ZN7Console4initEv
-.asciz "_ZN7Console4initEv"
+.long _ZN8Terminal4initEv
+.asciz "_ZN8Terminal4initEv"
 
-.long _ZN7Console4putcEcc
-.asciz "_ZN7Console4putcEcc"
+.long _ZN8Terminal4putcEcc
+.asciz "_ZN8Terminal4putcEcc"
 
-.long _ZN7Console4putsEPKcc
-.asciz "_ZN7Console4putsEPKcc"
+.long _ZN8Terminal4putsEPKcc
+.asciz "_ZN8Terminal4putsEPKcc"
 
-.long _ZN7Console5clearEv
-.asciz "_ZN7Console5clearEv"
+.long _ZN8Terminal5clearEv
+.asciz "_ZN8Terminal5clearEv"
 
-.long _ZN7ConsoleC1Ev
-.asciz "_ZN7ConsoleC1Ev"
+.long _ZN8TerminalC1Ev
+.asciz "_ZN8TerminalC1Ev"
 
-.long _ZN7ConsoleC2Ev
-.asciz "_ZN7ConsoleC2Ev"
+.long _ZN8TerminalC2Ev
+.asciz "_ZN8TerminalC2Ev"
 
 .long bss
 .asciz "bss"

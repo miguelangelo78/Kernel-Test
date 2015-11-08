@@ -37,7 +37,7 @@ namespace Module {
 }
 
 namespace Kernel {
-	Console term;
+	Terminal term;
 
 	 /* All CPU Related components, such as GDT, 
 		IDT (which includes ISR and PIC / IRQ) and registers */
@@ -113,6 +113,32 @@ namespace Kernel {
 			typedef void(*idt_gate_t)(void);
 
 			extern "C" { void idt_flush(uintptr_t); }
+
+			/* IDT Interrupt List: */
+			enum IDT_IVT {
+				ISR_DIVBY0,
+				ISR_RESERVED0,
+				ISR_NMI,
+				ISR_BREAK,
+				ISR_OVERFLOW,
+				ISR_BOUNDS,
+				ISR_INVOPCODE,
+				ISR_DEVICEUN,
+				ISR_DOUBLEFAULT,
+				ISR_COPROC,
+				ISR_INVTSS,
+				ISR_SEG_FAULT,
+				ISR_STACKSEG_FAULT,
+				ISR_GENERALPROT,
+				ISR_PAGEFAULT,
+				ISR_RESERVED1,
+				ISR_FPU,
+				ISR_ALIGNCHECK,
+				ISR_SIMD_FPU,
+				ISR_RESERVED2,
+				ISR_USR,
+				SYSCALL_VECTOR = 0x7F
+			};
 
 			typedef struct {
 				uint16_t base_low;
@@ -191,32 +217,6 @@ namespace Kernel {
 				"Reserved"
 			};
 
-			/* ISR List: */
-			enum ISR_IVT {
-				ISR_DIVBY0,
-				ISR_RESERVED0,
-				ISR_NMI,
-				ISR_BREAK,
-				ISR_OVERFLOW,
-				ISR_BOUNDS,
-				ISR_INVOPCODE,
-				ISR_DEVICEUN,
-				ISR_DOUBLEFAULT,
-				ISR_COPROC,
-				ISR_INVTSS,
-				ISR_SEG_FAULT,
-				ISR_STACKSEG_FAULT,
-				ISR_GENERALPROT,
-				ISR_PAGEFAULT,
-				ISR_RESERVED1,
-				ISR_FPU,
-				ISR_ALIGNCHECK,
-				ISR_SIMD_FPU,
-				ISR_RESERVED2,
-				ISR_USR,
-				SYSCALL_VECTOR = 0x7F
-			};
-
 			typedef void(*irq_handler_t) (CPU::regs_t *);
 			
 			static irq_handler_t isr_routines[256];
@@ -235,8 +235,7 @@ namespace Kernel {
 					sprintf(buffer, "_isr%d", i);
 					IDT::idt_set_gate(i, (IDT::idt_gate_t)Module::symbol_find(buffer), 0x08, 0x8E);
 				}
-				
-				IDT::idt_set_gate(SYSCALL_VECTOR, (IDT::idt_gate_t)Module::symbol_find("_isr127"), 0x08, 0x8E);
+				IDT::idt_set_gate(IDT::SYSCALL_VECTOR, (IDT::idt_gate_t)Module::symbol_find("_isr127"), 0x08, 0x8E);
 			}
 			
 			void fault_handler(CPU::regs_t * r) {
@@ -336,7 +335,7 @@ namespace Kernel {
 	
 		/* Multiboot Validate: */
 		DEBUG(">> Initializing Kernel <<\n\n> Checking Multiboot...");
-		ASSERT(magic != MULTIBOOT_HEADER_MAGIC, "Multiboot is not valid!");
+		ASSERT(magic == MULTIBOOT_HEADER_MAGIC, "Multiboot is not valid!");
 		DEBUGVALID();
 		
 		/* Install GDT: */

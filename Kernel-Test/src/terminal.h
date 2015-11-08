@@ -34,9 +34,9 @@ enum VIDColor {
 #define COLOR_WARNING COLOR(VIDYellow, VIDBlack)
 #define COLOR_INFO COLOR(VIDBlue, VIDWhite)
 
-class Console {
+class Terminal {
 	public:
-		Console();
+		Terminal();
 		void init(void);
 		void putc(const char chr, char color);
 		void puts(const char * str, char color);

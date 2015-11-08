@@ -1,7 +1,7 @@
 #include "system.h"
 
 namespace Kernel {
-	extern Console term; /* Used only for debugging to the screen */
+	extern Terminal term; /* Used only for debugging to the screen */
 	
 	namespace Error {
 
@@ -14,7 +14,7 @@ namespace Kernel {
 			term.fill(VIDRed);
 			term.puts(buff, COLOR_BAD);
 
-			KERNEL_FULL_STOP();
+			KERNEL_FULL_PAUSE(); /* IRQs still work */
 		}
 
 		void panic(const char * msg, int intno) {
@@ -24,7 +24,7 @@ namespace Kernel {
 			term.fill(VIDRed);
 			term.puts(buff, COLOR_BAD);
 
-			KERNEL_FULL_STOP();
+			KERNEL_FULL_PAUSE(); /* IRQs still work */
 		}
 
 		void panic(const char * msg) {
@@ -32,19 +32,22 @@ namespace Kernel {
 			term.puts("!! KERNEL PANIC !!\n\n - ", COLOR_BAD);
 			term.puts(msg, COLOR_BAD);
 
-			KERNEL_FULL_STOP();
+			KERNEL_FULL_PAUSE(); /* IRQs still work */
 		}
 
 		void panic(void) {
 			term.fill(VIDRed);
 			term.puts("!! KERNEL PANIC !!", COLOR_BAD);
-			KERNEL_FULL_STOP();
+			KERNEL_FULL_PAUSE(); /* IRQs still work */
 		}
 
 		void infinite_idle(const char * msg) {
 			term.fill(VIDBlue);
 			term.puts(msg, COLOR_INFO);
-			KERNEL_FULL_STOP();
+			
+			/* TODO: Disable IRQs: */
+			KERNEL_FULL_PAUSE();
+			// TODO: IRQ_OFF
 		}
 	}
 }
