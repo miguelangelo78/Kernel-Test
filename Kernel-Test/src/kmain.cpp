@@ -1,8 +1,4 @@
-#include "console.h"
-#include "libc.h"
-
-#define asm __asm__
-#define volatile __volatile__
+#include "system.h"
 
 namespace Module {
 	extern "C" { void kernel_symbols_start(void); }
@@ -41,64 +37,7 @@ namespace Module {
 }
 
 namespace Kernel {
-	#define DEBUG(msg) term.puts((char*)msg, COLOR_DEFAULT);
-	#define DEBUGC(msg, color) term.puts((char*)msg, color);
-	#define DEBUGOK() DEBUGC(" OK \n", COLOR_GOOD);
-	#define DEBUGVALID() DEBUGC(" VALID \n", COLOR_GOOD);
-
-	#define STRSTR(str) #str
-	#define STR(str) STRSTR(str)
-	#define ASSERT(cond, msg) { if(!cond) { char buff[256]; sprintf(buff, "Assert (%s): %s", STR(cond), msg); Error::panic(buff, __LINE__, __FILE__, 0); } }
-
-	#define KERNEL_PAUSE()   { asm volatile ("hlt"); }
-	#define KERNEL_FULL_STOP() while (1) { KERNEL_PAUSE(); }
-	
-	Console term; /* Used only for debugging to the screen */
-
-	namespace Error {
-		
-		/* Many ways to panic: */
-
-		void panic(const char * msg, const int line, const char * file, int intno) {
-			char buff[256];
-			sprintf(buff, "!!KERNEL PANIC !!\n\n - %s (At line %d @ %s - int: %d)", msg, line, file, intno);
-
-			term.fill(VIDRed);
-			term.puts(buff, COLOR_BAD);
-			
-			KERNEL_FULL_STOP();
-		}
-
-		void panic(const char * msg, int intno) {
-			char buff[256];
-			sprintf(buff, "!!KERNEL PANIC !!\n\n - %s (int: %d)", msg, intno);
-			
-			term.fill(VIDRed);
-			term.puts(buff, COLOR_BAD);
-
-			KERNEL_FULL_STOP();
-		}
-
-		void panic(const char * msg) {
-			term.fill(VIDRed);
-			term.puts("!!KERNEL PANIC !!\n\n - ", COLOR_BAD);
-			term.puts(msg, COLOR_BAD);
-			
-			KERNEL_FULL_STOP();
-		}
-
-		void panic(void) {
-			term.fill(VIDRed);
-			term.puts("!!KERNEL PANIC !!", COLOR_BAD);
-			KERNEL_FULL_STOP();
-		}
-
-		void infinite_idle(const char * msg) {
-			term.fill(VIDBlue);
-			term.puts(msg, COLOR_INFO);
-			KERNEL_FULL_STOP();
-		}
-	}
+	Console term;
 
 	 /* All CPU Related components, such as GDT, 
 		IDT (which includes ISR and PIC / IRQ) and registers */
@@ -397,7 +336,7 @@ namespace Kernel {
 	
 		/* Multiboot Validate: */
 		DEBUG(">> Initializing Kernel <<\n\n> Checking Multiboot...");
-		ASSERT(magic == MULTIBOOT_HEADER_MAGIC, "ERROR: Multiboot is not valid!");
+		ASSERT(magic != MULTIBOOT_HEADER_MAGIC, "Multiboot is not valid!");
 		DEBUGVALID();
 		
 		/* Install GDT: */
@@ -419,7 +358,7 @@ namespace Kernel {
 		DEBUG("> Installing IRQs (PIC) - ");
 		CPU::IRQ::irq_install();
 		DEBUGOK();
-		
+
 		for(;;);
 
 		return 0;
