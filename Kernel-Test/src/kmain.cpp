@@ -46,7 +46,9 @@ namespace Kernel {
 	#define DEBUGOK() DEBUGC(" OK \n", COLOR_GOOD);
 	#define DEBUGVALID() DEBUGC(" VALID \n", COLOR_GOOD);
 
-	#define ASSERT(cond, msg) { if(!cond) { char buff[256]; sprintf(buff, "Assert: %s", msg); Error::panic(buff, __LINE__, __FILE__, 0); } }
+	#define STRSTR(str) #str
+	#define STR(str) STRSTR(str)
+	#define ASSERT(cond, msg) { if(!cond) { char buff[256]; sprintf(buff, "Assert (%s): %s", STR(cond), msg); Error::panic(buff, __LINE__, __FILE__, 0); } }
 
 	#define KERNEL_PAUSE()   { asm volatile ("hlt"); }
 	#define KERNEL_FULL_STOP() while (1) { KERNEL_PAUSE(); }
