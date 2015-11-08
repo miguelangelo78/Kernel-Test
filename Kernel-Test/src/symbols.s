@@ -147,17 +147,83 @@
 .extern _isr9
 .type _isr9, @function
 
+.extern _Z10startswithPKcS0_
+.type _Z10startswithPKcS0_, @function
+
+.extern _Z4atoiPKc
+.type _Z4atoiPKc, @function
+
+.extern _Z5krandv
+.type _Z5krandv, @function
+
+.extern _Z5lfindPKcc
+.type _Z5lfindPKcc, @function
+
+.extern _Z5rfindPKcc
+.type _Z5rfindPKcc, @function
+
+.extern _Z6memchrPKvim
+.type _Z6memchrPKvim, @function
+
+.extern _Z6memcmpPKvS0_m
+.type _Z6memcmpPKvS0_m, @function
+
+.extern _Z6memcpyPvPKvm
+.type _Z6memcpyPvPKvm, @function
+
 .extern _Z6memsetPvim
 .type _Z6memsetPvim, @function
+
+.extern _Z6stpcpyPcPKc
+.type _Z6stpcpyPcPKc, @function
+
+.extern _Z6strchrPKci
+.type _Z6strchrPKci, @function
 
 .extern _Z6strcmpPKcS0_
 .type _Z6strcmpPKcS0_, @function
 
+.extern _Z6strcpyPcPKc
+.type _Z6strcpyPcPKc, @function
+
+.extern _Z6strdupPKc
+.type _Z6strdupPKc, @function
+
 .extern _Z6strlenPKc
 .type _Z6strlenPKc, @function
 
+.extern _Z6strspnPKcS0_
+.type _Z6strspnPKcS0_, @function
+
+.extern _Z6strstrPKcS0_
+.type _Z6strstrPKcS0_, @function
+
+.extern _Z7memmovePvPKvm
+.type _Z7memmovePvPKvm, @function
+
+.extern _Z7memrchrPKvim
+.type _Z7memrchrPKvim, @function
+
+.extern _Z7memsetwPtti
+.type _Z7memsetwPtti, @function
+
 .extern _Z7sprintfPcPKcz
 .type _Z7sprintfPcPKcz, @function
+
+.extern _Z7strcspnPKcS0_
+.type _Z7strcspnPKcS0_, @function
+
+.extern _Z7strpbrkPKcS0_
+.type _Z7strpbrkPKcS0_, @function
+
+.extern _Z7strrchrPKci
+.type _Z7strrchrPKci, @function
+
+.extern _Z8strtok_rPcPKcPS_
+.type _Z8strtok_rPcPKcPS_, @function
+
+.extern _Z9strchrnulPKci
+.type _Z9strchrnulPKci, @function
 
 .extern _Z9vasprintfPcPKcS_
 .type _Z9vasprintfPcPKcS_, @function
@@ -426,17 +492,83 @@ kernel_symbols_start:
 .long _isr9
 .asciz "_isr9"
 
+.long _Z10startswithPKcS0_
+.asciz "_Z10startswithPKcS0_"
+
+.long _Z4atoiPKc
+.asciz "_Z4atoiPKc"
+
+.long _Z5krandv
+.asciz "_Z5krandv"
+
+.long _Z5lfindPKcc
+.asciz "_Z5lfindPKcc"
+
+.long _Z5rfindPKcc
+.asciz "_Z5rfindPKcc"
+
+.long _Z6memchrPKvim
+.asciz "_Z6memchrPKvim"
+
+.long _Z6memcmpPKvS0_m
+.asciz "_Z6memcmpPKvS0_m"
+
+.long _Z6memcpyPvPKvm
+.asciz "_Z6memcpyPvPKvm"
+
 .long _Z6memsetPvim
 .asciz "_Z6memsetPvim"
+
+.long _Z6stpcpyPcPKc
+.asciz "_Z6stpcpyPcPKc"
+
+.long _Z6strchrPKci
+.asciz "_Z6strchrPKci"
 
 .long _Z6strcmpPKcS0_
 .asciz "_Z6strcmpPKcS0_"
 
+.long _Z6strcpyPcPKc
+.asciz "_Z6strcpyPcPKc"
+
+.long _Z6strdupPKc
+.asciz "_Z6strdupPKc"
+
 .long _Z6strlenPKc
 .asciz "_Z6strlenPKc"
 
+.long _Z6strspnPKcS0_
+.asciz "_Z6strspnPKcS0_"
+
+.long _Z6strstrPKcS0_
+.asciz "_Z6strstrPKcS0_"
+
+.long _Z7memmovePvPKvm
+.asciz "_Z7memmovePvPKvm"
+
+.long _Z7memrchrPKvim
+.asciz "_Z7memrchrPKvim"
+
+.long _Z7memsetwPtti
+.asciz "_Z7memsetwPtti"
+
 .long _Z7sprintfPcPKcz
 .asciz "_Z7sprintfPcPKcz"
+
+.long _Z7strcspnPKcS0_
+.asciz "_Z7strcspnPKcS0_"
+
+.long _Z7strpbrkPKcS0_
+.asciz "_Z7strpbrkPKcS0_"
+
+.long _Z7strrchrPKci
+.asciz "_Z7strrchrPKci"
+
+.long _Z8strtok_rPcPKcPS_
+.asciz "_Z8strtok_rPcPKcPS_"
+
+.long _Z9strchrnulPKci
+.asciz "_Z9strchrnulPKci"
 
 .long _Z9vasprintfPcPKcS_
 .asciz "_Z9vasprintfPcPKcS_"
