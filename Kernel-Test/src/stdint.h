@@ -141,3 +141,5 @@ object pointers */
 /* 7.18.4.2  Macros for greatest-width integer constants */
 #define INTMAX_C(val)  INT64_C(val)
 #define UINTMAX_C(val) UINT64_C(val)
+
+#define NULL ((void *)0)

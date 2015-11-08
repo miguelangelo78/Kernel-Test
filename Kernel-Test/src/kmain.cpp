@@ -1,11 +1,70 @@
 #include "console.h"
-#include "stdint.h"
+#include "libc.h"
+
+#define ALIGN (sizeof(size_t))
+#define ONES ((size_t)-1/UCHAR_MAX)
+#define HIGHS (ONES * (UCHAR_MAX/2+1))
+#define HASZERO(X) (((X)-ONES) & ~(X) & HIGHS)
 
 void * memset(void * dest, int c, size_t n) {
 	uint8_t *ptr = (uint8_t*)dest;
 	for(size_t i = 0; i < n; i++)
 		ptr[i] = (uint8_t)c;
 	return dest;
+}
+
+int strcmp(const char * l, const char * r) {
+	for (; *l == *r && *l; l++, r++);
+	return *(uint8_t *)l - *(uint8_t *)r;
+}
+
+size_t strlen(const char * s) {
+	const char * a = s;
+	const size_t * w;
+	for (; (uintptr_t)s % ALIGN; s++) {
+		if (!*s) {
+			return s - a;
+		}
+	}
+	for (w = (const size_t *)s; !HASZERO(*w); w++);
+	for (s = (const char *)w; *s; s++);
+	return s - a;
+}
+
+namespace Module {
+	extern "C" { void kernel_symbols_start(void); }
+	extern "C" { void kernel_symbols_end(void); }
+
+	typedef struct {
+		uintptr_t addr;
+		char name[];
+	} kernel_sym_t;
+	
+	void * symbol_find(const char * name) {
+		kernel_sym_t * k = (kernel_sym_t *)&kernel_symbols_start;
+		while ((uintptr_t)k < (uintptr_t)&kernel_symbols_end) {
+			if (strcmp(k->name, name)) {
+				k = (kernel_sym_t *)((uintptr_t)k + sizeof *k + strlen(k->name) + 1);
+				continue;
+			}
+			return (void*)k->addr;
+		}
+		return NULL;
+	}
+
+	void * symbol_call(const char * name, void * params) {
+		typedef void * (*cback)(void*);
+		cback fptr = (cback)Module::symbol_find(name);
+		if(fptr) return fptr(params);
+		else return NULL;
+	}
+
+	void * symbol_call(const char * name) {
+		typedef void * (*cback)(void);
+		cback fptr = (cback)Module::symbol_find(name);
+		if (fptr) return fptr();
+		else return NULL;
+	}
 }
 
 namespace Kernel {
@@ -17,10 +76,12 @@ namespace Kernel {
 
 	#define KERNEL_STOP() for(;;) { asm("cli"); asm("hlt"); }
 
+	#define SYSCALL_VECTOR 0x7F
+
 	Console term; /* Used only for debugging to the screen */
 
 	namespace Error {
-		void panic(const char * msg, int errcode) {
+		void panic(const char * msg, int intno) {
 			term.fill(VIDRed);
 			term.puts((char*)"!! KERNEL PANIC !!\n\n - ", COLOR(VIDRed, VIDWhite));
 			term.puts(msg, COLOR(VIDRed, VIDWhite));
@@ -140,61 +201,8 @@ namespace Kernel {
 			}
 		}
 	
-		namespace ISR { /* ISR: Used in exceptions */
+		namespace ISR { /* ISR: Uses the IDT to install and manage exceptions */
 			#define ISR_COUNT 32
-
-			/* ISR routines declared in isr_defs.s: */
-			#pragma region ISRS_ASM_DECL
-			extern "C" { void _isr0(void); }
-			extern "C" { void _isr1(void); }
-			extern "C" { void _isr2(void); }
-			extern "C" { void _isr3(void); }
-			extern "C" { void _isr4(void); }
-			extern "C" { void _isr5(void); }
-			extern "C" { void _isr6(void); }
-			extern "C" { void _isr7(void); }
-			extern "C" { void _isr8(void); }
-			extern "C" { void _isr9(void); }
-			extern "C" { void _isr10(void); }
-			extern "C" { void _isr11(void); }
-			extern "C" { void _isr12(void); }
-			extern "C" { void _isr13(void); }
-			extern "C" { void _isr14(void); }
-			extern "C" { void _isr15(void); }
-			extern "C" { void _isr16(void); }
-			extern "C" { void _isr17(void); }
-			extern "C" { void _isr18(void); }
-			extern "C" { void _isr19(void); }
-			extern "C" { void _isr20(void); }
-			extern "C" { void _isr21(void); }
-			extern "C" { void _isr22(void); }
-			extern "C" { void _isr23(void); }
-			extern "C" { void _isr24(void); }
-			extern "C" { void _isr25(void); }
-			extern "C" { void _isr26(void); }
-			extern "C" { void _isr27(void); }
-			extern "C" { void _isr28(void); }
-			extern "C" { void _isr29(void); }
-			extern "C" { void _isr30(void); }
-			extern "C" { void _isr31(void); }
-			extern "C" { void irq0(void); }
-			extern "C" { void irq1(void); }
-			extern "C" { void irq2(void); }
-			extern "C" { void irq3(void); }
-			extern "C" { void irq4(void); }
-			extern "C" { void irq5(void); }
-			extern "C" { void irq6(void); }
-			extern "C" { void irq7(void); }
-			extern "C" { void irq8(void); }
-			extern "C" { void irq9(void); }
-			extern "C" { void irq10(void); }
-			extern "C" { void irq11(void); }
-			extern "C" { void irq12(void); }
-			extern "C" { void irq13(void); }
-			extern "C" { void irq14(void); }
-			extern "C" { void irq15(void); }
-			extern "C" { void _isr128(void); }
-			#pragma endregion
 
 			/* ISR Messages: */
 			static const char *exception_msgs[ISR_COUNT] = {
@@ -258,64 +266,37 @@ namespace Kernel {
 			};
 
 			typedef void(*irq_handler_t) (CPU::regs_t *);
-
-			static struct {
-				size_t index;
-				void (*stub)(void);
-			} isrs[32 + 1] __attribute__((used));
-
+			
 			static irq_handler_t isr_routines[256];
 
+			void isr_install_handler(size_t isrs, irq_handler_t handler) {
+				isr_routines[isrs] = handler;
+			}
+
+			void isr_uninstall_handler(size_t isrs) {
+				isr_routines[isrs] = 0;
+			}
+
 			void isrs_install(void) {
-				IDT::idt_set_gate(0x00, _isr0, 0x08, 0x8E);
-				IDT::idt_set_gate(0x01, _isr1, 0x08, 0x8E);
-				IDT::idt_set_gate(0x02, _isr2, 0x08, 0x8E);
-				IDT::idt_set_gate(0x03, _isr3, 0x08, 0x8E);
-				IDT::idt_set_gate(0x04, _isr4, 0x08, 0x8E);
-				IDT::idt_set_gate(0x05, _isr5, 0x08, 0x8E);
-				IDT::idt_set_gate(0x06, _isr6, 0x08, 0x8E);
-				IDT::idt_set_gate(0x07, _isr7, 0x08, 0x8E);
-				IDT::idt_set_gate(0x08, _isr8, 0x08, 0x8E);
-				IDT::idt_set_gate(0x09, _isr9, 0x08, 0x8E);
-				IDT::idt_set_gate(0x0A, _isr10, 0x08, 0x8E);
-				IDT::idt_set_gate(0x0B, _isr11, 0x08, 0x8E);
-				IDT::idt_set_gate(0x0C, _isr12, 0x08, 0x8E);
-				IDT::idt_set_gate(0x0D, _isr13, 0x08, 0x8E);
-				IDT::idt_set_gate(0x0E, _isr14, 0x08, 0x8E);
-				IDT::idt_set_gate(0x0F, _isr15, 0x08, 0x8E);
-				IDT::idt_set_gate(0x10, _isr16, 0x08, 0x8E);
-				IDT::idt_set_gate(0x11, _isr17, 0x08, 0x8E);
-				IDT::idt_set_gate(0x12, _isr18, 0x08, 0x8E);
-				IDT::idt_set_gate(0x13, _isr19, 0x08, 0x8E);
-				IDT::idt_set_gate(0x14, _isr20, 0x08, 0x8E);
-				IDT::idt_set_gate(0x15, _isr21, 0x08, 0x8E);
-				IDT::idt_set_gate(0x16, _isr22, 0x08, 0x8E);
-				IDT::idt_set_gate(0x17, _isr23, 0x08, 0x8E);
-				IDT::idt_set_gate(0x18, _isr24, 0x08, 0x8E);
-				IDT::idt_set_gate(0x19, _isr25, 0x08, 0x8E);
-				IDT::idt_set_gate(0x1A, _isr26, 0x08, 0x8E);
-				IDT::idt_set_gate(0x1B, _isr27, 0x08, 0x8E);
-				IDT::idt_set_gate(0x1C, _isr28, 0x08, 0x8E);
-				IDT::idt_set_gate(0x1D, _isr29, 0x08, 0x8E);
-				IDT::idt_set_gate(0x1E, _isr30, 0x08, 0x8E);
-				IDT::idt_set_gate(0x1F, _isr31, 0x08, 0x8E);
+				char buffer[16];
+				for (int i = 0; i < ISR_COUNT; i++) {
+					sprintf(buffer, "_isr%d", i);
+					IDT::idt_set_gate(i, (IDT::idt_gate_t)Module::symbol_find(buffer), 0x08, 0x8E);
+				}
+				
+				IDT::idt_set_gate(SYSCALL_VECTOR, (IDT::idt_gate_t)Module::symbol_find("_isr127"), 0x08, 0x8E);
 			}
 			
-			void foo(int){}
-			
 			void fault_handler(CPU::regs_t * r) {
-			foo(1);
 				irq_handler_t handler = isr_routines[r->int_no];
-				if (handler) {
+				if (handler)
 					handler(r);
-				} else {
-					// Kernel BSOD
-					Error::panic(exception_msgs[r->err_code], r->err_code);
-				}
+				else /* Kernel BSOD */
+					Error::panic(exception_msgs[r->int_no], r->int_no);
 			}
 		}
 
-		namespace IRQ {
+		namespace IRQ { /* IRQ: Uses the IDT to install and manage interrupt requests */
 
 		}
 
@@ -418,9 +399,8 @@ namespace Kernel {
 		
 		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
 
-		int j = 0,x = 1;
-		term.putc(x/j, 0);
-		 
+		asm("int $1");
+
 		for(;;);
 
 		return 1;
