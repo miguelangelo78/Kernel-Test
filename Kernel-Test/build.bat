@@ -23,7 +23,7 @@ exit
 
 :error_compile
 printf "****\nERROR: %~1\n****\n"
-IF [%arg%] == [1] (printf "\n**** Exhausted build tries. The problem is on the source code. ****\n\n" && call:errorhandle)
+IF [%arg%] == [2] (printf "\n**** Exhausted build tries. The problem is on the source code. ****\n\n" && call:errorhandle)
 printf "**** Trying again by rebuilding (due to outdated symbols)... ****\n"
 set /a arg_inc =%arg%+1
 call rebuild.bat %arg_inc%

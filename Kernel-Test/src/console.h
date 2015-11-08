@@ -9,26 +9,30 @@
 #define VID_CALC_POS(x, y) (x + y * VID_WIDTH)
 
 enum VIDColor {
-	VIDBlack = 0x0,
-	VIDBlue = 0x1,
-	VIDGreen = 0x2,
-	VIDCyan = 0x3,
-	VIDRed = 0x4,
-	VIDMagenta = 0x5,
-	VIDBrown = 0x6,
-	VIDLightGray = 0x7,
-	VIDDarkGray = 0x8,
-	VIDLightBlue = 0x9,
-	VIDLightGreen = 0xA,
-	VIDLightCyan = 0xB,
-	VIDLightRed = 0xC,
-	VIDLightMagenta = 0xD,
-	VIDYellow = 0xE,
-	VIDWhite = 0xF
+	VIDBlack,
+	VIDBlue,
+	VIDGreen,
+	VIDCyan,
+	VIDRed,
+	VIDMagenta,
+	VIDBrown,
+	VIDLightGray,
+	VIDDarkGray,
+	VIDLightBlue,
+	VIDLightGreen,
+	VIDLightCyan,
+	VIDLightRed,
+	VIDLightMagenta,
+	VIDYellow,
+	VIDWhite
 };
 
 #define COLOR(bg, fg) ((bg<<4) | fg)
-#define DEFAULT_COLOR COLOR(VIDBlack, VIDLightGray)
+#define COLOR_DEFAULT COLOR(VIDBlack, VIDLightGray)
+#define COLOR_GOOD COLOR(VIDGreen, VIDWhite)
+#define COLOR_BAD COLOR(VIDRed, VIDWhite)
+#define COLOR_WARNING COLOR(VIDYellow, VIDBlack)
+#define COLOR_INFO COLOR(VIDBlue, VIDWhite)
 
 class Console {
 	public:

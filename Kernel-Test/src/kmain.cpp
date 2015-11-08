@@ -41,8 +41,10 @@ namespace Module {
 }
 
 namespace Kernel {
-	#define DEBUG(msg) term.puts((char*)msg, DEFAULT_COLOR);
+	#define DEBUG(msg) term.puts((char*)msg, COLOR_DEFAULT);
 	#define DEBUGC(msg, color) term.puts((char*)msg, color);
+	#define DEBUGOK() DEBUGC(" OK \n", COLOR_GOOD);
+	#define DEBUGVALID() DEBUGC(" VALID \n", COLOR_GOOD);
 
 	#define KERNEL_PAUSE()   { asm volatile ("hlt"); }
 	#define KERNEL_FULL_STOP() while (1) { KERNEL_PAUSE(); }
@@ -94,8 +96,14 @@ namespace Kernel {
 	namespace Error {
 		void panic(const char * msg, int intno) {
 			term.fill(VIDRed);
-			term.puts((char*)"!! KERNEL PANIC !!\n\n - ", COLOR(VIDRed, VIDWhite));
-			term.puts(msg, COLOR(VIDRed, VIDWhite));
+			term.puts((char*)"!! KERNEL PANIC !!\n\n - ", COLOR_BAD);
+			term.puts(msg, COLOR_BAD);
+			KERNEL_FULL_STOP();
+		}
+
+		void infinite_idle(const char * msg) {
+			term.fill(VIDBlue);
+			term.puts(msg, COLOR_INFO);
 			KERNEL_FULL_STOP();
 		}
 	}
@@ -151,7 +159,8 @@ namespace Kernel {
 			}
 
 			void gdt_init(void) {
-				gdt_pointer_t *gdtp = &gdt.pointer;
+				/* Set up GDT pointer: */
+				gdt_pointer_t * gdtp = &gdt.pointer;
 				gdtp->limit = sizeof gdt.entries - 1;
 				gdtp->base = (uintptr_t)&gdt.entries[0];
 
@@ -163,8 +172,8 @@ namespace Kernel {
 
 				// xxx write_tss(5, 0x10, 0x0);
 
-				/* Go go go */
-				gdt_flush((uintptr_t)gdtp);
+				/* Install GDT and TSS: */
+				gdt_flush((uintptr_t) gdtp);
 				//xxx tss_flush();
 			}
 		}
@@ -388,41 +397,40 @@ namespace Kernel {
 		/******* Initialize everything: *******/
 		
 		term.init();
-		
-		DEBUG(">> Initializing Kernel <<\n\n");
-		
-		DEBUG("> Checking Multiboot...");
+	
+		/* Multiboot Validate: */
+		DEBUG(">> Initializing Kernel <<\n\n> Checking Multiboot...");
 		if (magic != MULTIBOOT_HEADER_MAGIC)
 			Error::panic("ERROR: Multiboot is not valid!", -1);
-		DEBUGC(" VALID \n", COLOR(VIDGreen, VIDWhite));
+		DEBUGC(" VALID \n", COLOR_GOOD);
 		
+		/* Install GDT: */
 		DEBUG("> Installing GDT - ");
 		CPU::GDT::gdt_init();
-		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
+		DEBUGVALID();
 
+		/* Install IDT: */
 		DEBUG("> Installing IDT - ");
 		CPU::IDT::idt_init();
-		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
+		DEBUGOK();
 
+		/* Install ISRs: */
 		DEBUG("> Installing ISRs - ");
 		CPU::ISR::isrs_install();
-		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
+		DEBUGOK();
 
+		/* Install IRQs: */
 		DEBUG("> Installing IRQs (PIC) - ");
 		CPU::IRQ::irq_install();
-		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
+		DEBUGOK();
 	
 		for(;;);
 
 		return 0;
 	}
 
-	void kexit() {
-		term.fill(VIDBlue);
-		term.puts((char*)"!! The Kernel has exited !!", COLOR(VIDBlue, VIDWhite));
-		for(;;) { 
-			asm("cli");
-			asm("hlt");
-		}
+	void kexit()
+	{
+		Error::infinite_idle("!! The Kernel has exited !!");
 	}
 }

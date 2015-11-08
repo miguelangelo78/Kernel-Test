@@ -219,6 +219,9 @@
 .extern _ZN6Kernel4termE
 .type _ZN6Kernel4termE, @function
 
+.extern _ZN6Kernel5Error13infinite_idleEPKc
+.type _ZN6Kernel5Error13infinite_idleEPKc, @function
+
 .extern _ZN6Kernel5Error5panicEPKci
 .type _ZN6Kernel5Error5panicEPKci, @function
 
@@ -515,6 +518,9 @@ kernel_symbols_start:
 
 .long _ZN6Kernel4termE
 .asciz "_ZN6Kernel4termE"
+
+.long _ZN6Kernel5Error13infinite_idleEPKc
+.asciz "_ZN6Kernel5Error13infinite_idleEPKc"
 
 .long _ZN6Kernel5Error5panicEPKci
 .asciz "_ZN6Kernel5Error5panicEPKci"
