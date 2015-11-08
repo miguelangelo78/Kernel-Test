@@ -1,35 +1,8 @@
 #include "console.h"
 #include "libc.h"
 
-#define ALIGN (sizeof(size_t))
-#define ONES ((size_t)-1/UCHAR_MAX)
-#define HIGHS (ONES * (UCHAR_MAX/2+1))
-#define HASZERO(X) (((X)-ONES) & ~(X) & HIGHS)
-
-void * memset(void * dest, int c, size_t n) {
-	uint8_t *ptr = (uint8_t*)dest;
-	for(size_t i = 0; i < n; i++)
-		ptr[i] = (uint8_t)c;
-	return dest;
-}
-
-int strcmp(const char * l, const char * r) {
-	for (; *l == *r && *l; l++, r++);
-	return *(uint8_t *)l - *(uint8_t *)r;
-}
-
-size_t strlen(const char * s) {
-	const char * a = s;
-	const size_t * w;
-	for (; (uintptr_t)s % ALIGN; s++) {
-		if (!*s) {
-			return s - a;
-		}
-	}
-	for (w = (const size_t *)s; !HASZERO(*w); w++);
-	for (s = (const char *)w; *s; s++);
-	return s - a;
-}
+#define asm __asm__
+#define volatile __volatile__
 
 namespace Module {
 	extern "C" { void kernel_symbols_start(void); }
@@ -68,24 +41,62 @@ namespace Module {
 }
 
 namespace Kernel {
-	#define asm __asm__
-	#define volatile __volatile__
-
 	#define DEBUG(msg) term.puts((char*)msg, DEFAULT_COLOR);
 	#define DEBUGC(msg, color) term.puts((char*)msg, color);
 
-	#define KERNEL_STOP() for(;;) { asm("cli"); asm("hlt"); }
+	#define KERNEL_PAUSE()   { asm volatile ("hlt"); }
+	#define KERNEL_FULL_STOP() while (1) { KERNEL_PAUSE(); }
 
 	#define SYSCALL_VECTOR 0x7F
 
 	Console term; /* Used only for debugging to the screen */
+
+	namespace IO {
+		uint16_t inports(uint16_t _port) {
+			uint16_t rv;
+			asm volatile ("inw %1, %0" : "=a" (rv) : "dN" (_port));
+			return rv;
+		}
+
+		void outports(uint16_t _port, uint16_t _data) {
+			asm volatile ("outw %1, %0" : : "dN" (_port), "a" (_data));
+		}
+
+		unsigned int inportl(uint16_t _port) {
+			unsigned int rv;
+			asm volatile ("inl %%dx, %%eax" : "=a" (rv) : "dN" (_port));
+			return rv;
+		}
+
+		void outportl(uint16_t _port, unsigned int _data) {
+			asm volatile ("outl %%eax, %%dx" : : "dN" (_port), "a" (_data));
+		}
+
+		unsigned char inportb(uint16_t _port) {
+			unsigned char rv;
+			asm volatile ("inb %1, %0" : "=a" (rv) : "dN" (_port));
+			return rv;
+		}
+
+		void outportb(uint16_t _port, unsigned char _data) {
+			asm volatile ("outb %1, %0" : : "dN" (_port), "a" (_data));
+		}
+
+		void outportsm(uint16_t port, unsigned char * data, unsigned long size) {
+			asm volatile ("rep outsw" : "+S" (data), "+c" (size) : "d" (port));
+		}
+
+		void inportsm(uint16_t port, unsigned char * data, unsigned long size) {
+			asm volatile ("rep insw" : "+D" (data), "+c" (size) : "d" (port) : "memory");
+		}
+	}
 
 	namespace Error {
 		void panic(const char * msg, int intno) {
 			term.fill(VIDRed);
 			term.puts((char*)"!! KERNEL PANIC !!\n\n - ", COLOR(VIDRed, VIDWhite));
 			term.puts(msg, COLOR(VIDRed, VIDWhite));
-			KERNEL_STOP();
+			KERNEL_FULL_STOP();
 		}
 	}
 
@@ -297,7 +308,13 @@ namespace Kernel {
 		}
 
 		namespace IRQ { /* IRQ: Uses the IDT to install and manage interrupt requests */
+			void irq_handler(struct regs *r) {
+				
+			}
 
+			void irq_install(void) {
+
+			}
 		}
 
 	}
@@ -365,28 +382,24 @@ namespace Kernel {
 			} vbe;
 		} __attribute__((packed));
 	}
-
+	
 	int kmain(struct Init::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
 		/******* Initialize everything: *******/
-
+		
 		term.init();
 		
 		DEBUG(">> Initializing Kernel <<\n\n");
-	
+		
 		DEBUG("> Checking Multiboot...");
-		if (magic != MULTIBOOT_HEADER_MAGIC) {
-			/* TODO: ADD PANIC */
-			term.fill(VIDRed);
-			DEBUGC("ERROR: Multiboot is not valid!", COLOR(VIDRed, VIDWhite));
-			for(;;);
-		}
+		if (magic != MULTIBOOT_HEADER_MAGIC)
+			Error::panic("ERROR: Multiboot is not valid!", -1);
 		DEBUGC(" VALID \n", COLOR(VIDGreen, VIDWhite));
 		
 		DEBUG("> Installing GDT - ");
 		CPU::GDT::gdt_init();
 		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
-		
+
 		DEBUG("> Installing IDT - ");
 		CPU::IDT::idt_init();
 		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
@@ -396,14 +409,12 @@ namespace Kernel {
 		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
 
 		DEBUG("> Installing IRQs (PIC) - ");
-		
+		CPU::IRQ::irq_install();
 		DEBUGC(" OK \n", COLOR(VIDGreen, VIDWhite));
-
-		asm("int $1");
-
+	
 		for(;;);
 
-		return 1;
+		return 0;
 	}
 
 	void kexit() {

@@ -1,28 +1,52 @@
 .section .symbols
 
-.extern __bss
-.type __bss, @function
+.extern _irq0
+.type _irq0, @function
 
-.extern __code
-.type __code, @function
+.extern _irq1
+.type _irq1, @function
 
-.extern __data
-.type __data, @function
+.extern _irq10
+.type _irq10, @function
 
-.extern __end
-.type __end, @function
+.extern _irq11
+.type _irq11, @function
 
-.extern _bss
-.type _bss, @function
+.extern _irq12
+.type _irq12, @function
 
-.extern _code
-.type _code, @function
+.extern _irq13
+.type _irq13, @function
 
-.extern _data
-.type _data, @function
+.extern _irq14
+.type _irq14, @function
 
-.extern _end
-.type _end, @function
+.extern _irq15
+.type _irq15, @function
+
+.extern _irq2
+.type _irq2, @function
+
+.extern _irq3
+.type _irq3, @function
+
+.extern _irq4
+.type _irq4, @function
+
+.extern _irq5
+.type _irq5, @function
+
+.extern _irq6
+.type _irq6, @function
+
+.extern _irq7
+.type _irq7, @function
+
+.extern _irq8
+.type _irq8, @function
+
+.extern _irq9
+.type _irq9, @function
 
 .extern _isr0
 .type _isr0, @function
@@ -138,6 +162,30 @@
 .extern _Z9vasprintfPcPKcS_
 .type _Z9vasprintfPcPKcS_, @function
 
+.extern _ZN6Kernel2IO7inportbEt
+.type _ZN6Kernel2IO7inportbEt, @function
+
+.extern _ZN6Kernel2IO7inportlEt
+.type _ZN6Kernel2IO7inportlEt, @function
+
+.extern _ZN6Kernel2IO7inportsEt
+.type _ZN6Kernel2IO7inportsEt, @function
+
+.extern _ZN6Kernel2IO8inportsmEtPhm
+.type _ZN6Kernel2IO8inportsmEtPhm, @function
+
+.extern _ZN6Kernel2IO8outportbEth
+.type _ZN6Kernel2IO8outportbEth, @function
+
+.extern _ZN6Kernel2IO8outportlEtj
+.type _ZN6Kernel2IO8outportlEtj, @function
+
+.extern _ZN6Kernel2IO8outportsEtt
+.type _ZN6Kernel2IO8outportsEtt, @function
+
+.extern _ZN6Kernel2IO9outportsmEtPhm
+.type _ZN6Kernel2IO9outportsmEtPhm, @function
+
 .extern _ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh
 .type _ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh, @function
 
@@ -149,6 +197,12 @@
 
 .extern _ZN6Kernel3CPU3IDT8idt_initEv
 .type _ZN6Kernel3CPU3IDT8idt_initEv, @function
+
+.extern _ZN6Kernel3CPU3IRQ11irq_handlerEPNS1_4regsE
+.type _ZN6Kernel3CPU3IRQ11irq_handlerEPNS1_4regsE, @function
+
+.extern _ZN6Kernel3CPU3IRQ11irq_installEv
+.type _ZN6Kernel3CPU3IRQ11irq_installEv, @function
 
 .extern _ZN6Kernel3CPU3ISR12isrs_installEv
 .type _ZN6Kernel3CPU3ISR12isrs_installEv, @function
@@ -234,35 +288,62 @@
 .extern mboot
 .type mboot, @function
 
+.extern phys
+.type phys, @function
+
 .extern start
 .type start, @function
 
 .global kernel_symbols_start
 kernel_symbols_start:
 
-.long __bss
-.asciz "__bss"
+.long _irq0
+.asciz "_irq0"
 
-.long __code
-.asciz "__code"
+.long _irq1
+.asciz "_irq1"
 
-.long __data
-.asciz "__data"
+.long _irq10
+.asciz "_irq10"
 
-.long __end
-.asciz "__end"
+.long _irq11
+.asciz "_irq11"
 
-.long _bss
-.asciz "_bss"
+.long _irq12
+.asciz "_irq12"
 
-.long _code
-.asciz "_code"
+.long _irq13
+.asciz "_irq13"
 
-.long _data
-.asciz "_data"
+.long _irq14
+.asciz "_irq14"
 
-.long _end
-.asciz "_end"
+.long _irq15
+.asciz "_irq15"
+
+.long _irq2
+.asciz "_irq2"
+
+.long _irq3
+.asciz "_irq3"
+
+.long _irq4
+.asciz "_irq4"
+
+.long _irq5
+.asciz "_irq5"
+
+.long _irq6
+.asciz "_irq6"
+
+.long _irq7
+.asciz "_irq7"
+
+.long _irq8
+.asciz "_irq8"
+
+.long _irq9
+.asciz "_irq9"
 
 .long _isr0
 .asciz "_isr0"
@@ -378,6 +459,30 @@ kernel_symbols_start:
 .long _Z9vasprintfPcPKcS_
 .asciz "_Z9vasprintfPcPKcS_"
 
+.long _ZN6Kernel2IO7inportbEt
+.asciz "_ZN6Kernel2IO7inportbEt"
+
+.long _ZN6Kernel2IO7inportlEt
+.asciz "_ZN6Kernel2IO7inportlEt"
+
+.long _ZN6Kernel2IO7inportsEt
+.asciz "_ZN6Kernel2IO7inportsEt"
+
+.long _ZN6Kernel2IO8inportsmEtPhm
+.asciz "_ZN6Kernel2IO8inportsmEtPhm"
+
+.long _ZN6Kernel2IO8outportbEth
+.asciz "_ZN6Kernel2IO8outportbEth"
+
+.long _ZN6Kernel2IO8outportlEtj
+.asciz "_ZN6Kernel2IO8outportlEtj"
+
+.long _ZN6Kernel2IO8outportsEtt
+.asciz "_ZN6Kernel2IO8outportsEtt"
+
+.long _ZN6Kernel2IO9outportsmEtPhm
+.asciz "_ZN6Kernel2IO9outportsmEtPhm"
+
 .long _ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh
 .asciz "_ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh"
 
@@ -389,6 +494,12 @@ kernel_symbols_start:
 
 .long _ZN6Kernel3CPU3IDT8idt_initEv
 .asciz "_ZN6Kernel3CPU3IDT8idt_initEv"
+
+.long _ZN6Kernel3CPU3IRQ11irq_handlerEPNS1_4regsE
+.asciz "_ZN6Kernel3CPU3IRQ11irq_handlerEPNS1_4regsE"
+
+.long _ZN6Kernel3CPU3IRQ11irq_installEv
+.asciz "_ZN6Kernel3CPU3IRQ11irq_installEv"
 
 .long _ZN6Kernel3CPU3ISR12isrs_installEv
 .asciz "_ZN6Kernel3CPU3ISR12isrs_installEv"
@@ -473,6 +584,9 @@ kernel_symbols_start:
 
 .long mboot
 .asciz "mboot"
+
+.long phys
+.asciz "phys"
 
 .long start
 .asciz "start"

@@ -22,6 +22,7 @@ include src\subdir.mk
 include src\arch\x86\subdir.mk
 include src\arch\x86\gdt\subdir.mk
 include src\arch\x86\idt\subdir.mk
+include src\arch\x86\irq\subdir.mk
 include src\arch\x86\isr\subdir.mk
 
 ############### Main targets ###############
