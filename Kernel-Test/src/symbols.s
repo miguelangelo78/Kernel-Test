@@ -261,9 +261,6 @@
 .extern _ZN6Kernel3CPU3ISR21isr_uninstall_handlerEm
 .type _ZN6Kernel3CPU3ISR21isr_uninstall_handlerEm, @function
 
-.extern _ZN6Kernel3fooEv
-.type _ZN6Kernel3fooEv, @function
-
 .extern _ZN6Kernel4termE
 .type _ZN6Kernel4termE, @function
 
@@ -608,9 +605,6 @@ kernel_symbols_start:
 
 .long _ZN6Kernel3CPU3ISR21isr_uninstall_handlerEm
 .asciz "_ZN6Kernel3CPU3ISR21isr_uninstall_handlerEm"
-
-.long _ZN6Kernel3fooEv
-.asciz "_ZN6Kernel3fooEv"
 
 .long _ZN6Kernel4termE
 .asciz "_ZN6Kernel4termE"

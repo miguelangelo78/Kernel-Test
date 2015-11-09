@@ -282,10 +282,6 @@ namespace Kernel {
 			} vbe;
 		} __attribute__((packed));
 	}
-	
-	char foo() {
-		return 'a';
-	}
 
 	int kmain(struct Init::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
