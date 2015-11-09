@@ -48,3 +48,4 @@ size_t rfind(const char * str, const char accept);
 uint8_t startswith(const char * str, const char * accept);
 char * strtok_r(char * str, const char * delim, char ** saveptr);
 uint32_t __attribute__((pure)) krand(void);
+int tokenize(char * str, char * sep, char **buf);

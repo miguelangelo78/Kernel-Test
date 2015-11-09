@@ -17,27 +17,25 @@ namespace Kernel {
 		namespace GDT {
 			extern "C" { void gdt_flush(uintptr_t); }
 
-			typedef struct {
-				/* Limits */
-				uint16_t limit_low;
-				/* Segment address */
-				uint16_t base_low;
-				uint8_t base_middle;
-				/* Access modes */
-				uint8_t access;
-				uint8_t granularity;
-				uint8_t base_high;
-			} __attribute__((packed)) gdt_entry_t;
-
-			typedef struct {
-				uint16_t limit;
-				uintptr_t base;
-			} __attribute__((packed)) gdt_pointer_t;
-
+			/* Actual GDT Table: */
 			static struct {
-				gdt_entry_t entries[6];
-				gdt_pointer_t pointer;
-			//xxx tss_entry_t tss;
+				struct {
+					/* Limits */
+					uint16_t limit_low;
+					/* Segment address */
+					uint16_t base_low;
+					uint8_t base_middle;
+					/* Access modes */
+					uint8_t access;
+					uint8_t granularity;
+					uint8_t base_high;
+				} __attribute__((packed)) entries[6]; /* 6 segments */
+				
+				struct {
+					uint16_t limit;
+					uintptr_t base;
+				} __attribute__((packed)) * pointer;
+			//xxx tss_entry_t tss; /* Too early for TSS man... */
 			} gdt __attribute__((used));
 
 			void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran) {
@@ -56,29 +54,24 @@ namespace Kernel {
 
 			void gdt_init(void) {
 				/* Set up GDT pointer: */
-				gdt_pointer_t * gdtp = &gdt.pointer;
-				gdtp->limit = sizeof gdt.entries - 1;
-				gdtp->base = (uintptr_t)&gdt.entries[0];
+				gdt.pointer->limit = sizeof gdt.entries - 1;
+				gdt.pointer->base = (uintptr_t)&gdt.entries[0];
 
 				gdt_set_gate(0, 0, 0, 0, 0);                /* NULL segment */
-				gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment */
+				gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment (kernel's code) */
 				gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Data segment */
-				gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* 	User code 	*/
-				gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* 	User data 	*/
+				gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* User code 	*/
+				gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* User data 	*/
 
-				// xxx write_tss(5, 0x10, 0x0);
+				// xxx write_tss(5, 0x10, 0x0); /* Too soon... */
 
 				/* Install GDT and TSS: */
-				gdt_flush((uintptr_t) gdtp);
-				//xxx tss_flush();
+				gdt_flush((uintptr_t)gdt.pointer);
+				//xxx tss_flush(); /* Too soon... */
 			}
 		}
 
 		namespace IDT {
-			typedef void(*idt_gate_t)(void);
-
-			extern "C" { void idt_flush(uintptr_t); }
-
 			/* IDT Interrupt List: */
 			enum IDT_IVT {
 				ISR_DIVBY0,
@@ -105,8 +98,8 @@ namespace Kernel {
 				SYSCALL_VECTOR = 0x7F
 			};
 	
+			/* Actual IDT Table: */
 			struct {
-
 				struct {
 					uint16_t base_low;
 					uint16_t sel;
@@ -121,22 +114,23 @@ namespace Kernel {
 				} __attribute__((packed)) * pointer;
 			} idt __attribute__((used));
 
-			void idt_set_gate(uint8_t num, idt_gate_t isr_addr, uint16_t sel, uint8_t flags) {
-				idt.entries[num].base_low = ((uintptr_t)isr_addr & 0xFFFF);
-				idt.entries[num].base_high = ((uintptr_t)isr_addr >> 16) & 0xFFFF;
+			void idt_set_gate(uint8_t num, uintptr_t isr_addr, uint16_t sel, uint8_t flags) {
+				idt.entries[num].base_low = ((uintptr_t)isr_addr & 0xFFFF); /* Mask low 16 bit (low half) */
+				idt.entries[num].base_high = ((uintptr_t)isr_addr >> 16) & 0xFFFF; /* Mask high 16 bit (higher half) */
 				idt.entries[num].sel = sel;
 				idt.entries[num].zero = 0;
 				idt.entries[num].flags = flags | 0x60;
 			}
 
+			#define idt_flush(idt_ptr) asm volatile("lidtl (%0)" : : "r"(idt_ptr));
+
 			void idt_init() {
 				/* Set up IDT pointer: */
 				idt.pointer->limit = sizeof idt.entries - 1;
 				idt.pointer->base = (uintptr_t)&idt.entries[0];
-				memset(&idt.entries[0], 0, sizeof idt.entries);
-
+				
 				/* Install IDT: */
-				idt_flush((uintptr_t)idt.pointer);
+				idt_flush(idt.pointer);
 			}
 		}
 	
@@ -195,12 +189,12 @@ namespace Kernel {
 				char buffer[16];
 				for (int i = 0; i < ISR_COUNT; i++) {
 					sprintf(buffer, "_isr%d", i);
-					IDT::idt_set_gate(i, (IDT::idt_gate_t)Module::symbol_find(buffer), 0x08, 0x8E);
+					IDT::idt_set_gate(i, (uintptr_t)Module::symbol_find(buffer), 0x08, 0x8E);
 				}
-				IDT::idt_set_gate(IDT::SYSCALL_VECTOR, (IDT::idt_gate_t)Module::symbol_find("_isr127"), 0x08, 0x8E);
+				IDT::idt_set_gate(IDT::SYSCALL_VECTOR, (uintptr_t)Module::symbol_find("_isr127"), 0x08, 0x8E);
 			}
 			
-			void fault_handler(CPU::regs_t * r) {
+			void fault_handler(CPU::regs_t * r) { /* Gets called for EVERY ISR and IRQ interrupt */
 				irq_handler_t handler = isr_routines[r->int_no];
 				if (handler) {
 					handler(r);
@@ -289,6 +283,10 @@ namespace Kernel {
 		} __attribute__((packed));
 	}
 	
+	char foo() {
+		return 'a';
+	}
+
 	int kmain(struct Init::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
 		/******* Initialize everything: *******/

@@ -1,4 +1,4 @@
-#include "libc.h"
+#include <libc.h>
 
 void * memset(void * dest, int c, size_t n) {
 	uint8_t *ptr = (uint8_t*)dest;
@@ -112,7 +112,7 @@ char * strdup(const char * s) {
 	// TODO: Needs heap
 	//size_t l = strlen(s);
 	//return memcpy(malloc(l + 1), s, l + 1);
-	//return NULL;
+	return (char*)NULL;
 }
 
 char * stpcpy(char * __restrict__ d, const char * __restrict__ s) {
@@ -457,4 +457,19 @@ uint32_t __attribute__((pure)) krand(void) {
 	t = x ^ (x << 11);
 	x = y; y = z; z = w;
 	return w = w ^ (w >> 19) ^ t ^ (t >> 8);
+}
+
+int tokenize(char * str, char * sep, char **buf) {
+	char * pch_i;
+	char * save_i;
+	int    argc = 0;
+	pch_i = strtok_r(str, sep, &save_i);
+	if (!pch_i) { return 0; }
+	while (pch_i != NULL) {
+		buf[argc] = (char *)pch_i;
+		++argc;
+		pch_i = strtok_r((char*)NULL, sep, &save_i);
+	}
+	buf[argc] = (char*)NULL;
+	return argc;
 }

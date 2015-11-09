@@ -222,6 +222,9 @@
 .extern _Z8strtok_rPcPKcPS_
 .type _Z8strtok_rPcPKcPS_, @function
 
+.extern _Z8tokenizePcS_PS_
+.type _Z8tokenizePcS_PS_, @function
+
 .extern _Z9strchrnulPKci
 .type _Z9strchrnulPKci, @function
 
@@ -234,8 +237,8 @@
 .extern _ZN6Kernel3CPU3GDT8gdt_initEv
 .type _ZN6Kernel3CPU3GDT8gdt_initEv, @function
 
-.extern _ZN6Kernel3CPU3IDT12idt_set_gateEhPFvvEth
-.type _ZN6Kernel3CPU3IDT12idt_set_gateEhPFvvEth, @function
+.extern _ZN6Kernel3CPU3IDT12idt_set_gateEhmth
+.type _ZN6Kernel3CPU3IDT12idt_set_gateEhmth, @function
 
 .extern _ZN6Kernel3CPU3IDT8idt_initEv
 .type _ZN6Kernel3CPU3IDT8idt_initEv, @function
@@ -257,6 +260,9 @@
 
 .extern _ZN6Kernel3CPU3ISR21isr_uninstall_handlerEm
 .type _ZN6Kernel3CPU3ISR21isr_uninstall_handlerEm, @function
+
+.extern _ZN6Kernel3fooEv
+.type _ZN6Kernel3fooEv, @function
 
 .extern _ZN6Kernel4termE
 .type _ZN6Kernel4termE, @function
@@ -323,9 +329,6 @@
 
 .extern gdt_flush
 .type gdt_flush, @function
-
-.extern idt_flush
-.type idt_flush, @function
 
 .extern kernel_symbols_end
 .type kernel_symbols_end, @function
@@ -567,6 +570,9 @@ kernel_symbols_start:
 .long _Z8strtok_rPcPKcPS_
 .asciz "_Z8strtok_rPcPKcPS_"
 
+.long _Z8tokenizePcS_PS_
+.asciz "_Z8tokenizePcS_PS_"
+
 .long _Z9strchrnulPKci
 .asciz "_Z9strchrnulPKci"
 
@@ -579,8 +585,8 @@ kernel_symbols_start:
 .long _ZN6Kernel3CPU3GDT8gdt_initEv
 .asciz "_ZN6Kernel3CPU3GDT8gdt_initEv"
 
-.long _ZN6Kernel3CPU3IDT12idt_set_gateEhPFvvEth
-.asciz "_ZN6Kernel3CPU3IDT12idt_set_gateEhPFvvEth"
+.long _ZN6Kernel3CPU3IDT12idt_set_gateEhmth
+.asciz "_ZN6Kernel3CPU3IDT12idt_set_gateEhmth"
 
 .long _ZN6Kernel3CPU3IDT8idt_initEv
 .asciz "_ZN6Kernel3CPU3IDT8idt_initEv"
@@ -602,6 +608,9 @@ kernel_symbols_start:
 
 .long _ZN6Kernel3CPU3ISR21isr_uninstall_handlerEm
 .asciz "_ZN6Kernel3CPU3ISR21isr_uninstall_handlerEm"
+
+.long _ZN6Kernel3fooEv
+.asciz "_ZN6Kernel3fooEv"
 
 .long _ZN6Kernel4termE
 .asciz "_ZN6Kernel4termE"
@@ -668,9 +677,6 @@ kernel_symbols_start:
 
 .long gdt_flush
 .asciz "gdt_flush"
-
-.long idt_flush
-.asciz "idt_flush"
 
 .long kernel_symbols_end
 .asciz "kernel_symbols_end"

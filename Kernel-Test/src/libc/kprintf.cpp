@@ -1,5 +1,4 @@
-#include "libc.h"
-#include "stdint.h"
+#include <libc.h>
 
 static void print_dec(unsigned int value, unsigned int width, char * buf, int * ptr) {
 	unsigned int n_width = 1;

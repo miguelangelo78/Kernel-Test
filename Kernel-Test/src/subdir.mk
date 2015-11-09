@@ -1,8 +1,6 @@
 OBJS += \
 $(BOUT)\error.o \
 $(BOUT)\kmain.o \
-$(BOUT)\kprintf.o \
-$(BOUT)\libc.o \
 $(BOUT)\terminal.o \
 $(BOUT)\symbols.o
 
@@ -14,20 +12,6 @@ $(BOUT)\error.o: src\error.cpp
 	@echo ' '
 
 $(BOUT)\kmain.o: src\kmain.cpp 
-	@echo '>> Building file $<'
-	@echo '>> Invoking Cross i686-elf GCC Compiler'
-	$(CXX) $(CFLAGS)  -o $@ -c $<  
-	@echo '>> Finished building: $<'
-	@echo ' '
-
-$(BOUT)\kprintf.o: src\kprintf.cpp 
-	@echo '>> Building file $<'
-	@echo '>> Invoking Cross i686-elf GCC Compiler'
-	$(CXX) $(CFLAGS)  -o $@ -c $<  
-	@echo '>> Finished building: $<'
-	@echo ' '
-
-$(BOUT)\libc.o: src\libc.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking Cross i686-elf GCC Compiler'
 	$(CXX) $(CFLAGS)  -o $@ -c $<  
