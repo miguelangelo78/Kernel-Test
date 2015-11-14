@@ -56,7 +56,7 @@ ISR_NOERR 127
 .extern _ZN6Kernel3CPU3ISR13fault_handlerEPNS0_6regs_tE
 .type _ZN6Kernel3CPU3ISR13fault_handlerEPNS0_6regs_tE, @function
 
-isr_common: // All interrupts will lead here
+isr_common: /* All interrupts will lead here */
     /* Push all registers */
     pusha
 
@@ -65,6 +65,8 @@ isr_common: // All interrupts will lead here
     push %es
     push %fs
     push %gs
+
+	/* Load the Kernel Data Segment descriptor (gdt offset: 0x10) */
     mov $0x10, %ax
     mov %ax, %ds
     mov %ax, %es

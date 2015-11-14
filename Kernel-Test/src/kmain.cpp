@@ -15,6 +15,10 @@ namespace Kernel {
 		} regs_t;
 
 		namespace GDT {
+			/* Reference: http://wiki.osdev.org/Global_Descriptor_Table , http://www.osdever.net/bkerndev/Docs/gdt.htm */
+			/* Tutorial: http://wiki.osdev.org/GDT_Tutorial */
+
+			/* Declared in arch/x86/gdt/gdt_flush.s: */
 			extern "C" { void gdt_flush(uintptr_t); }
 
 			/* Actual GDT Table: */
@@ -26,8 +30,8 @@ namespace Kernel {
 					uint16_t base_low;
 					uint8_t base_middle;
 					/* Access modes */
-					uint8_t access;
-					uint8_t granularity;
+					uint8_t access; /* Contains: Present, Ring (0=lvl 0, 3=lvl 3), is Exec., Segment Grow Dir, RW and Accessed bit */
+					uint8_t granularity; /* Contains: Granularity (1Byte/4KiB) and Mode (0 = 16 bit Real Mode, 1 =32 bit Protected Mode) */
 					uint8_t base_high;
 				} __attribute__((packed)) entries[6]; /* 6 segments */
 				
@@ -35,7 +39,7 @@ namespace Kernel {
 					uint16_t limit;
 					uintptr_t base;
 				} __attribute__((packed)) * pointer;
-			//xxx tss_entry_t tss; /* Too early for TSS man... */
+			//xxx tss_entry_t tss; /* Too early for TSS... */
 			} gdt __attribute__((used));
 
 			void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran) {
@@ -57,11 +61,11 @@ namespace Kernel {
 				gdt.pointer->limit = sizeof gdt.entries - 1;
 				gdt.pointer->base = (uintptr_t)&gdt.entries[0];
 
-				gdt_set_gate(0, 0, 0, 0, 0);                /* NULL segment */
-				gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment (kernel's code) */
-				gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Data segment */
-				gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* User code 	*/
-				gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* User data 	*/
+				gdt_set_gate(0, 0, 0, 0, 0);                /* NULL segment (seg. selector: 0x00) */
+				gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment (kernel's code, seg. selector: 0x08) */
+				gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Data segment (seg. selector: 0x10) */
+				gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* User code (seg. selector: 0x18) */
+				gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* User data (seg. selector: 0x20) */
 
 				// xxx write_tss(5, 0x10, 0x0); /* Too soon... */
 
@@ -72,6 +76,8 @@ namespace Kernel {
 		}
 
 		namespace IDT {
+			/* Reference: http://wiki.osdev.org/IDT , http://www.osdever.net/bkerndev/Docs/idt.htm */
+
 			/* IDT Interrupt List: */
 			enum IDT_IVT {
 				ISR_DIVBY0,
@@ -102,9 +108,9 @@ namespace Kernel {
 			struct {
 				struct {
 					uint16_t base_low;
-					uint16_t sel;
-					uint8_t zero;
-					uint8_t flags;
+					uint16_t sel; /* Segment selector */
+					uint8_t zero; /* This field must always be 0 */
+					uint8_t flags; /* Attributes for a certain entry (seg. present and ring lvl) */
 					uint16_t base_high;
 				} __attribute__((packed)) entries[256];
 			
@@ -135,6 +141,8 @@ namespace Kernel {
 		}
 	
 		namespace ISR { /* ISR: Uses the IDT to install and manage exceptions */
+			/* Reference: http://www.osdever.net/bkerndev/Docs/isrs.htm */
+			
 			#define ISR_COUNT 32
 
 			/* ISR Messages: */
@@ -173,8 +181,10 @@ namespace Kernel {
 				"Reserved"
 			};
 
+			/* Function callback type for IRQs: */
 			typedef void(*irq_handler_t) (CPU::regs_t *);
 			
+			/* Function pointers will be installed here: */
 			static irq_handler_t isr_routines[256];
 
 			void isr_install_handler(size_t isrs, irq_handler_t handler) {
@@ -186,17 +196,19 @@ namespace Kernel {
 			}
 
 			void isrs_install(void) {
+				#define ISR_DEFAULT_FLAG 0b10001110 /* Segment Present and in Ring 0 */
 				char buffer[16];
 				for (int i = 0; i < ISR_COUNT; i++) {
 					sprintf(buffer, "_isr%d", i);
-					IDT::idt_set_gate(i, (uintptr_t)Module::symbol_find(buffer), 0x08, 0x8E);
+					IDT::idt_set_gate(i, (uintptr_t)Module::symbol_find(buffer), SEG_KERNEL_CS, ISR_DEFAULT_FLAG);
 				}
-				IDT::idt_set_gate(IDT::SYSCALL_VECTOR, (uintptr_t)Module::symbol_find("_isr127"), 0x08, 0x8E);
+				IDT::idt_set_gate(IDT::SYSCALL_VECTOR, (uintptr_t)Module::symbol_find("_isr127"), SEG_KERNEL_CS, ISR_DEFAULT_FLAG);
 			}
 			
 			void fault_handler(CPU::regs_t * r) { /* Gets called for EVERY ISR and IRQ interrupt */
 				irq_handler_t handler = isr_routines[r->int_no];
 				if (handler) {
+					/* This handler was installed. This is used for Keyboard, or any other IO device. */
 					handler(r);
 				} else { 
 					/* Kernel RSOD (aka BSOD) */
@@ -208,18 +220,165 @@ namespace Kernel {
 		}
 
 		namespace IRQ { /* IRQ: Uses the IDT to install and manage interrupt requests */
-			void irq_handler(struct regs *r) {
-				
+			/* Reference:	http://www.osdever.net/bkerndev/Docs/irqs.htm ,
+							http://wiki.osdev.org/PIC */
+			
+			/* 8259 Programmable Interrupt Controller (8259 PIC) constants: */
+			/* PIC 1: */
+			#define PIC1_ADDR 0x20 /* IO base address for master PIC */
+			#define PIC1_CMD PIC1_ADDR
+			#define PIC1_OFFSET 0x20
+			#define PIC1_DATA (PIC1_ADDR + 1)
+			/* PIC 2: */
+			#define PIC2_ADDR 0xA0 /* IO base address for slave PIC */
+			#define PIC2_CMD PIC2_ADDR
+			#define PIC2_OFFSET 0x28
+			#define PIC2_DATA (PIC2_ADDR + 1)
+			/* End-of-interrupt command code */
+			#define PIC_EOI 0x20
+			#define PIC_WAIT() \
+				do { \
+					asm volatile("jmp 1f\n\t" \
+								 "1:\n\t" \
+								 "    jmp 2f\n\t" \
+								 "2:"); \
+				} while (0)
+
+			/* Initialization constants: */
+			#define ICW1_ICW4 0x01
+			#define ICW1_INIT 0x10
+
+			/* Interrupt constants: */
+			#define IRQ_COUNT 16
+			#define IRQ_CHAIN_DEPTH 4
+			#define IRQ_OFFSET 32
+
+			#define SYNC_CLI() asm volatile("cli")
+			#define SYNC_STI() asm volatile("sti")
+
+			/* Callback constants: */
+			typedef int(*irq_handler_chain_t) (CPU::regs_t *);
+			static irq_handler_chain_t irq_routines[IRQ_COUNT * IRQ_CHAIN_DEPTH] = { 0 };
+			static uintptr_t irqs[IRQ_COUNT];
+
+			/* Interrupt functions: */
+			static volatile int sync_depth = 0;
+			void int_disable(void) {
+				/* Check if interrupts are enabled */
+				uint32_t flags;
+				asm volatile("pushf\n\t"
+					"pop %%eax\n\t"
+					"movl %%eax, %0\n\t"
+					: "=r"(flags)
+					:
+					: "%eax");
+
+				/* Disable interrupts */
+				SYNC_CLI();
+
+				/* If interrupts were enabled, then this is the first call depth */
+				if (flags & (1 << 9))
+					sync_depth = 1;
+				else /* Otherwise there is now an additional call depth */
+					sync_depth++;
+			}
+
+			void irq_install_handler(size_t irq_num, irq_handler_chain_t irq_handler) {
+				/* Disable interrupts when changing handlers */
+				SYNC_CLI();
+				for (size_t i = 0; i < IRQ_CHAIN_DEPTH; i++) {
+					if (irq_routines[i * IRQ_COUNT + irq_num])
+						continue;
+					irq_routines[i * IRQ_COUNT + irq_num] = irq_handler;
+					break;
+				}
+				SYNC_STI();
+			}
+
+			void irq_uninstall_handler(size_t irq_num) {
+				/* Disable interrupts when changing handlers */
+				SYNC_CLI();
+				for (size_t i = 0; i < IRQ_CHAIN_DEPTH; i++)
+					irq_routines[i * IRQ_COUNT + irq_num] = 0;
+				SYNC_STI();
+			}
+
+			void int_resume(void) {
+				/* If there is one or no call depths, reenable interrupts */
+				if (sync_depth == 0 || sync_depth == 1) SYNC_STI();
+				else sync_depth--;
+			}
+
+			void int_enable(void) {
+				sync_depth = 0;
+				SYNC_STI();
+			}
+
+			static void pic8259_init(void) {
+				using namespace IO;
+				/* Cascade initialization */
+				outb(PIC1_CMD, ICW1_INIT | ICW1_ICW4); PIC_WAIT();
+				outb(PIC2_CMD, ICW1_INIT | ICW1_ICW4); PIC_WAIT();
+
+				/* Remap */
+				outb(PIC1_DATA, PIC1_OFFSET); PIC_WAIT();
+				outb(PIC2_DATA, PIC2_OFFSET); PIC_WAIT();
+
+				/* Cascade identity with slave PIC at IRQ2 */
+				outb(PIC1_DATA, 0x04); PIC_WAIT();
+				outb(PIC2_DATA, 0x02); PIC_WAIT();
+
+				/* Request 8086 mode on each PIC */
+				outb(PIC1_DATA, 0x01); PIC_WAIT();
+				outb(PIC2_DATA, 0x01); PIC_WAIT();
+			}
+
+			static void irq_setup_gates(void) {
+				#define ISR_DEFAULT_FLAG 0b10001110 /* Segment Present and in Ring 0 */
+				for (size_t i = 0; i < IRQ_COUNT; i++)
+					IDT::idt_set_gate(IRQ_OFFSET + i, irqs[i], SEG_KERNEL_CS, ISR_DEFAULT_FLAG);
+			}
+
+			inline void irq_ack(size_t irq_num) {
+				if (irq_num >= 8)
+					IO::outb(PIC2_CMD, PIC_EOI);
+				IO::outb(PIC1_CMD, PIC_EOI);
+			}
+
+			inline int irq_is_valid(uint16_t int_no) {
+				return int_no >= IRQ_OFFSET && int_no <= IRQ_OFFSET + (IRQ_COUNT - 1); /* IRQ_COUNT - 1 because it starts from 0 */
+			}
+
+			void irq_handler(CPU::regs_t * r) {
+				/* Disable interrupts when handling */
+				int_disable();
+				if (irq_is_valid(r->int_no)) {
+					for (size_t i = 0; i < IRQ_CHAIN_DEPTH; i++) {
+						irq_handler_chain_t handler = irq_routines[i * IRQ_COUNT + (r->int_no - IRQ_OFFSET)];
+						// Check and run irq handler:
+						if (handler && handler(r))
+							goto done;
+					}
+					irq_ack(r->int_no - IRQ_OFFSET);
+				}
+			done:
+				int_resume();
 			}
 
 			void irq_install(void) {
-
+				char buffer[16];
+				for (int i = 0; i < IRQ_COUNT; i++) {
+					sprintf(buffer, "_irq%d", i);
+					irqs[i] = (uintptr_t)Module::symbol_find(buffer);
+				}
+				pic8259_init(); /* Initialize PIC */
+				irq_setup_gates(); /* Install IRQs' address onto IDT */
 			}
 		}
 
 	}
 
-	/* Initialization data goes here, like the Multiboot, for example: */
+	/* Initialization data goes here, like the Multiboot, for example */
 	namespace Init {
 		#define MULTIBOOT_HEADER_MAGIC 0x2BADB002
 

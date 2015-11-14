@@ -4,6 +4,15 @@
 #include "libc.h"
 #include "io.h"
 
+/* Memory segment selectors: */
+enum SEGSEL {
+	SEG_NULL,
+	SEG_KERNEL_CS = 0x8,
+	SEG_KERNEL_DS = 0x10,
+	SEG_USER_CS = 0x18,
+	SEG_USER_DS = 0x20
+};
+
 #define asm __asm__
 #define volatile __volatile__
 

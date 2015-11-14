@@ -29,8 +29,8 @@ IRQ 13, 45
 IRQ 14, 46
 IRQ 15, 47
 
-.extern _ZN6Kernel3CPU3IRQ11irq_handlerEPNS1_4regsE
-.type _ZN6Kernel3CPU3IRQ11irq_handlerEPNS1_4regsE, @function
+.extern _ZN6Kernel3CPU3IRQ11irq_handlerEPNS0_6regs_tE
+.type _ZN6Kernel3CPU3IRQ11irq_handlerEPNS0_6regs_tE, @function
 
 irq_common:
     /* Save all registers */
@@ -41,6 +41,8 @@ irq_common:
     push %es
     push %fs
     push %gs
+
+	/* Load the Kernel Data Segment descriptor (gdt offset: 0x10) */
     mov $0x10, %ax
     mov %ax, %ds
     mov %ax, %es
@@ -49,7 +51,7 @@ irq_common:
 
     /* Call interrupt handler */
     push %esp
-    call _ZN6Kernel3CPU3IRQ11irq_handlerEPNS1_4regsE
+    call _ZN6Kernel3CPU3IRQ11irq_handlerEPNS0_6regs_tE
     add $4, %esp
 
     /* Restore segment registers */
