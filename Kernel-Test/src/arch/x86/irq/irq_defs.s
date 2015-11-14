@@ -32,7 +32,7 @@ IRQ 15, 47
 .extern _ZN6Kernel3CPU3IRQ11irq_handlerEPNS0_6regs_tE
 .type _ZN6Kernel3CPU3IRQ11irq_handlerEPNS0_6regs_tE, @function
 
-irq_common:
+irq_common: /* All interrupt requests will lead here */
     /* Save all registers */
     pusha
 

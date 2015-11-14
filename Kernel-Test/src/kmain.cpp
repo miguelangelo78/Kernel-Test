@@ -248,22 +248,20 @@ namespace Kernel {
 			#define ICW1_ICW4 0x01
 			#define ICW1_INIT 0x10
 
-			/* Interrupt constants: */
+			/* Interrupt Request constants: */
 			#define IRQ_COUNT 16
 			#define IRQ_CHAIN_DEPTH 4
 			#define IRQ_OFFSET 32
-
-			#define SYNC_CLI() asm volatile("cli")
-			#define SYNC_STI() asm volatile("sti")
+			#define SYNC_CLI() asm volatile("cli") /* Disables interrupts */
+			#define SYNC_STI() asm volatile("sti") /* Enables interrupts */
 
 			/* Callback constants: */
-			typedef int(*irq_handler_chain_t) (CPU::regs_t *);
-			static irq_handler_chain_t irq_routines[IRQ_COUNT * IRQ_CHAIN_DEPTH] = { 0 };
-			static uintptr_t irqs[IRQ_COUNT];
-
-			/* Interrupt functions: */
-			static volatile int sync_depth = 0;
-			void int_disable(void) {
+			typedef int(*irq_handler_chain_t) (CPU::regs_t *); /* Callback type */
+			static irq_handler_chain_t irq_routines[IRQ_COUNT * IRQ_CHAIN_DEPTH] = { 0 }; /* IRQ Callback handlers */
+			
+			/* Interrupt functions used by external modules: */
+			static volatile int sync_depth = 0; /* Used by interrupts */
+			inline void int_disable(void) {
 				/* Check if interrupts are enabled */
 				uint32_t flags;
 				asm volatile("pushf\n\t"
@@ -281,6 +279,17 @@ namespace Kernel {
 					sync_depth = 1;
 				else /* Otherwise there is now an additional call depth */
 					sync_depth++;
+			}
+			
+			void int_enable(void) {
+				sync_depth = 0;
+				SYNC_STI();
+			}
+
+			void int_resume(void) {
+				/* If there is one or no call depths, reenable interrupts */
+				if (sync_depth == 0 || sync_depth == 1) SYNC_STI();
+				else sync_depth--;
 			}
 
 			void irq_install_handler(size_t irq_num, irq_handler_chain_t irq_handler) {
@@ -303,18 +312,32 @@ namespace Kernel {
 				SYNC_STI();
 			}
 
-			void int_resume(void) {
-				/* If there is one or no call depths, reenable interrupts */
-				if (sync_depth == 0 || sync_depth == 1) SYNC_STI();
-				else sync_depth--;
+			inline void irq_ack(size_t irq_num) {
+				if (irq_num >= 8)
+					IO::outb(PIC2_CMD, PIC_EOI);
+				IO::outb(PIC1_CMD, PIC_EOI);
 			}
 
-			void int_enable(void) {
-				sync_depth = 0;
-				SYNC_STI();
+			/* Implementation and initialization functions: */
+			#define irq_is_valid(int_no) ((int_no) >= IRQ_OFFSET && (int_no) <= IRQ_OFFSET + (IRQ_COUNT - 1)) /* IRQ_COUNT - 1 because it starts from 0 */
+	
+			void irq_handler(CPU::regs_t * r) {
+				/* Disable interrupts when handling */
+				int_disable();
+				if (irq_is_valid(r->int_no)) {
+					for (size_t i = 0; i < IRQ_CHAIN_DEPTH; i++) {
+						irq_handler_chain_t handler = irq_routines[i * IRQ_COUNT + (r->int_no - IRQ_OFFSET)];
+						/* Check and run irq handler: */
+						if (handler && handler(r))
+							goto done;
+					}
+					irq_ack(r->int_no - IRQ_OFFSET);
+				}
+			done:
+				int_resume();
 			}
 
-			static void pic8259_init(void) {
+			inline void pic8259_init(void) {
 				using namespace IO;
 				/* Cascade initialization */
 				outb(PIC1_CMD, ICW1_INIT | ICW1_ICW4); PIC_WAIT();
@@ -333,49 +356,17 @@ namespace Kernel {
 				outb(PIC2_DATA, 0x01); PIC_WAIT();
 			}
 
-			static void irq_setup_gates(void) {
-				#define ISR_DEFAULT_FLAG 0b10001110 /* Segment Present and in Ring 0 */
-				for (size_t i = 0; i < IRQ_COUNT; i++)
-					IDT::idt_set_gate(IRQ_OFFSET + i, irqs[i], SEG_KERNEL_CS, ISR_DEFAULT_FLAG);
-			}
-
-			inline void irq_ack(size_t irq_num) {
-				if (irq_num >= 8)
-					IO::outb(PIC2_CMD, PIC_EOI);
-				IO::outb(PIC1_CMD, PIC_EOI);
-			}
-
-			inline int irq_is_valid(uint16_t int_no) {
-				return int_no >= IRQ_OFFSET && int_no <= IRQ_OFFSET + (IRQ_COUNT - 1); /* IRQ_COUNT - 1 because it starts from 0 */
-			}
-
-			void irq_handler(CPU::regs_t * r) {
-				/* Disable interrupts when handling */
-				int_disable();
-				if (irq_is_valid(r->int_no)) {
-					for (size_t i = 0; i < IRQ_CHAIN_DEPTH; i++) {
-						irq_handler_chain_t handler = irq_routines[i * IRQ_COUNT + (r->int_no - IRQ_OFFSET)];
-						// Check and run irq handler:
-						if (handler && handler(r))
-							goto done;
-					}
-					irq_ack(r->int_no - IRQ_OFFSET);
-				}
-			done:
-				int_resume();
-			}
-
 			void irq_install(void) {
+				#define IRQ_DEFAULT_FLAG 0b10001110 /* Segment Present and in Ring 0 */
+				/* Install IRQs' address onto IDT: */
 				char buffer[16];
-				for (int i = 0; i < IRQ_COUNT; i++) {
+				for (size_t i = 0; i < IRQ_COUNT; i++) {
 					sprintf(buffer, "_irq%d", i);
-					irqs[i] = (uintptr_t)Module::symbol_find(buffer);
+					IDT::idt_set_gate(IRQ_OFFSET + i, (uintptr_t)Module::symbol_find(buffer), SEG_KERNEL_CS, IRQ_DEFAULT_FLAG);
 				}
-				pic8259_init(); /* Initialize PIC */
-				irq_setup_gates(); /* Install IRQs' address onto IDT */
+				pic8259_init(); /* Initialize the 8259 PIC */
 			}
 		}
-
 	}
 
 	/* Initialization data goes here, like the Multiboot, for example */
@@ -473,6 +464,8 @@ namespace Kernel {
 		CPU::IRQ::irq_install();
 		DEBUGOK();
 		
+		/* All done! */
+		DEBUGC("\nReady", COLOR_GOOD);
 		for(;;);
 
 		return 0;
