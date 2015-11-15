@@ -23,8 +23,8 @@ An experimental project for training and testing with a Kernel for x86 systems (
 1 - QEMU (Windows - http://qemu.weilnetz.de/)
 
 2 - VirtualBox (https://www.virtualbox.org/)
-  
-  2.1 - Virtualbox Debug reference (https://www.virtualbox.org/manual/ch12.html)
+
+> 2.1 - Virtualbox Debug reference (https://www.virtualbox.org/manual/ch12.html)
 
 3 - Bochs (http://bochs.sourceforge.net/)
 
