@@ -337,7 +337,7 @@ namespace Kernel {
 				int_resume();
 			}
 
-			inline void irq_set_mask(uint8_t irq_num) {
+			inline void irq_mask(uint8_t irq_num, uint8_t enable) {
 				uint16_t port;
 				if (irq_num < 8) {
 					port = PIC1_DATA;
@@ -347,20 +347,18 @@ namespace Kernel {
 					irq_num -= 8;
 				}
 
-				IO::outb(port, IO::inb(port) | (1 << irq_num));
+				if(enable)
+					IO::outb(port, IO::inb(port) | (1 << irq_num));
+				else 
+					IO::outb(port, IO::inb(port) & ~(1 << irq_num));
+			}
+
+			inline void irq_set_mask(uint8_t irq_num) {
+				irq_mask(irq_num, 1);
 			}
 
 			inline void irq_clear_mask(uint8_t irq_num) {
-				uint16_t port;
-				if (irq_num < 8) {
-					port = PIC1_DATA;
-				}
-				else {
-					port = PIC2_DATA;
-					irq_num -= 8;
-				}
-
-				IO::outb(port, IO::inb(port) & ~(1 << irq_num));
+				irq_mask(irq_num, 0);
 			}
 
 			inline void pic8259_init(void) {
@@ -391,6 +389,7 @@ namespace Kernel {
 					IDT::idt_set_gate(IRQ_OFFSET + i, (uintptr_t)Module::symbol_find(buffer), SEG_KERNEL_CS, IRQ_DEFAULT_FLAG);
 				}
 				pic8259_init(); /* Initialize the 8259 PIC */
+				SYNC_STI(); /* Enable interrupts, even though we haven't installed any yet */
 			}
 		}
 	}
