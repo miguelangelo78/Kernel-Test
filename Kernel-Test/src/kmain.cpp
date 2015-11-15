@@ -251,7 +251,7 @@ namespace Kernel {
 			/* Interrupt Request constants: */
 			#define IRQ_COUNT 16
 			#define IRQ_CHAIN_DEPTH 4
-			#define IRQ_OFFSET 32
+			#define IRQ_OFFSET 32 /* Offset which separates ISRs from IRQs on the IDT entry table */
 			#define SYNC_CLI() asm volatile("cli") /* Disables interrupts */
 			#define SYNC_STI() asm volatile("sti") /* Enables interrupts */
 
@@ -335,6 +335,32 @@ namespace Kernel {
 				}
 			done:
 				int_resume();
+			}
+
+			inline void irq_set_mask(uint8_t irq_num) {
+				uint16_t port;
+				if (irq_num < 8) {
+					port = PIC1_DATA;
+				}
+				else {
+					port = PIC2_DATA;
+					irq_num -= 8;
+				}
+
+				IO::outb(port, IO::inb(port) | (1 << irq_num));
+			}
+
+			inline void irq_clear_mask(uint8_t irq_num) {
+				uint16_t port;
+				if (irq_num < 8) {
+					port = PIC1_DATA;
+				}
+				else {
+					port = PIC2_DATA;
+					irq_num -= 8;
+				}
+
+				IO::outb(port, IO::inb(port) & ~(1 << irq_num));
 			}
 
 			inline void pic8259_init(void) {
@@ -463,7 +489,7 @@ namespace Kernel {
 		DEBUG("> Installing IRQs (PIC) - ");
 		CPU::IRQ::irq_install();
 		DEBUGOK();
-		
+	
 		/* All done! */
 		DEBUGC("\nReady", COLOR_GOOD);
 		for(;;);
