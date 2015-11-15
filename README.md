@@ -13,3 +13,5 @@ An experimental project for training and testing with a Kernel for x86 systems (
 5 - BrokenThorn Entertainment - OS Development Series (http://www.brokenthorn.com/Resources/OSDevIndex.html)
 
 6 - Bona Fide - OS Development Tutorials (http://www.osdever.net/tutorials/)
+
+7 - Intel® 64 and IA-32 Architectures Software Developer’s Manual (http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-manual-325462.pdf)
