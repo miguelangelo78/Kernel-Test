@@ -389,7 +389,6 @@ namespace Kernel {
 					IDT::idt_set_gate(IRQ_OFFSET + i, (uintptr_t)Module::symbol_find(buffer), SEG_KERNEL_CS, IRQ_DEFAULT_FLAG);
 				}
 				pic8259_init(); /* Initialize the 8259 PIC */
-				SYNC_STI(); /* Enable interrupts, even though we haven't installed any yet */
 			}
 		}
 	}
@@ -489,6 +488,13 @@ namespace Kernel {
 		CPU::IRQ::irq_install();
 		DEBUGOK();
 	
+		DEBUG("\n\nTODO: \n1 - Code up Kernel Heap\n");
+		DEBUG("3 - Code up modules\n");
+		DEBUG("4 - Relocate Modules\n");
+		DEBUG("5 - Enable Paging\n");
+		DEBUG("6 - Set up heap pointer\n");
+		DEBUG("7 - Enough for now...\n");
+
 		/* All done! */
 		DEBUGC("\nReady", COLOR_GOOD);
 		for(;;);
