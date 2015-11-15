@@ -9,3 +9,5 @@ An experimental project for training and testing with a Kernel for x86 systems (
 3 - OSDev Forum (http://forum.osdev.org/)
 
 4 - Bran's Kernel Development (http://www.osdever.net/bkerndev/Docs/title.htm)
+
+5 - BrokenThorn Entertainment - OS Development Series (http://www.brokenthorn.com/Resources/OSDevIndex.html)
