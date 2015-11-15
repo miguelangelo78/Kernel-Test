@@ -1,3 +1,4 @@
+@cd "%~dp0"
 cls
 @echo off
 
@@ -12,9 +13,9 @@ del iso\KernelSharp.iso
 toolchain\Tools\ISO9660Generator.exe 4 "%CD%\iso\KernelSharp.iso" "%CD%\iso\isolinux-debug.bin" true "%CD%\iso"
 if ERRORLEVEL 1 ( call:errorhandle "Creating Disk" )
 
-call launch_i386.bat
+call launch_x86_64.bat
 
-exit
+@GOTO:EOF
 
 :errorhandle
 IF NOT "%1"=="" (printf "****\nERROR: %~1\n****\n")

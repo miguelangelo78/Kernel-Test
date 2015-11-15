@@ -1,9 +1,9 @@
+@cd "%~dp0"
 @echo off
 
-printf "\nLaunching Kernel... (i386)\n"
-"C:\Program Files\qemu\qemu-system-i386" -boot d -cdrom iso\KernelSharp.iso -m 512
-@rem vboxmanage.exe startvm KernelSharp
-if ERRORLEVEL 1 ( call:errorhandle "Launching Virtual Box" )
+printf "\nLaunching Kernel... (QEMU i386)\n"
+"C:\Program Files (x86)\qemu\qemu-system-i386" -cdrom iso\KernelSharp.iso -m 512
+if ERRORLEVEL 1 ( call:errorhandle "Launching QEMU" )
 
 @echo on
 exit

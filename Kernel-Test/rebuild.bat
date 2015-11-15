@@ -1,3 +1,4 @@
+@cd "%~dp0"
 cls
 @echo off
 
@@ -13,7 +14,7 @@ IF [%1]==[] ( call build.bat 0 )
 
 @REM calling rebuild.bat FROM build.bat
 call build.bat %1
-exit
+@GOTO:EOF
 
 :errorhandle
 printf "****\nERROR: %~1\n****\n"

@@ -245,11 +245,20 @@ namespace Kernel {
 				} while (0)
 
 			/* Initialization constants: */
-			#define ICW1_ICW4 0x01
-			#define ICW1_INIT 0x10
+			#define ICW1_ICW4 0x01 /* ICW4 (not) needed */
+			#define ICW1_SINGLE	0x02 /* Single (cascade) mode */
+			#define ICW1_INTERVAL4 0x04 /* Call address interval 4 (8) */
+			#define ICW1_LEVEL 0x08 /* Level triggered (edge) mode */
+			#define ICW1_INIT 0x10 /* Initialization - required! */
+
+			#define ICW4_8086 0x01 /* 8086/88 (MCS-80/85) mode */
+			#define ICW4_AUTO 0x02 /* Auto (normal) EOI */
+			#define ICW4_BUF_SLAVE	0x08 /* Buffered mode/slave */
+			#define ICW4_BUF_MASTER	0x0C /* Buffered mode/master */
+			#define ICW4_SFNM 0x10 /* Special fully nested (not) */
 
 			/* Interrupt Request constants: */
-			#define IRQ_COUNT 16
+			#define IRQ_COUNT 16 /* How many IRQ lines exist (8 for each PIC, only 15 usable) */
 			#define IRQ_CHAIN_DEPTH 4
 			#define IRQ_OFFSET 32 /* Offset which separates ISRs from IRQs on the IDT entry table */
 			#define SYNC_CLI() asm volatile("cli") /* Disables interrupts */
@@ -372,12 +381,12 @@ namespace Kernel {
 				outb(PIC2_DATA, PIC2_OFFSET); PIC_WAIT();
 
 				/* Cascade identity with slave PIC at IRQ2 */
-				outb(PIC1_DATA, 0x04); PIC_WAIT();
-				outb(PIC2_DATA, 0x02); PIC_WAIT();
+				outb(PIC1_DATA, ICW1_INTERVAL4); PIC_WAIT();
+				outb(PIC2_DATA, ICW1_SINGLE); PIC_WAIT();
 
 				/* Request 8086 mode on each PIC */
-				outb(PIC1_DATA, 0x01); PIC_WAIT();
-				outb(PIC2_DATA, 0x01); PIC_WAIT();
+				outb(PIC1_DATA, ICW4_8086); PIC_WAIT();
+				outb(PIC2_DATA, ICW4_8086); PIC_WAIT();
 			}
 
 			void irq_install(void) {
@@ -494,7 +503,7 @@ namespace Kernel {
 		DEBUG("5 - Enable Paging\n");
 		DEBUG("6 - Set up heap pointer\n");
 		DEBUG("7 - Enough for now...\n");
-
+		
 		/* All done! */
 		DEBUGC("\nReady", COLOR_GOOD);
 		for(;;);
