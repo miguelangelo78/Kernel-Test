@@ -17,3 +17,13 @@ An experimental project for training and testing with a Kernel for x86 systems (
 6 - Bona Fide - OS Development Tutorials (http://www.osdever.net/tutorials/)
 
 7 - Intel® 64 and IA-32 Architectures Software Developer’s Manual (http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-manual-325462.pdf)
+
+# x86 Virtual Machines
+
+1 - QEMU (Windows - http://qemu.weilnetz.de/)
+
+2 - VirtualBox (https://www.virtualbox.org/)
+
+3 - Bochs (http://bochs.sourceforge.net/)
+
+3 - VMware (http://www.vmware.com/)
