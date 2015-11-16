@@ -221,7 +221,8 @@ namespace Kernel {
 
 		namespace IRQ { /* IRQ: Uses the IDT to install and manage interrupt requests */
 			/* Reference:	http://www.osdever.net/bkerndev/Docs/irqs.htm ,
-							http://wiki.osdev.org/PIC */
+							http://wiki.osdev.org/PIC ,
+							https://pdos.csail.mit.edu/6.828/2010/readings/hardware/8259A.pdf */
 			
 			/* 8259 Programmable Interrupt Controller (8259 PIC) constants: */
 			/* PIC 1: */
@@ -263,6 +264,10 @@ namespace Kernel {
 			#define IRQ_OFFSET 32 /* Offset which separates ISRs from IRQs on the IDT entry table */
 			#define SYNC_CLI() asm volatile("cli") /* Disables interrupts */
 			#define SYNC_STI() asm volatile("sti") /* Enables interrupts */
+
+			/* Just helper macros, so we can understand what they do: */
+			#define pic_send_cmd(pic_cmd_addr, cmd) IO::outb(pic_cmd_addr, cmd); PIC_WAIT();
+			#define pic_send_dat(pic_dat_addr, dat) IO::outb(pic_dat_addr, dat); PIC_WAIT();
 
 			/* Callback constants: */
 			typedef int(*irq_handler_chain_t) (CPU::regs_t *); /* Callback type */
@@ -322,8 +327,7 @@ namespace Kernel {
 			}
 
 			inline void irq_ack(size_t irq_num) {
-				if (irq_num >= 8)
-					IO::outb(PIC2_CMD, PIC_EOI);
+				if (irq_num >= 8) IO::outb(PIC2_CMD, PIC_EOI);
 				IO::outb(PIC1_CMD, PIC_EOI);
 			}
 
@@ -371,22 +375,21 @@ namespace Kernel {
 			}
 
 			inline void pic8259_init(void) {
-				using namespace IO;
 				/* Cascade initialization */
-				outb(PIC1_CMD, ICW1_INIT | ICW1_ICW4); PIC_WAIT();
-				outb(PIC2_CMD, ICW1_INIT | ICW1_ICW4); PIC_WAIT();
+				pic_send_cmd(PIC1_CMD, ICW1_INIT | ICW1_ICW4); 
+				pic_send_cmd(PIC2_CMD, ICW1_INIT | ICW1_ICW4);
 
 				/* Remap */
-				outb(PIC1_DATA, PIC1_OFFSET); PIC_WAIT();
-				outb(PIC2_DATA, PIC2_OFFSET); PIC_WAIT();
+				pic_send_dat(PIC1_DATA, PIC1_OFFSET);
+				pic_send_dat(PIC2_DATA, PIC2_OFFSET);
 
 				/* Cascade identity with slave PIC at IRQ2 */
-				outb(PIC1_DATA, ICW1_INTERVAL4); PIC_WAIT();
-				outb(PIC2_DATA, ICW1_SINGLE); PIC_WAIT();
+				pic_send_dat(PIC1_DATA, ICW1_INTERVAL4);
+				pic_send_dat(PIC2_DATA, ICW1_SINGLE);
 
 				/* Request 8086 mode on each PIC */
-				outb(PIC1_DATA, ICW4_8086); PIC_WAIT();
-				outb(PIC2_DATA, ICW4_8086); PIC_WAIT();
+				pic_send_dat(PIC1_DATA, ICW4_8086);
+				pic_send_dat(PIC2_DATA, ICW4_8086);
 			}
 
 			void irq_install(void) {
@@ -428,8 +431,7 @@ namespace Kernel {
 		* this structure, the multiboot magic number and the initial
 		* stack.
 		*/
-		struct multiboot_t
-		{
+		struct multiboot_t {
 			uint32_t flags;
 			uint32_t mem_lower;
 			uint32_t mem_upper;
@@ -438,8 +440,7 @@ namespace Kernel {
 			uint32_t mods_count;
 			uint32_t mods_addr;
 
-			struct
-			{
+			struct {
 				uint32_t num;
 				uint32_t size;
 				uint32_t addr;
@@ -454,8 +455,7 @@ namespace Kernel {
 			uint32_t boot_loader_name;
 			uint32_t apm_table;
 
-			struct
-			{
+			struct {
 				uint32_t control_info;
 				uint32_t mode_info;
 				uint32_t mode;
@@ -469,7 +469,6 @@ namespace Kernel {
 	int kmain(struct Init::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
 		/******* Initialize everything: *******/
-		
 		term.init();
 	
 		/* Validate Multiboot: */
