@@ -258,6 +258,9 @@
 .extern _ZN6Kernel3CPU3IRQ11irq_installEv
 .type _ZN6Kernel3CPU3IRQ11irq_installEv, @function
 
+.extern _ZN6Kernel3CPU3IRQ12pic8259_initEv
+.type _ZN6Kernel3CPU3IRQ12pic8259_initEv, @function
+
 .extern _ZN6Kernel3CPU3IRQ19irq_install_handlerEmPFiPNS0_6regs_tEE
 .type _ZN6Kernel3CPU3IRQ19irq_install_handlerEmPFiPNS0_6regs_tEE, @function
 
@@ -302,6 +305,9 @@
 
 .extern _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj
 .type _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj, @function
+
+.extern _ZN6Module11symbol_findEPKc
+.type _ZN6Module11symbol_findEPKc, @function
 
 .extern _ZN8Terminal12reset_cursorEv
 .type _ZN8Terminal12reset_cursorEv, @function
@@ -621,6 +627,9 @@ kernel_symbols_start:
 .long _ZN6Kernel3CPU3IRQ11irq_installEv
 .asciz "_ZN6Kernel3CPU3IRQ11irq_installEv"
 
+.long _ZN6Kernel3CPU3IRQ12pic8259_initEv
+.asciz "_ZN6Kernel3CPU3IRQ12pic8259_initEv"
+
 .long _ZN6Kernel3CPU3IRQ19irq_install_handlerEmPFiPNS0_6regs_tEE
 .asciz "_ZN6Kernel3CPU3IRQ19irq_install_handlerEmPFiPNS0_6regs_tEE"
 
@@ -665,6 +674,9 @@ kernel_symbols_start:
 
 .long _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj
 .asciz "_ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj"
+
+.long _ZN6Module11symbol_findEPKc
+.asciz "_ZN6Module11symbol_findEPKc"
 
 .long _ZN8Terminal12reset_cursorEv
 .asciz "_ZN8Terminal12reset_cursorEv"

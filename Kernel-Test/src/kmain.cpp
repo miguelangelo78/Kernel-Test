@@ -33,14 +33,14 @@ namespace Kernel {
 					uint8_t access; /* Contains: Present, Ring (0=lvl 0, 3=lvl 3), is Exec., Segment Grow Dir, RW and Accessed bit */
 					uint8_t granularity; /* Contains: Granularity (1Byte/4KiB) and Mode (0 = 16 bit Real Mode, 1 =32 bit Protected Mode) */
 					uint8_t base_high;
-				} __attribute__((packed)) entries[6]; /* 6 segments */
+				} __packed entries[6]; /* 6 segments */
 				
 				struct {
 					uint16_t limit;
 					uintptr_t base;
-				} __attribute__((packed)) * pointer;
+				} __packed * pointer;
 			//xxx tss_entry_t tss; /* Too early for TSS... */
-			} gdt __attribute__((used));
+			} gdt __used;
 
 			void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran) {
 				/* Base Address */
@@ -56,7 +56,7 @@ namespace Kernel {
 				gdt.entries[num].access = access;
 			}
 
-			void gdt_init(void) {
+			void __init gdt_init(void) {
 				/* Set up GDT pointer: */
 				gdt.pointer->limit = sizeof gdt.entries - 1;
 				gdt.pointer->base = (uintptr_t)&gdt.entries[0];
@@ -112,13 +112,13 @@ namespace Kernel {
 					uint8_t zero; /* This field must always be 0 */
 					uint8_t flags; /* Attributes for a certain entry (seg. present and ring lvl) */
 					uint16_t base_high;
-				} __attribute__((packed)) entries[256];
+				} __packed entries[256];
 			
 				struct {
 					uint16_t limit;
 					uintptr_t base;
-				} __attribute__((packed)) * pointer;
-			} idt __attribute__((used));
+				} __packed * pointer;
+			} idt __used;
 
 			void idt_set_gate(uint8_t num, uintptr_t isr_addr, uint16_t sel, uint8_t flags) {
 				idt.entries[num].base_low = ((uintptr_t)isr_addr & 0xFFFF); /* Mask low 16 bit (low half) */
@@ -130,7 +130,7 @@ namespace Kernel {
 
 			#define idt_flush(idt_ptr) asm volatile("lidtl (%0)" : : "r"(idt_ptr));
 
-			void idt_init() {
+			void __init idt_init() {
 				/* Set up IDT pointer: */
 				idt.pointer->limit = sizeof idt.entries - 1;
 				idt.pointer->base = (uintptr_t)&idt.entries[0];
@@ -195,7 +195,7 @@ namespace Kernel {
 				isr_routines[isrs] = 0;
 			}
 
-			void isrs_install(void) {
+			void __init isrs_install(void) {
 				#define ISR_DEFAULT_FLAG 0b10001110 /* Segment Present and in Ring 0 */
 				char buffer[16];
 				for (int i = 0; i < ISR_COUNT; i++) {
@@ -205,10 +205,10 @@ namespace Kernel {
 				IDT::idt_set_gate(IDT::SYSCALL_VECTOR, (uintptr_t)Module::symbol_find("_isr127"), SEG_KERNEL_CS, ISR_DEFAULT_FLAG);
 			}
 			
-			void fault_handler(CPU::regs_t * r) { /* Gets called for EVERY ISR and IRQ interrupt */
+			void __interrupt fault_handler(CPU::regs_t * r) { /* Gets called for EVERY ISR and IRQ interrupt */
 				irq_handler_t handler = isr_routines[r->int_no];
 				if (handler) {
-					/* This handler was installed. This is used for Keyboard, or any other IO device. */
+					/* This handler was installed. */
 					handler(r);
 				} else { 
 					/* Kernel RSOD (aka BSOD) */
@@ -333,8 +333,8 @@ namespace Kernel {
 
 			/* Implementation and initialization functions: */
 			#define irq_is_valid(int_no) ((int_no) >= IRQ_OFFSET && (int_no) <= IRQ_OFFSET + (IRQ_COUNT - 1)) /* IRQ_COUNT - 1 because it starts from 0 */
-	
-			void irq_handler(CPU::regs_t * r) {
+		
+			void __interrupt irq_handler(CPU::regs_t * r) {
 				/* Disable interrupts when handling */
 				int_disable();
 				if (irq_is_valid(r->int_no)) {
@@ -374,7 +374,7 @@ namespace Kernel {
 				irq_mask(irq_num, 0);
 			}
 
-			inline void pic8259_init(void) {
+			void __init pic8259_init(void) {
 				/* Cascade initialization */
 				pic_send_cmd(PIC1_CMD, ICW1_INIT | ICW1_ICW4); 
 				pic_send_cmd(PIC2_CMD, ICW1_INIT | ICW1_ICW4);
@@ -463,10 +463,10 @@ namespace Kernel {
 				uint32_t interface_off;
 				uint32_t interface_len;
 			} vbe;
-		} __attribute__((packed));
+		} __packed;
 	}
 
-	int kmain(struct Init::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
+	int __init kmain(struct Init::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
 		/******* Initialize everything: *******/
 		term.init();
