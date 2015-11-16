@@ -48,7 +48,7 @@ namespace Kernel {
 			term.fill(VIDBlue);
 			term.puts(msg, COLOR_INFO);
 			
-			KERNEL_FULL_STOP();
+			KERNEL_FULL_STOP(); /* IRQs don't work anymore */
 		}
 	}
 }

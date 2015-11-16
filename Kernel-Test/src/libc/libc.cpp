@@ -383,11 +383,11 @@ char *strstr(const char * h, const char * n) {
 	return strstr_twoway((unsigned char *)h, (unsigned char *)n);
 }
 
-static inline int isdigit(int ch) {
+static int isdigit(int ch) {
 	return (unsigned int)ch - '0' < 10;
 }
 
-static inline int isspace(int ch) {
+static int isspace(int ch) {
 	return ch == ' ' || (unsigned int)ch - '\t' < 5;
 }
 
