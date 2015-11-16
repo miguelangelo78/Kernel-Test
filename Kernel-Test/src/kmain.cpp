@@ -275,7 +275,7 @@ namespace Kernel {
 			
 			/* Interrupt functions used by external modules: */
 			static volatile int sync_depth = 0; /* Used by interrupts */
-			inline void int_disable(void) {
+			void int_disable(void) {
 				/* Check if interrupts are enabled */
 				uint32_t flags;
 				asm volatile("pushf\n\t"

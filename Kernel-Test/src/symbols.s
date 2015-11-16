@@ -249,6 +249,9 @@
 .extern _ZN6Kernel3CPU3IRQ10int_resumeEv
 .type _ZN6Kernel3CPU3IRQ10int_resumeEv, @function
 
+.extern _ZN6Kernel3CPU3IRQ11int_disableEv
+.type _ZN6Kernel3CPU3IRQ11int_disableEv, @function
+
 .extern _ZN6Kernel3CPU3IRQ11irq_handlerEPNS0_6regs_tE
 .type _ZN6Kernel3CPU3IRQ11irq_handlerEPNS0_6regs_tE, @function
 
@@ -278,6 +281,9 @@
 
 .extern _ZN6Kernel5Error13infinite_idleEPKc
 .type _ZN6Kernel5Error13infinite_idleEPKc, @function
+
+.extern _ZN6Kernel5Error16kernel_panic_msgE
+.type _ZN6Kernel5Error16kernel_panic_msgE, @function
 
 .extern _ZN6Kernel5Error5panicEPKc
 .type _ZN6Kernel5Error5panicEPKc, @function
@@ -606,6 +612,9 @@ kernel_symbols_start:
 .long _ZN6Kernel3CPU3IRQ10int_resumeEv
 .asciz "_ZN6Kernel3CPU3IRQ10int_resumeEv"
 
+.long _ZN6Kernel3CPU3IRQ11int_disableEv
+.asciz "_ZN6Kernel3CPU3IRQ11int_disableEv"
+
 .long _ZN6Kernel3CPU3IRQ11irq_handlerEPNS0_6regs_tE
 .asciz "_ZN6Kernel3CPU3IRQ11irq_handlerEPNS0_6regs_tE"
 
@@ -635,6 +644,9 @@ kernel_symbols_start:
 
 .long _ZN6Kernel5Error13infinite_idleEPKc
 .asciz "_ZN6Kernel5Error13infinite_idleEPKc"
+
+.long _ZN6Kernel5Error16kernel_panic_msgE
+.asciz "_ZN6Kernel5Error16kernel_panic_msgE"
 
 .long _ZN6Kernel5Error5panicEPKc
 .asciz "_ZN6Kernel5Error5panicEPKc"
