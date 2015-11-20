@@ -32,7 +32,7 @@ mboot:
     dd  start                   ; Kernel entry point (initial EIP).
 
 [GLOBAL start]
-[EXTERN _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj]
+[EXTERN _ZN6Kernel5kmainEPN5KInit11multiboot_tEjj]
 [EXTERN _ZN6Kernel5kexitEv]
 
 start:
@@ -41,6 +41,6 @@ start:
     push ebx
 
     cli
-    call _ZN6Kernel5kmainEPNS_4Init11multiboot_tEjj ; Call Kernel Main function
+    call _ZN6Kernel5kmainEPN5KInit11multiboot_tEjj ; Call Kernel Main function
 	call _ZN6Kernel5kexitEv ; Call Kernel Exit function
 	jmp $ ; It is impossible to reach this, but, just in case

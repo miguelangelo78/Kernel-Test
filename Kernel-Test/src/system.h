@@ -1,8 +1,10 @@
 #pragma once
 
-#include "terminal.h"
-#include "libc.h"
-#include "io.h"
+#include <kinit.h>
+#include <terminal.h>
+#include <libc.h>
+#include <io.h>
+#include <attr.h>
 
 /* Memory segment selectors: */
 enum SEGSEL {
@@ -35,11 +37,115 @@ enum SEGSEL {
 #define KERNEL_FULL_STOP() while(1) { IRQ_OFF(); KERNEL_FULL_PAUSE(); }
 
 namespace Kernel {
+
+	/* All CPU Related components, such as GDT,
+	IDT (which includes ISR and PIC / IRQ) and registers */
 	namespace CPU {
+		typedef struct {
+			unsigned int gs, fs, es, ds;
+			unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+			unsigned int int_no, err_code;
+			unsigned int eip, cs, eflags, useresp, ss;
+		} regs_t;
+
+		namespace GDT {
+			void __init gdt_init(void);
+			void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran);
+		}
+
+		namespace IDT {
+			/* IDT Interrupt List: */
+			enum IDT_IVT {
+				ISR_DIVBY0,
+				ISR_RESERVED0,
+				ISR_NMI,
+				ISR_BREAK,
+				ISR_OVERFLOW,
+				ISR_BOUNDS,
+				ISR_INVOPCODE,
+				ISR_DEVICEUN,
+				ISR_DOUBLEFAULT,
+				ISR_COPROC,
+				ISR_INVTSS,
+				ISR_SEG_FAULT,
+				ISR_STACKSEG_FAULT,
+				ISR_GENERALPROT,
+				ISR_PAGEFAULT,
+				ISR_RESERVED1,
+				ISR_FPU,
+				ISR_ALIGNCHECK,
+				ISR_SIMD_FPU,
+				ISR_RESERVED2,
+				ISR_USR,
+				SYSCALL_VECTOR = 0x7F
+			};
+
+			void __init idt_init();
+			void idt_set_gate(uint8_t num, uintptr_t isr_addr, uint16_t sel, uint8_t flags);
+		}
+
+		namespace ISR {
+			#define ISR_COUNT 32
+
+			/* ISR Messages: */
+			static const char *exception_msgs[ISR_COUNT] = {
+				"Division by zero",
+				"Debug",
+				"Non-maskable interrupt",
+				"Breakpoint",
+				"Detected overflow",
+				"Out-of-bounds",
+				"Invalid opcode",
+				"No coprocessor",
+				"Double fault",
+				"Coprocessor segment overrun",
+				"Bad TSS",
+				"Segment not present",
+				"Stack fault",
+				"General protection fault",
+				"Page fault",
+				"Unknown interrupt",
+				"Coprocessor fault",
+				"Alignment check",
+				"Machine check",
+				"Reserved",
+				"Reserved",
+				"Reserved",
+				"Reserved",
+				"Reserved",
+				"Reserved",
+				"Reserved",
+				"Reserved",
+				"Reserved",
+				"Reserved",
+				"Reserved",
+				"Reserved",
+				"Reserved"
+			};
+
+			/* Function callback type for ISRs: */
+			typedef void(*isr_handler_t) (CPU::regs_t *);
+
+			void __init isrs_install(void);
+			void isr_install_handler(size_t isrs, isr_handler_t handler);
+			void isr_uninstall_handler(size_t isrs);
+		}
+
 		namespace IRQ {
+			typedef int(*irq_handler_t) (CPU::regs_t *); /* Callback type */
+
+			void irq_install(void);
+
 			void int_disable(void);
 			void int_enable(void);
 			void int_resume(void);
+
+			void irq_install_handler(size_t irq_num, irq_handler_t irq_handler);
+			void irq_uninstall_handler(size_t irq_num);
+			void irq_ack(size_t irq_num);
+			void irq_mask(uint8_t irq_num, uint8_t enable);
+			void irq_set_mask(uint8_t irq_num);
+			void irq_clear_mask(uint8_t irq_num);
 		}
 	}
 
@@ -51,44 +157,3 @@ namespace Kernel {
 		extern void infinite_idle(const char * msg);
 	}
 }
-
-/* Attribute macros: (Ref - https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html )*/
-#define attr(attribute) __attribute__((attribute))
-
-#define __packed attr(packed)
-#define __used attr(used)
-#define __unused attr(unused)
-
-#define __section(s) attr(__section__(#s))
-#define __cold attr(cold)
-
-#define __visible attr(externally_visible)
-#define __visibility(vis) attr(visibility(vis))
-#define __vis_default "default"
-#define __vis_hidden "hidden"
-#define __vis_internal "internal"
-#define __vis_protected "protected"
-
-#define __init      __section(.init.text) __cold
-#define __initdata  __section(.init.data)
-#define __initconst __section(.init.rodata)
-#define __exitdata  __section(.exit.data)
-#define __exit_call __used __section(.exitcall.exit)
-
-#define __deprecated(msg) attr(deprecated(msg))
-#define __error(err) attr(error(msg))
-#define __warning(warn) attr(warning(warn))
-
-#define __interrupt attr(interrupt)
-
-#define __pure attr(pure)
-#define __weak attr(weak)
-
-#define __align(al) attr(align(al))
-
-#define __optimize attr(optimize)
-#define __hot attr(hot)
-
-#define __malloc attr(malloc)
-
-#define __target(targ) attr(__target__(targ))
