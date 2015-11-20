@@ -150,6 +150,9 @@
 .extern _Z10startswithPKcS0_
 .type _Z10startswithPKcS0_, @function
 
+.extern _Z13setup_ld_segsv
+.type _Z13setup_ld_segsv, @function
+
 .extern _Z4atoiPKc
 .type _Z4atoiPKc, @function
 
@@ -321,9 +324,6 @@
 .extern _ZN6Kernel5kmainEPN5KInit11multiboot_tEjj
 .type _ZN6Kernel5kmainEPN5KInit11multiboot_tEjj, @function
 
-.extern _ZN6Module11symbol_findEPKc
-.type _ZN6Module11symbol_findEPKc, @function
-
 .extern _ZN8Terminal12reset_cursorEv
 .type _ZN8Terminal12reset_cursorEv, @function
 
@@ -339,11 +339,20 @@
 .extern _ZN8Terminal4putcEcc
 .type _ZN8Terminal4putcEcc, @function
 
+.extern _ZN8Terminal4putsEPKc
+.type _ZN8Terminal4putsEPKc, @function
+
 .extern _ZN8Terminal4putsEPKcc
 .type _ZN8Terminal4putsEPKcc, @function
 
 .extern _ZN8Terminal5clearEv
 .type _ZN8Terminal5clearEv, @function
+
+.extern _ZN8Terminal6printfEcPKcz
+.type _ZN8Terminal6printfEcPKcz, @function
+
+.extern _ZN8Terminal6printfEPKcz
+.type _ZN8Terminal6printfEPKcz, @function
 
 .extern _ZN8TerminalC1Ev
 .type _ZN8TerminalC1Ev, @function
@@ -377,6 +386,12 @@
 
 .extern phys
 .type phys, @function
+
+.extern printf_buff
+.type printf_buff, @function
+
+.extern rodata
+.type rodata, @function
 
 .extern start
 .type start, @function
@@ -533,6 +548,9 @@ kernel_symbols_start:
 
 .long _Z10startswithPKcS0_
 .asciz "_Z10startswithPKcS0_"
+
+.long _Z13setup_ld_segsv
+.asciz "_Z13setup_ld_segsv"
 
 .long _Z4atoiPKc
 .asciz "_Z4atoiPKc"
@@ -705,9 +723,6 @@ kernel_symbols_start:
 .long _ZN6Kernel5kmainEPN5KInit11multiboot_tEjj
 .asciz "_ZN6Kernel5kmainEPN5KInit11multiboot_tEjj"
 
-.long _ZN6Module11symbol_findEPKc
-.asciz "_ZN6Module11symbol_findEPKc"
-
 .long _ZN8Terminal12reset_cursorEv
 .asciz "_ZN8Terminal12reset_cursorEv"
 
@@ -723,11 +738,20 @@ kernel_symbols_start:
 .long _ZN8Terminal4putcEcc
 .asciz "_ZN8Terminal4putcEcc"
 
+.long _ZN8Terminal4putsEPKc
+.asciz "_ZN8Terminal4putsEPKc"
+
 .long _ZN8Terminal4putsEPKcc
 .asciz "_ZN8Terminal4putsEPKcc"
 
 .long _ZN8Terminal5clearEv
 .asciz "_ZN8Terminal5clearEv"
+
+.long _ZN8Terminal6printfEcPKcz
+.asciz "_ZN8Terminal6printfEcPKcz"
+
+.long _ZN8Terminal6printfEPKcz
+.asciz "_ZN8Terminal6printfEPKcz"
 
 .long _ZN8TerminalC1Ev
 .asciz "_ZN8TerminalC1Ev"
@@ -761,6 +785,12 @@ kernel_symbols_start:
 
 .long phys
 .asciz "phys"
+
+.long printf_buff
+.asciz "printf_buff"
+
+.long rodata
+.asciz "rodata"
 
 .long start
 .asciz "start"

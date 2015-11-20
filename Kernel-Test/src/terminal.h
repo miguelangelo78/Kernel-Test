@@ -40,6 +40,9 @@ class Terminal {
 		void init(void);
 		void putc(const char chr, char color);
 		void puts(const char * str, char color);
+		void puts(const char * str);
+		int printf(char color, const char *fmt, ...);
+		int printf(const char *fmt, ...); 
 		void clear(void);
 		void fill(char color);
 		void reset_cursor(void);

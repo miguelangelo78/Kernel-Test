@@ -2,6 +2,14 @@
 #include <module.h>
 #include <stdint.h>
 
+void setup_ld_segs(void) {
+	ld_segs.ld_code = code;
+	ld_segs.ld_data = data;
+	ld_segs.ld_end = end;
+	ld_segs.ld_rodata = rodata;
+	ld_segs.ld_bss = bss;
+}
+
 namespace Kernel {
 	Terminal term;
 
@@ -34,6 +42,10 @@ namespace Kernel {
 		DEBUG("> Installing IRQs (PIC) - ");
 		CPU::IRQ::irq_install();
 		DEBUGOK();
+
+		DEBUG("> Initializing data and structs - ");
+		setup_ld_segs();
+		DEBUGOK();
 	
 		DEBUG("\n\nTODO: \n1 - Code up Kernel Heap\n");
 		DEBUG("3 - Code up modules\n");
@@ -41,9 +53,10 @@ namespace Kernel {
 		DEBUG("5 - Enable Paging\n");
 		DEBUG("6 - Set up heap pointer\n");
 		DEBUG("7 - Enough for now...\n");
-		
+
 		/* All done! */
 		DEBUGC("\nReady", COLOR_GOOD);
+		
 		for(;;);
 
 		return 0;

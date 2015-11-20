@@ -30,6 +30,10 @@ void Terminal::puts(const char * str, char color) {
 	while (*str) putc(*str++, color);
 }
 
+void Terminal::puts(const char * str) {
+	while (*str) putc(*str++, COLOR_DEFAULT);
+}
+
 void Terminal::clear() {
 	reset_cursor();
 	for (int i = 0; i<2000; i++)
@@ -46,4 +50,21 @@ void Terminal::fill(char bgcolor) {
 
 void Terminal::reset_cursor() {
 	cursor_x = cursor_y = 0;
+}
+
+char printf_buff[256];
+#define term_printf(color) 	va_list args; \
+							va_start(args, fmt); \
+							int ret = vasprintf(printf_buff, fmt, args); \
+							va_end(args); \
+							puts(printf_buff, color); \
+							
+int Terminal::printf(char color, const char *fmt, ...) {
+	term_printf(color);
+	return ret;
+}
+
+int Terminal::printf(const char *fmt, ...) {
+	term_printf(COLOR_DEFAULT);
+	return ret;
 }

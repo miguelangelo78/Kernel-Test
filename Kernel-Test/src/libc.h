@@ -11,10 +11,15 @@
 #define HIGHS (ONES * (UCHAR_MAX/2+1))
 #define HASZERO(X) (((X)-ONES) & ~(X) & HIGHS)
 
+#define NTH_BIT(nth) (1 << nth)
+#define FETCH_BIT(nth) NTH_BIT(nth) >> (nth)
+#define IS_BIT_SET(flag, nth) flag & NTH_BIT(nth)
+
 #define BITOP(A, B, OP) \
  ((A)[(size_t)(B)/(8*sizeof *(A))] OP (size_t)1<<((size_t)(B)%(8*sizeof *(A))))
 
 int sprintf(char * buf, const char *fmt, ...);
+size_t vasprintf(char * buf, const char * fmt, va_list args);
 
 void * memset(void * dest, int c, size_t n);
 unsigned short * memsetw(unsigned short * dest, unsigned short val, int count);

@@ -15,6 +15,21 @@ enum SEGSEL {
 	SEG_USER_DS = 0x20
 };
 
+/* Segments from the linker */
+extern void * code;
+extern void * end;
+extern void * data;
+extern void * bss;
+extern void * rodata;
+
+struct {
+	void * ld_code;
+	void * ld_end;
+	void * ld_data;
+	void * ld_bss;
+	void * ld_rodata;
+} ld_segs; /* Segments from the linker (in struct form) */
+
 #define asm __asm__
 #define volatile __volatile__
 
@@ -27,9 +42,9 @@ enum SEGSEL {
 #define STR(str) STRSTR(str)
 #define ASSERT(cond, msg) { if(!(cond)) { char buff[256]; sprintf(buff, "Assert (%s): %s", STR(cond), msg); Error::panic(buff, __LINE__, __FILE__, 0); } }
 
-#define IRQ_OFF() CPU::IRQ::int_disable()
-#define IRQ_RES() CPU::IRQ::int_resume()
-#define IRQ_ON() CPU::IRQ::int_enable()
+#define IRQ_OFF() Kernel::CPU::IRQ::int_disable()
+#define IRQ_RES() Kernel::CPU::IRQ::int_resume()
+#define IRQ_ON() Kernel::CPU::IRQ::int_enable()
 
 #define KERNEL_PAUSE() { asm volatile ("hlt"); }
 #define KERNEL_FULL_PAUSE() while (1) { KERNEL_PAUSE(); }
@@ -37,7 +52,6 @@ enum SEGSEL {
 #define KERNEL_FULL_STOP() while(1) { IRQ_OFF(); KERNEL_FULL_PAUSE(); }
 
 namespace Kernel {
-
 	/* All CPU Related components, such as GDT,
 	IDT (which includes ISR and PIC / IRQ) and registers */
 	namespace CPU {
@@ -54,7 +68,7 @@ namespace Kernel {
 		}
 
 		namespace IDT {
-			/* IDT Interrupt List: */
+			/* IDT Interrupt List (includes ISRs and IRQs): */
 			enum IDT_IVT {
 				ISR_DIVBY0,
 				ISR_RESERVED0,
