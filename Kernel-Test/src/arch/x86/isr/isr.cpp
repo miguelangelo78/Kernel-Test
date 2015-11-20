@@ -9,6 +9,42 @@ namespace Kernel {
 namespace CPU {
 namespace ISR {
 
+	/* ISR Messages: */
+	const char *exception_msgs[ISR_COUNT] = {
+		"Division by zero",
+		"Debug",
+		"Non-maskable interrupt",
+		"Breakpoint",
+		"Detected overflow",
+		"Out-of-bounds",
+		"Invalid opcode",
+		"No coprocessor",
+		"Double fault",
+		"Coprocessor segment overrun",
+		"Bad TSS",
+		"Segment not present",
+		"Stack fault",
+		"General protection fault",
+		"Page fault",
+		"Unknown interrupt",
+		"Coprocessor fault",
+		"Alignment check",
+		"Machine check",
+		"Reserved",
+		"Reserved",
+		"Reserved",
+		"Reserved",
+		"Reserved",
+		"Reserved",
+		"Reserved",
+		"Reserved",
+		"Reserved",
+		"Reserved",
+		"Reserved",
+		"Reserved",
+		"Reserved"
+	};
+
 	/* Function pointers will be installed here: */
 	static isr_handler_t isr_routines[256];
 
@@ -20,7 +56,7 @@ namespace ISR {
 		isr_routines[isrs] = 0;
 	}
 
-	void __init isrs_install(void) {
+	void isrs_install(void) {
 		#define ISR_DEFAULT_FLAG 0b10001110 /* Segment Present and in Ring 0 */
 		char buffer[16];
 		for (int i = 0; i < ISR_COUNT; i++) {

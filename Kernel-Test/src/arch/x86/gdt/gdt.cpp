@@ -46,7 +46,7 @@ namespace GDT {
 		gdt.entries[num].access = access;
 	}
 
-	void __init gdt_init(void) {
+	void gdt_init(void) {
 		/* Set up GDT pointer: */
 		gdt.pointer->limit = sizeof gdt.entries - 1;
 		gdt.pointer->base = (uintptr_t)&gdt.entries[0];

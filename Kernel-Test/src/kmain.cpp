@@ -5,7 +5,7 @@
 namespace Kernel {
 	Terminal term;
 
-	int __init kmain(struct KInit::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
+	int kmain(struct KInit::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
 		/******* Initialize everything: *******/
 		term.init();

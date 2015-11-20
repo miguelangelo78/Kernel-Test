@@ -31,7 +31,7 @@ namespace IDT {
 
 	#define idt_flush(idt_ptr) asm volatile("lidtl (%0)" : : "r"(idt_ptr));
 
-	void __init idt_init() {
+	void idt_init() {
 		/* Set up IDT pointer: */
 		idt.pointer->limit = sizeof idt.entries - 1;
 		idt.pointer->base = (uintptr_t)&idt.entries[0];

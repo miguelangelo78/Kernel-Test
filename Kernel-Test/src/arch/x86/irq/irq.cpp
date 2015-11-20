@@ -160,7 +160,7 @@ namespace IRQ {
 		irq_mask(irq_num, 0);
 	}
 
-	void __init pic8259_init(void) {
+	void pic8259_init(void) {
 		/* Cascade initialization */
 		pic_send_cmd(PIC1_CMD, ICW1_INIT | ICW1_ICW4);
 		pic_send_cmd(PIC2_CMD, ICW1_INIT | ICW1_ICW4);

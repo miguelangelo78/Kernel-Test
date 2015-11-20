@@ -49,7 +49,7 @@ namespace Kernel {
 		} regs_t;
 
 		namespace GDT {
-			void __init gdt_init(void);
+			void gdt_init(void);
 			void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran);
 		}
 
@@ -80,7 +80,7 @@ namespace Kernel {
 				SYSCALL_VECTOR = 0x7F
 			};
 
-			void __init idt_init();
+			void idt_init();
 			void idt_set_gate(uint8_t num, uintptr_t isr_addr, uint16_t sel, uint8_t flags);
 		}
 
@@ -88,45 +88,12 @@ namespace Kernel {
 			#define ISR_COUNT 32
 
 			/* ISR Messages: */
-			static const char *exception_msgs[ISR_COUNT] = {
-				"Division by zero",
-				"Debug",
-				"Non-maskable interrupt",
-				"Breakpoint",
-				"Detected overflow",
-				"Out-of-bounds",
-				"Invalid opcode",
-				"No coprocessor",
-				"Double fault",
-				"Coprocessor segment overrun",
-				"Bad TSS",
-				"Segment not present",
-				"Stack fault",
-				"General protection fault",
-				"Page fault",
-				"Unknown interrupt",
-				"Coprocessor fault",
-				"Alignment check",
-				"Machine check",
-				"Reserved",
-				"Reserved",
-				"Reserved",
-				"Reserved",
-				"Reserved",
-				"Reserved",
-				"Reserved",
-				"Reserved",
-				"Reserved",
-				"Reserved",
-				"Reserved",
-				"Reserved",
-				"Reserved"
-			};
+			extern const char *exception_msgs[ISR_COUNT];
 
 			/* Function callback type for ISRs: */
 			typedef void(*isr_handler_t) (CPU::regs_t *);
 
-			void __init isrs_install(void);
+			void isrs_install(void);
 			void isr_install_handler(size_t isrs, isr_handler_t handler);
 			void isr_uninstall_handler(size_t isrs);
 		}
