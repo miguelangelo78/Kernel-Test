@@ -21,29 +21,13 @@ extern void * end;
 extern void * data;
 extern void * bss;
 extern void * rodata;
+struct ld_segs;
 
-struct {
-	void * ld_code;
-	void * ld_end;
-	void * ld_data;
-	void * ld_bss;
-	void * ld_rodata;
-} ld_segs; /* Segments from the linker (in struct form) */
+extern uintptr_t init_esp;
 
 #define asm __asm__
 #define volatile __volatile__
 
-#define DEBUG(msg) term.puts((char*)msg, COLOR_DEFAULT);
-#define DEBUGF(msg, ...) term.printf(msg, ##__VA_ARGS__);
-#define DEBUGCF(color, msg, ...) term.printf(color, msg, ##__VA_ARGS__);
-#define DEBUGC(msg, color) term.puts((char*)msg, color);
-#define DEBUGOK() DEBUGC(" OK \n", COLOR_GOOD);
-#define DEBUGVALID() DEBUGC(" VALID \n", COLOR_GOOD);
-#define DEBUGBAD() DEBUGC(" BAD \n", COLOR_BAD);
-#define DEBUGNO() DEBUGC(" NO \n", COLOR_BAD);
-
-#define STRSTR(str) #str
-#define STR(str) STRSTR(str)
 #define ASSERT(cond, msg) { if(!(cond)) { char buff[256]; sprintf(buff, "Assert (%s): %s", STR(cond), msg); Error::panic(buff, __LINE__, __FILE__, 0); } }
 
 #define IRQ_OFF() Kernel::CPU::IRQ::int_disable()
@@ -134,6 +118,9 @@ namespace Kernel {
 		}
 	}
 
+
+
+	/* Error related functions: */
 	namespace Error{
 		void panic(const char * msg, const int line, const char * file, int intno);
 		void panic(const char * msg, int intno);

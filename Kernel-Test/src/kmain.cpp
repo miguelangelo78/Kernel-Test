@@ -1,12 +1,22 @@
 #include <system.h>
 #include <module.h>
 #include <stdint.h>
+#include <log.h>
 
 namespace Kernel {
 	Terminal term;
 
 	/* Initial stack pointer: */
 	uintptr_t init_esp = 0;
+	
+	/* Segments from the linker (in struct form) */
+	struct {
+		void * ld_code;
+		void * ld_end;
+		void * ld_data;
+		void * ld_bss;
+		void * ld_rodata;
+	} ld_segs; 
 
 	int kmain(struct KInit::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{

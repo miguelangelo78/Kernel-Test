@@ -25,6 +25,7 @@ include src\arch\x86\idt\subdir.mk
 include src\arch\x86\irq\subdir.mk
 include src\arch\x86\isr\subdir.mk
 include src\libc\subdir.mk
+include src\memory\subdir.mk
 
 ############### Main targets ###############
 

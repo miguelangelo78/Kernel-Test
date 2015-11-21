@@ -11,9 +11,8 @@
 #define HIGHS (ONES * (UCHAR_MAX/2+1))
 #define HASZERO(X) (((X)-ONES) & ~(X) & HIGHS)
 
-#define NTH_BIT(nth) (1 << nth)
-#define IS_BIT_SET(flag, nth) flag & NTH_BIT(nth)
-#define FETCH_BIT(val, nth) (IS_BIT_SET((val), (nth)) >> (nth)))
+#define STRSTR(str) #str
+#define STR(str) STRSTR(str)
 
 #define BITOP(A, B, OP) \
  ((A)[(size_t)(B)/(8*sizeof *(A))] OP (size_t)1<<((size_t)(B)%(8*sizeof *(A))))

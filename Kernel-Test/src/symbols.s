@@ -333,26 +333,26 @@
 .extern _ZN8Terminal20hide_textmode_cursorEv
 .type _ZN8Terminal20hide_textmode_cursorEv, @function
 
-.extern _ZN8Terminal4fillEc
-.type _ZN8Terminal4fillEc, @function
+.extern _ZN8Terminal4fillEh
+.type _ZN8Terminal4fillEh, @function
 
 .extern _ZN8Terminal4initEv
 .type _ZN8Terminal4initEv, @function
 
-.extern _ZN8Terminal4putcEcc
-.type _ZN8Terminal4putcEcc, @function
+.extern _ZN8Terminal4putcEch
+.type _ZN8Terminal4putcEch, @function
 
 .extern _ZN8Terminal4putsEPKc
 .type _ZN8Terminal4putsEPKc, @function
 
-.extern _ZN8Terminal4putsEPKcc
-.type _ZN8Terminal4putsEPKcc, @function
+.extern _ZN8Terminal4putsEPKch
+.type _ZN8Terminal4putsEPKch, @function
 
 .extern _ZN8Terminal5clearEv
 .type _ZN8Terminal5clearEv, @function
 
-.extern _ZN8Terminal6printfEcPKcz
-.type _ZN8Terminal6printfEcPKcz, @function
+.extern _ZN8Terminal6printfEhPKcz
+.type _ZN8Terminal6printfEhPKcz, @function
 
 .extern _ZN8Terminal6printfEPKcz
 .type _ZN8Terminal6printfEPKcz, @function
@@ -735,26 +735,26 @@ kernel_symbols_start:
 .long _ZN8Terminal20hide_textmode_cursorEv
 .asciz "_ZN8Terminal20hide_textmode_cursorEv"
 
-.long _ZN8Terminal4fillEc
-.asciz "_ZN8Terminal4fillEc"
+.long _ZN8Terminal4fillEh
+.asciz "_ZN8Terminal4fillEh"
 
 .long _ZN8Terminal4initEv
 .asciz "_ZN8Terminal4initEv"
 
-.long _ZN8Terminal4putcEcc
-.asciz "_ZN8Terminal4putcEcc"
+.long _ZN8Terminal4putcEch
+.asciz "_ZN8Terminal4putcEch"
 
 .long _ZN8Terminal4putsEPKc
 .asciz "_ZN8Terminal4putsEPKc"
 
-.long _ZN8Terminal4putsEPKcc
-.asciz "_ZN8Terminal4putsEPKcc"
+.long _ZN8Terminal4putsEPKch
+.asciz "_ZN8Terminal4putsEPKch"
 
 .long _ZN8Terminal5clearEv
 .asciz "_ZN8Terminal5clearEv"
 
-.long _ZN8Terminal6printfEcPKcz
-.asciz "_ZN8Terminal6printfEcPKcz"
+.long _ZN8Terminal6printfEhPKcz
+.asciz "_ZN8Terminal6printfEhPKcz"
 
 .long _ZN8Terminal6printfEPKcz
 .asciz "_ZN8Terminal6printfEPKcz"
