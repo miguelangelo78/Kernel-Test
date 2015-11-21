@@ -2,24 +2,33 @@
 #include <module.h>
 #include <stdint.h>
 
-void setup_ld_segs(void) {
-	ld_segs.ld_code = code;
-	ld_segs.ld_data = data;
-	ld_segs.ld_end = end;
-	ld_segs.ld_rodata = rodata;
-	ld_segs.ld_bss = bss;
-}
-
 namespace Kernel {
 	Terminal term;
+
+	/* Initial stack pointer: */
+	uintptr_t init_esp = 0;
 
 	int kmain(struct KInit::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
 		/******* Initialize everything: *******/
 		term.init();
-	
+		
+		/* Initialize critical data: */
+		init_esp = initial_stack;
+		KInit::mboot_ptr = mboot;
+		ld_segs = { code, end, data, bss, rodata };
+
+		/* Output initial data from multiboot: */
+		DEBUGF("> Bootloader: %s| Module Count: %d at 0x%x\n> Memory: 0x%x\n", 
+			KInit::mboot_ptr->boot_loader_name, 
+			KInit::mboot_ptr->mods_count,
+			KInit::mboot_ptr->mods_addr,
+			KInit::mboot_ptr->mem_upper - KInit::mboot_ptr->mem_lower);
+		DEBUGF("> ESP: 0x%x\n\n", init_esp);
+
 		/* Validate Multiboot: */
-		DEBUG(">> Initializing Kernel <<\n\n> Checking Multiboot...");
+		DEBUGC(">> Initializing Kernel <<\n\n", COLOR_INFO);
+		DEBUG("> Checking Multiboot...");
 		ASSERT(magic == MULTIBOOT_HEADER_MAGIC, "Multiboot is not valid!");
 		DEBUGVALID();
 		
@@ -42,12 +51,10 @@ namespace Kernel {
 		DEBUG("> Installing IRQs (PIC) - ");
 		CPU::IRQ::irq_install();
 		DEBUGOK();
-
-		DEBUG("> Initializing data and structs - ");
-		setup_ld_segs();
-		DEBUGOK();
 	
-		DEBUG("\n\nTODO: \n1 - Code up Kernel Heap\n");
+		/* TODO List: */
+		DEBUGC("\n\nTODO:\n", COLOR_WARNING);
+		DEBUG("1 - Code up Kernel Heap\n");
 		DEBUG("3 - Code up modules\n");
 		DEBUG("4 - Relocate Modules\n");
 		DEBUG("5 - Enable Paging\n");
@@ -58,7 +65,6 @@ namespace Kernel {
 		DEBUGC("\nReady", COLOR_GOOD);
 		
 		for(;;);
-
 		return 0;
 	}
 

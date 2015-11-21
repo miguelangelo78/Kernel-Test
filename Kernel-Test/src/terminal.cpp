@@ -53,18 +53,18 @@ void Terminal::reset_cursor() {
 }
 
 char printf_buff[256];
-#define term_printf(color) 	va_list args; \
-							va_start(args, fmt); \
-							int ret = vasprintf(printf_buff, fmt, args); \
-							va_end(args); \
-							puts(printf_buff, color); \
+#define term_printf(fmt, color) va_list args; \
+								va_start(args, fmt); \
+								int ret = vasprintf(printf_buff, fmt, args); \
+								va_end(args); \
+								puts(printf_buff, color); \
 							
 int Terminal::printf(char color, const char *fmt, ...) {
-	term_printf(color);
+	term_printf(fmt, color);
 	return ret;
 }
 
 int Terminal::printf(const char *fmt, ...) {
-	term_printf(COLOR_DEFAULT);
+	term_printf(fmt, COLOR_DEFAULT);
 	return ret;
 }

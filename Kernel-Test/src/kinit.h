@@ -62,4 +62,6 @@ namespace KInit {
 			uint32_t interface_len;
 		} vbe;
 	} __packed;
+
+	extern struct KInit::multiboot_t * mboot_ptr;
 }

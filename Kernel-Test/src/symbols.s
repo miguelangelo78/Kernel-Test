@@ -150,9 +150,6 @@
 .extern _Z10startswithPKcS0_
 .type _Z10startswithPKcS0_, @function
 
-.extern _Z13setup_ld_segsv
-.type _Z13setup_ld_segsv, @function
-
 .extern _Z4atoiPKc
 .type _Z4atoiPKc, @function
 
@@ -233,6 +230,9 @@
 
 .extern _Z9vasprintfPcPKcS_
 .type _Z9vasprintfPcPKcS_, @function
+
+.extern _ZN5KInit9mboot_ptrE
+.type _ZN5KInit9mboot_ptrE, @function
 
 .extern _ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh
 .type _ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh, @function
@@ -323,6 +323,9 @@
 
 .extern _ZN6Kernel5kmainEPN5KInit11multiboot_tEjj
 .type _ZN6Kernel5kmainEPN5KInit11multiboot_tEjj, @function
+
+.extern _ZN6Kernel8init_espE
+.type _ZN6Kernel8init_espE, @function
 
 .extern _ZN8Terminal12reset_cursorEv
 .type _ZN8Terminal12reset_cursorEv, @function
@@ -549,9 +552,6 @@ kernel_symbols_start:
 .long _Z10startswithPKcS0_
 .asciz "_Z10startswithPKcS0_"
 
-.long _Z13setup_ld_segsv
-.asciz "_Z13setup_ld_segsv"
-
 .long _Z4atoiPKc
 .asciz "_Z4atoiPKc"
 
@@ -632,6 +632,9 @@ kernel_symbols_start:
 
 .long _Z9vasprintfPcPKcS_
 .asciz "_Z9vasprintfPcPKcS_"
+
+.long _ZN5KInit9mboot_ptrE
+.asciz "_ZN5KInit9mboot_ptrE"
 
 .long _ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh
 .asciz "_ZN6Kernel3CPU3GDT12gdt_set_gateEhyyhh"
@@ -722,6 +725,9 @@ kernel_symbols_start:
 
 .long _ZN6Kernel5kmainEPN5KInit11multiboot_tEjj
 .asciz "_ZN6Kernel5kmainEPN5KInit11multiboot_tEjj"
+
+.long _ZN6Kernel8init_espE
+.asciz "_ZN6Kernel8init_espE"
 
 .long _ZN8Terminal12reset_cursorEv
 .asciz "_ZN8Terminal12reset_cursorEv"

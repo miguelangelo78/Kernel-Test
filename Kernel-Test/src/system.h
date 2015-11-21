@@ -34,9 +34,13 @@ struct {
 #define volatile __volatile__
 
 #define DEBUG(msg) term.puts((char*)msg, COLOR_DEFAULT);
+#define DEBUGF(msg, ...) term.printf(msg, ##__VA_ARGS__);
+#define DEBUGCF(color, msg, ...) term.printf(color, msg, ##__VA_ARGS__);
 #define DEBUGC(msg, color) term.puts((char*)msg, color);
 #define DEBUGOK() DEBUGC(" OK \n", COLOR_GOOD);
 #define DEBUGVALID() DEBUGC(" VALID \n", COLOR_GOOD);
+#define DEBUGBAD() DEBUGC(" BAD \n", COLOR_BAD);
+#define DEBUGNO() DEBUGC(" NO \n", COLOR_BAD);
 
 #define STRSTR(str) #str
 #define STR(str) STRSTR(str)
@@ -131,10 +135,10 @@ namespace Kernel {
 	}
 
 	namespace Error{
-		extern void panic(const char * msg, const int line, const char * file, int intno);
-		extern void panic(const char * msg, int intno);
-		extern void panic(const char * msg);
-		extern void panic(void);
-		extern void infinite_idle(const char * msg);
+		void panic(const char * msg, const int line, const char * file, int intno);
+		void panic(const char * msg, int intno);
+		void panic(const char * msg);
+		void panic(void);
+		void infinite_idle(const char * msg);
 	}
 }
