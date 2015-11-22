@@ -21,10 +21,6 @@ SECTIONS
 	{
 		data = .;
 		*(.data)
-	}
-
-	.symbols BLOCK(4K): ALIGN(4K)
-	{
 		PROVIDE(kernel_symbols_start = .);
 		*(.symbols)
 		PROVIDE(kernel_symbols_end = .);
