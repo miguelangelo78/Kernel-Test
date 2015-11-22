@@ -79,6 +79,74 @@ namespace ISR {
 			Error::panic(msg_fmt, __LINE__, __FILE__, r->int_no);
 		}
 	}
+
+	extern "C" { void _isr0(void); }
+	extern "C" { void _isr1(void); }
+	extern "C" { void _isr2(void); }
+	extern "C" { void _isr3(void); }
+	extern "C" { void _isr4(void); }
+	extern "C" { void _isr5(void); }
+	extern "C" { void _isr6(void); }
+	extern "C" { void _isr7(void); }
+	extern "C" { void _isr8(void); }
+	extern "C" { void _isr9(void); }
+	extern "C" { void _isr10(void); }
+	extern "C" { void _isr11(void); }
+	extern "C" { void _isr12(void); }
+	extern "C" { void _isr13(void); }
+	extern "C" { void _isr14(void); }
+	extern "C" { void _isr15(void); }
+	extern "C" { void _isr16(void); }
+	extern "C" { void _isr17(void); }
+	extern "C" { void _isr18(void); }
+	extern "C" { void _isr19(void); }
+	extern "C" { void _isr20(void); }
+	extern "C" { void _isr21(void); }
+	extern "C" { void _isr22(void); }
+	extern "C" { void _isr23(void); }
+	extern "C" { void _isr24(void); }
+	extern "C" { void _isr25(void); }
+	extern "C" { void _isr26(void); }
+	extern "C" { void _isr27(void); }
+	extern "C" { void _isr28(void); }
+	extern "C" { void _isr29(void); }
+	extern "C" { void _isr30(void); }
+	extern "C" { void _isr31(void); }
+	extern "C" { void _isr127(void); }
+
+	EXPORT_SYMBOL(_isr0);
+	EXPORT_SYMBOL(_isr1);
+	EXPORT_SYMBOL(_isr2);
+	EXPORT_SYMBOL(_isr3);
+	EXPORT_SYMBOL(_isr4);
+	EXPORT_SYMBOL(_isr5);
+	EXPORT_SYMBOL(_isr6);
+	EXPORT_SYMBOL(_isr7);
+	EXPORT_SYMBOL(_isr8);
+	EXPORT_SYMBOL(_isr9);
+	EXPORT_SYMBOL(_isr10);
+	EXPORT_SYMBOL(_isr11);
+	EXPORT_SYMBOL(_isr12);
+	EXPORT_SYMBOL(_isr13);
+	EXPORT_SYMBOL(_isr14);
+	EXPORT_SYMBOL(_isr15);
+	EXPORT_SYMBOL(_isr16);
+	EXPORT_SYMBOL(_isr17);
+	EXPORT_SYMBOL(_isr18);
+	EXPORT_SYMBOL(_isr19);
+	EXPORT_SYMBOL(_isr20);
+	EXPORT_SYMBOL(_isr21);
+	EXPORT_SYMBOL(_isr22);
+	EXPORT_SYMBOL(_isr23);
+	EXPORT_SYMBOL(_isr24);
+	EXPORT_SYMBOL(_isr25);
+	EXPORT_SYMBOL(_isr26);
+	EXPORT_SYMBOL(_isr27);
+	EXPORT_SYMBOL(_isr28);
+	EXPORT_SYMBOL(_isr29);
+	EXPORT_SYMBOL(_isr30);
+	EXPORT_SYMBOL(_isr31);
+	EXPORT_SYMBOL(_isr127);
 }
 }
 }

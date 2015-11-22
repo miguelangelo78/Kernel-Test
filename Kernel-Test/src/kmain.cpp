@@ -9,31 +9,25 @@ namespace Kernel {
 	/* Initial stack pointer: */
 	uintptr_t init_esp = 0;
 	
-	/* Segments from the linker (in struct form) */
-	struct {
-		void * ld_code;
-		void * ld_end;
-		void * ld_data;
-		void * ld_bss;
-		void * ld_rodata;
-	} ld_segs; 
+	/* Linker segments: */
+	struct ld_seg ld_segs;
 
-	int kmain(struct KInit::multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
+	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
 		/******* Initialize everything: *******/
 		term.init();
-		
+
 		/* Initialize critical data: */
 		init_esp = initial_stack;
-		KInit::mboot_ptr = mboot;
-		ld_segs = { code, end, data, bss, rodata };
+		mboot_ptr = mboot;
+		ld_segs = { &code, &end, &data, &bss, &rodata };
 
 		/* Output initial data from multiboot: */
 		DEBUGF("> Bootloader: %s| Module Count: %d at 0x%x\n> Memory: 0x%x\n", 
-			KInit::mboot_ptr->boot_loader_name, 
-			KInit::mboot_ptr->mods_count,
-			KInit::mboot_ptr->mods_addr,
-			KInit::mboot_ptr->mem_upper - KInit::mboot_ptr->mem_lower);
+			mboot_ptr->boot_loader_name, 
+			mboot_ptr->mods_count,
+			mboot_ptr->mods_addr,
+			mboot_ptr->mem_upper - KInit::mboot_ptr->mem_lower);
 		DEBUGF("> ESP: 0x%x\n\n", init_esp);
 
 		/* Validate Multiboot: */
@@ -73,7 +67,7 @@ namespace Kernel {
 
 		/* All done! */
 		DEBUGC("\nReady", COLOR_GOOD);
-		
+
 		for(;;);
 		return 0;
 	}

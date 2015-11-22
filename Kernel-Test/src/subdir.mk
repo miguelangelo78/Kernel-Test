@@ -2,8 +2,8 @@ OBJS += \
 $(BOUT)\error.o \
 $(BOUT)\kmain.o \
 $(BOUT)\mboot.o \
-$(BOUT)\terminal.o \
-$(BOUT)\symbols.o
+$(BOUT)\module.o \
+$(BOUT)\terminal.o
 
 $(BOUT)\error.o: src\error.cpp 
 	@echo '>> Building file $<'
@@ -26,16 +26,16 @@ $(BOUT)\mboot.o: src\mboot.cpp
 	@echo '>> Finished building: $<'
 	@echo ' '
 
-$(BOUT)\terminal.o: src\terminal.cpp 
+$(BOUT)\module.o: src\module.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking Cross i686-elf GCC Compiler'
 	$(CXX) $(CFLAGS)  -o $@ -c $<  
 	@echo '>> Finished building: $<'
 	@echo ' '
 
-$(BOUT)\symbols.o: src\symbols.s 
+$(BOUT)\terminal.o: src\terminal.cpp 
 	@echo '>> Building file $<'
-	@echo '>> Invoking Cross i686-elf GCC Assembler'
-	$(AS) $(ASFLAGS)  -o $@  $<  
+	@echo '>> Invoking Cross i686-elf GCC Compiler'
+	$(CXX) $(CFLAGS)  -o $@ -c $<  
 	@echo '>> Finished building: $<'
 	@echo ' '

@@ -21,8 +21,15 @@ extern void * end;
 extern void * data;
 extern void * bss;
 extern void * rodata;
-struct ld_segs;
-
+/* Segments from the linker (in struct form) */
+struct ld_seg {
+	void * ld_code;
+	void * ld_end;
+	void * ld_data;
+	void * ld_bss;
+	void * ld_rodata;
+};
+extern struct ld_seg ld_segs;
 extern uintptr_t init_esp;
 
 #define asm __asm__
@@ -40,6 +47,8 @@ extern uintptr_t init_esp;
 #define KERNEL_FULL_STOP() while(1) { IRQ_OFF(); KERNEL_FULL_PAUSE(); }
 
 namespace Kernel {
+	extern Terminal term;
+
 	/* All CPU Related components, such as GDT,
 	IDT (which includes ISR and PIC / IRQ) and registers */
 	namespace CPU {
@@ -118,7 +127,24 @@ namespace Kernel {
 		}
 	}
 
+	namespace Memory {
 
+		/* Kernel memory manager. Contains paging/physical memory functions and a Kernel memory 
+		allocator (kmalloc, a dumb version of Alloc's malloc to be used before paging is enabled) */
+		namespace Man {
+			void kmalloc_starts(uintptr_t start_addr);
+			uintptr_t kmalloc(size_t size, char align, uintptr_t * phys);
+			uintptr_t kmalloc(size_t size);
+			uintptr_t kvmalloc(size_t size);
+			uintptr_t kmalloc_p(size_t size, uintptr_t *phys);
+			uintptr_t kvmalloc_p(size_t size, uintptr_t *phys);
+		}
+
+		/* Proper memory allocator to be used after paging and heap are fully installed: */
+		namespace Alloc {
+
+		}
+	}
 
 	/* Error related functions: */
 	namespace Error{
@@ -129,3 +155,8 @@ namespace Kernel {
 		void infinite_idle(const char * msg);
 	}
 }
+
+using namespace Kernel::Memory::Man;
+using namespace Kernel::Memory::Alloc; 
+using namespace Kernel::Error;
+using namespace Kernel::KInit;

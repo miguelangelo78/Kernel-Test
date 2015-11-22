@@ -4,6 +4,7 @@
 #include <attr.h>
 
 /* Initialization data goes here, like the Multiboot, for example */
+namespace Kernel {
 namespace KInit {
 	#define MULTIBOOT_HEADER_MAGIC 0x2BADB002
 
@@ -63,5 +64,6 @@ namespace KInit {
 		} vbe;
 	} __packed;
 
-	extern struct KInit::multiboot_t * mboot_ptr;
+	extern struct multiboot_t * mboot_ptr;
+}
 }

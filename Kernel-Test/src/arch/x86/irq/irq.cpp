@@ -188,6 +188,41 @@ namespace IRQ {
 		}
 		pic8259_init(); /* Initialize the 8259 PIC */
 	}
+
+	extern "C" { void _irq0(void); }
+	extern "C" { void _irq1(void); }
+	extern "C" { void _irq2(void); }
+	extern "C" { void _irq3(void); }
+	extern "C" { void _irq4(void); }
+	extern "C" { void _irq5(void); }
+	extern "C" { void _irq6(void); }
+	extern "C" { void _irq7(void); }
+	extern "C" { void _irq8(void); }
+	extern "C" { void _irq9(void); }
+	extern "C" { void _irq10(void); }
+	extern "C" { void _irq11(void); }
+	extern "C" { void _irq12(void); }
+	extern "C" { void _irq13(void); }
+	extern "C" { void _irq14(void); }
+	extern "C" { void _irq15(void); }
+
+	EXPORT_SYMBOL(_irq0);
+	EXPORT_SYMBOL(_irq1);
+	EXPORT_SYMBOL(_irq2);
+	EXPORT_SYMBOL(_irq3);
+	EXPORT_SYMBOL(_irq4);
+	EXPORT_SYMBOL(_irq5);
+	EXPORT_SYMBOL(_irq6);
+	EXPORT_SYMBOL(_irq7);
+	EXPORT_SYMBOL(_irq8);
+	EXPORT_SYMBOL(_irq9);
+	EXPORT_SYMBOL(_irq10);
+	EXPORT_SYMBOL(_irq11);
+	EXPORT_SYMBOL(_irq12);
+	EXPORT_SYMBOL(_irq13);
+	EXPORT_SYMBOL(_irq14);
+	EXPORT_SYMBOL(_irq15);
+
 }
 }
 }

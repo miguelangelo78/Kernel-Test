@@ -1,10 +1,10 @@
 #pragma once
 
 namespace Log {
-	#define DEBUG(msg) if(Log::logging) term.puts((char*)msg, COLOR_DEFAULT);
-	#define DEBUGF(msg, ...) if(Log::logging) term.printf(msg, ##__VA_ARGS__);
-	#define DEBUGCF(color, msg, ...) if(Log::logging) term.printf(color, msg, ##__VA_ARGS__);
-	#define DEBUGC(msg, color) if(Log::logging) term.puts((char*)msg, color);
+	#define DEBUG(msg) if(Log::logging) Kernel::term.puts((char*)msg, COLOR_DEFAULT);
+	#define DEBUGF(msg, ...) if(Log::logging)  Kernel::term.printf(msg, ##__VA_ARGS__);
+	#define DEBUGCF(color, msg, ...) if(Log::logging)  Kernel::term.printf(color, msg, ##__VA_ARGS__);
+	#define DEBUGC(msg, color) if(Log::logging)  Kernel::term.puts((char*)msg, color);
 	#define DEBUGOK() DEBUGC(" OK \n", COLOR_GOOD);
 	#define DEBUGVALID() DEBUGC(" VALID \n", COLOR_GOOD);
 	#define DEBUGBAD() DEBUGC(" BAD \n", COLOR_BAD);

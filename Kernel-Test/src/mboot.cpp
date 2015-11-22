@@ -2,6 +2,8 @@
 
 /* Multiboot related data definitions and functions */
 
+namespace Kernel {
 namespace KInit {
-	struct KInit::multiboot_t * mboot_ptr = 0;
+	struct multiboot_t * mboot_ptr = 0;
+}
 }

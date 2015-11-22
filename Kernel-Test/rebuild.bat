@@ -2,10 +2,6 @@
 cls
 @echo off
 
-printf "Generating symbols from Kernel\n"
-python gensym.py > src\symbols.s
-if ERRORLEVEL 1 ( call:errorhandle "Generating symbols")
-
 python genmake.py
 if ERRORLEVEL 1 ( call:errorhandle "Generating makefiles" )
 
