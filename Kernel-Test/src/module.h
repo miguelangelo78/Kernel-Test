@@ -8,7 +8,7 @@ namespace Module {
 	extern "C" { void kernel_symbols_end(void); }
 
 	#define EXPORT_SYMBOL(sym) \
-		Module::sym_t _sym_## sym __packed __section(.symbols) = {#sym, (uintptr_t)&sym}
+		Module::sym_t _sym_## sym __attribute__((section(".symbols"))) = {(char*)#sym, (uintptr_t)&sym}
 
 	/* Calculate the next symbol's address: */
 	#define SYM_NEXT(sym_ptr) (sym_t*)((uintptr_t)sym_ptr + sizeof(sym_ptr->name) + sizeof(sym_ptr->addr))
