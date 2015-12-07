@@ -72,6 +72,7 @@ An experimental project for training and testing with a Kernel for x86 systems (
 
 > - **Libraries**
 	 1. **libc**.cpp/.h (Essential C functions and macros)
+	 2. **kprintf.cpp** (Another essential C functions file)
 	 2. **attr**.h (Attribute macros)
 	 2. **bit**.h (Bit handler macros)
 	 3. **stdint**.h (Declaration of types)
