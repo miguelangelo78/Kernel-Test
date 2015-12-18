@@ -12,6 +12,8 @@ namespace Man {
 
 	#define ALIGN(frame) frame * MEM_FRAME_ALIGN
 
+	static spin_lock_t frame_alloc_lock = { 0 };
+
 	static uint32_t mem_size = 0;
 	static uint32_t mem_used_frames = 0;
 	static uint32_t mem_max_frames = 0;
@@ -144,12 +146,12 @@ namespace Man {
 			page->rw = is_writeable;
 			page->user = is_kernel;
 		} else {
-			// spin_lock ... XXX
+			spin_lock(frame_alloc_lock);
 			uint32_t index = first_frame();
 			ASSERT(index != (uint32_t)-1, "Out of frames");
 			set_frame(ALIGN(index));
 			page->frame = index;
-			// spin_unlock ... XXX
+			spin_unlock(frame_alloc_lock);
 			page->present = 1;
 			page->rw = is_writeable;
 			page->user = is_kernel;

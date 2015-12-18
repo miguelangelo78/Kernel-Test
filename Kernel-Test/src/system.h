@@ -6,6 +6,7 @@
 #include <io.h>
 #include <attr.h>
 #include <bit.h>
+#include <process.h>
 
 /* Memory segment selectors: */
 enum SEGSEL {
@@ -51,6 +52,8 @@ typedef volatile int spin_lock_t[2];
 extern void spin_init(spin_lock_t lock);
 extern void spin_lock(spin_lock_t lock);
 extern void spin_unlock(spin_lock_t lock);
+
+extern void switch_task(uint8_t reschedule);
 
 namespace Kernel {
 	extern Terminal term;
