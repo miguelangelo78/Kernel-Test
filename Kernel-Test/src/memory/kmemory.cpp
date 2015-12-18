@@ -10,13 +10,12 @@ namespace Man {
 	#define MEM_PAGE_SIZE MEM_FRAME_SIZE
 	#define MEM_FRAME_ALIGN MEM_FRAME_SIZE
 
-	#define ALIGN(frame) frame * MEM_FRAME_ALIGN
+	#define ALIGN(frame) (frame) * MEM_FRAME_ALIGN
 
 	static spin_lock_t frame_alloc_lock = { 0 };
 
 	static uint32_t mem_size = 0;
-	static uint32_t mem_used_frames = 0;
-	static uint32_t mem_max_frames = 0;
+	static uint32_t nframes = 0;
 	static uint32_t * frames; /* Memory map bit array */
 
 	uintptr_t frame_ptr = (uintptr_t)&end; /* Placement pointer to allocate raw frames */
@@ -46,7 +45,7 @@ namespace Man {
 
 		if (align && (frame_ptr & 0xFFFFF000)) {
 			frame_ptr &= 0xFFFFF000;
-			frame_ptr += 0x1000;
+			frame_ptr += MEM_FRAME_SIZE;
 		}
 
 		if(phys)
@@ -71,6 +70,7 @@ namespace Man {
 	uintptr_t kmalloc_p(size_t size, uintptr_t *phys) {
 		return kmalloc(size, 0, phys);
 	}
+	
 	/* Aligned, with a physical address */
 	uintptr_t kvmalloc_p(size_t size, uintptr_t *phys) {
 		return kmalloc(size, 1, phys);
@@ -81,23 +81,26 @@ namespace Man {
 	}
 
 	inline void set_frame(uintptr_t frame_addr) {
-		if(frame_addr < get_memsize() * 1024)
+		if(frame_addr < get_memsize() * 1024) {
+			frame_addr /= MEM_FRAME_ALIGN;
 			BIT_SET(frames[INDEX_FROM_BIT_SZ32(frame_addr)], OFFSET_FROM_BIT_SZ32(frame_addr));
+		}
 	}
 
 	inline void clear_frame(uintptr_t frame_addr) {
+		frame_addr /= MEM_FRAME_ALIGN;
 		BIT_CLEAR(frames[INDEX_FROM_BIT_SZ32(frame_addr)], OFFSET_FROM_BIT_SZ32(frame_addr));
 	}
 
 	inline uint32_t test_frame(uintptr_t frame_addr) {
+		frame_addr /= MEM_FRAME_ALIGN;
 		return IS_BIT_SET(frames[INDEX_FROM_BIT_SZ32(frame_addr)], OFFSET_FROM_BIT_SZ32(frame_addr));
 	}
 
 	uint32_t first_frame(void) {
-		uint32_t i, j;
-		for (i = 0; i < INDEX_FROM_BIT_SZ32(mem_max_frames); i++) {
+		for (uint32_t i = 0; i < INDEX_FROM_BIT_SZ32(nframes); i++) {
 			if (frames[i] != 0xFFFFFFFF) {
-				for (j = 0; j < 32; j++)
+				for (uint32_t j = 0; j < 32; j++)
 					if(!IS_BIT_SET(frames[i], j))
 						return i * 32 + j;
 			}
@@ -107,10 +110,9 @@ namespace Man {
 	}
 
 	uint32_t first_n_frames(int frame_count) {
-		uint32_t i, j;
-		for (i = 0; i < mem_max_frames * MEM_FRAME_SIZE; i += MEM_FRAME_SIZE) {
+		for (uint32_t i = 0; i < nframes * MEM_FRAME_SIZE; i += MEM_FRAME_SIZE) {
 			int bad = 0;
-			for (j = 0; j < frame_count; j++)
+			for (uint32_t j = 0; j < frame_count; j++)
 				if(test_frame(i + MEM_FRAME_SIZE * j))
 					bad = j + 1;
 			if(!bad)
@@ -122,7 +124,7 @@ namespace Man {
 	uintptr_t memory_use(void) {
 		uintptr_t ret = 0;
 		uint32_t i, j;
-		for (i = 0; i < INDEX_FROM_BIT_SZ32(mem_max_frames); i++)
+		for (i = 0; i < INDEX_FROM_BIT_SZ32(nframes); i++)
 			for(j = 0; j < 32; j++)
 				if(IS_BIT_SET(frames[i], j))
 					ret++;
@@ -144,7 +146,7 @@ namespace Man {
 		if (page->frame) { /* Already allocated */
 			page->present = 1;
 			page->rw = is_writeable;
-			page->user = is_kernel;
+			page->user = !is_kernel;
 		} else {
 			spin_lock(frame_alloc_lock);
 			uint32_t index = first_frame();
@@ -154,7 +156,7 @@ namespace Man {
 			spin_unlock(frame_alloc_lock);
 			page->present = 1;
 			page->rw = is_writeable;
-			page->user = is_kernel;
+			page->user = !is_kernel;
 		}
 	}
 
@@ -162,7 +164,7 @@ namespace Man {
 		/* Set physical address to a certain page */
 		page->present = 1;
 		page->rw = is_writeable;
-		page->user = is_kernel;
+		page->user = !is_kernel;
 		page->frame = physical_address / MEM_PAGE_SIZE;
 		set_frame(physical_address);
 	}
@@ -177,7 +179,7 @@ namespace Man {
 			uint32_t tmp;
 			dir->tables[table_index] = (page_table_t*)kvmalloc_p(sizeof(page_table_t), (uintptr_t *)(&tmp));
 			memset(dir->tables[table_index], 0, sizeof(page_table_t));
-			dir->physical_tables[table_index].table_address = tmp;
+			dir->physical_tables[table_index].table_address = tmp >> 12;
 			dir->physical_tables[table_index].present = 1;
 			dir->physical_tables[table_index].rw = 1;
 			dir->physical_tables[table_index].user = 1;
@@ -193,7 +195,7 @@ namespace Man {
 	}
 
 	uintptr_t map_to_physical(uintptr_t virtual_addr) {
-		uintptr_t remaining = OFFSET_FROM_BIT(MEM_PAGE_SIZE, MEM_PAGE_SIZE);
+		uintptr_t remaining = OFFSET_FROM_BIT(virtual_addr, MEM_PAGE_SIZE);
 		uintptr_t frame = INDEX_FROM_BIT(virtual_addr, MEM_PAGE_SIZE);
 		uintptr_t table = INDEX_FROM_BIT(frame, PAG_TABLES_PER_DIR);
 		uintptr_t subframe = OFFSET_FROM_BIT(frame, PAG_TABLES_PER_DIR);
@@ -288,17 +290,17 @@ namespace Man {
 
 	void paging_install(uint32_t memsize) {
 		mem_size = memsize;
-		mem_max_frames = (mem_size * 1024) / MEM_FRAME_SIZE;
-
+		
 		/* Allocate frame bitmap: */
-		uint32_t frame_bitmap_count_alloc = INDEX_FROM_BIT_SZ32(mem_max_frames * 8);
+		nframes = (mem_size * 1024) / MEM_FRAME_SIZE;
+		uint32_t frame_bitmap_count_alloc = INDEX_FROM_BIT_SZ32(nframes * 8);
 		frames = (uint32_t*)kmalloc(frame_bitmap_count_alloc);
 		memset(frames, 0, frame_bitmap_count_alloc);
 	
 		/* Initialize kernel page directory: */
 		kernel_directory = (page_directory_t*)kvmalloc(sizeof(page_directory_t));
 		memset(kernel_directory, 0, sizeof(page_directory_t));
-		
+
 		/* Parse memory map: */
 		if (IS_BIT_SET(mboot_ptr->flags, 6)) {
 			mboot_memmap_t * mmap = (mboot_memmap_t*)mboot_ptr->mmap_addr;
@@ -306,16 +308,17 @@ namespace Man {
 				if (mmap->type == 2) {
 					for(unsigned long long int i = 0; i < mmap->length; i += MEM_FRAME_SIZE) {
 						if(mmap->base_addr + i > 0xFFFFFFFF) break; /* Reached the end */
-						set_frame((mmap->base_addr + i) & 0xFFFFF000); /* Set frame as present for this memory segment */
+						set_frame((uint64_t)((mmap->base_addr + i) & 0xFFFFF000)); /* Set frame as present for this memory segment */
 					}
 				}
 				mmap = (mboot_memmap_t*) ((uintptr_t)mmap + mmap->size + sizeof(uintptr_t));
 			}
 		}
 
-		/* Map memory (identity): */
+		/* Map memory (identity) on kernel directory: */
 		create_table(0, kernel_directory)->present = 0;
 		set_frame(0);
+
 		for(uintptr_t i = 0x1000; i < 0x80000; i += MEM_PAGE_SIZE)
 			dma_frame(create_table(i, kernel_directory), 1, 0, i);
 		for (uintptr_t i = 0x80000; i < 0x100000; i += MEM_PAGE_SIZE)
@@ -323,12 +326,13 @@ namespace Man {
 		for (uintptr_t i = 0x100000; i < frame_ptr + 0x3000; i += MEM_PAGE_SIZE)
 			dma_frame(create_table(i, kernel_directory), 1, 0, i);
 		/* VGA Text mode (in user mode): */
-		for (uintptr_t j = 0xb8000; j < 0xc0000; j += 0x1000)
-			dma_frame(get_page(j, 0, kernel_directory), 0, 1, j);
+		for (uintptr_t i = 0xb8000; i < 0xc0000; i += MEM_PAGE_SIZE)
+			dma_frame(get_page(i, 0, kernel_directory), 0, 1, i);
 		
 		/* Install page fault handler: */
 		CPU::ISR::isr_install_handler(CPU::IDT::IDT_IVT::ISR_PAGEFAULT, (CPU::ISR::isr_handler_t)page_fault);
 
+		/* MMU needs this to enable paging: */
 		kernel_directory->physical_address = (uintptr_t)kernel_directory->physical_tables;
 
 		uintptr_t tmp_heap_start = KERNEL_HEAP_INIT;

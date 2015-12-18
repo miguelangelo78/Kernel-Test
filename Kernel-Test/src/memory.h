@@ -16,7 +16,7 @@ directory index    page table index  offset into page
 #define KERNEL_HEAP_SIZE KERNEL_HEAP_END - KERNEL_HEAP_INIT
 
 #define PAG_PAGES_PER_TABLE 1024
-#define PAG_TABLES_PER_DIR 1024
+#define PAG_TABLES_PER_DIR PAG_PAGES_PER_TABLE
 
 typedef struct page {
 	unsigned int present:1; /* 0: NOT PRESENT 1: PRESENT */
