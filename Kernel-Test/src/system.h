@@ -5,6 +5,7 @@
 #include <libc.h>
 #include <io.h>
 #include <attr.h>
+#include <bit.h>
 
 /* Memory segment selectors: */
 enum SEGSEL {
@@ -45,6 +46,11 @@ extern uintptr_t init_esp;
 #define KERNEL_FULL_PAUSE() while (1) { KERNEL_PAUSE(); }
 
 #define KERNEL_FULL_STOP() while(1) { IRQ_OFF(); KERNEL_FULL_PAUSE(); }
+
+typedef volatile int spin_lock_t[2];
+extern void spin_init(spin_lock_t lock);
+extern void spin_lock(spin_lock_t lock);
+extern void spin_unlock(spin_lock_t lock);
 
 namespace Kernel {
 	extern Terminal term;
@@ -138,6 +144,9 @@ namespace Kernel {
 			uintptr_t kvmalloc(size_t size);
 			uintptr_t kmalloc_p(size_t size, uintptr_t *phys);
 			uintptr_t kvmalloc_p(size_t size, uintptr_t *phys);
+
+			void paging_install(uint32_t memsize);
+			void heap_install(void);
 		}
 
 		/* Proper memory allocator to be used after paging and heap are fully installed: */

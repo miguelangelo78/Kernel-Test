@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <attr.h>
 
+#define MEMSIZE() (mboot_ptr->mem_upper + mboot_ptr->mem_lower)
+
 /* Initialization data goes here, like the Multiboot, for example */
 namespace Kernel {
 namespace KInit {
@@ -64,6 +66,22 @@ namespace KInit {
 		} vbe;
 	} __packed;
 
+	typedef struct {
+		uintptr_t mod_start;
+		uintptr_t mod_end;
+		uintptr_t cmdline;
+		uintptr_t reserved;
+	} mboot_mod_t __packed;
+
+	typedef struct {
+		uint32_t size;
+		uint64_t base_addr;
+		uint64_t length;
+		uint32_t type;
+	} mboot_memmap_t __packed;
+
+	/* Defined in kmain.cpp */
 	extern struct multiboot_t * mboot_ptr;
+	extern mboot_mod_t * mboot_mods;
 }
 }
