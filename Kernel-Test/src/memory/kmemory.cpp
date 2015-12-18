@@ -288,7 +288,32 @@ namespace Man {
 		/* TODO */
 	}
 
+	extern "C" { void loadPageDirectory(unsigned int*); }
+	extern "C" { void enablePaging(); }
+
+	uint32_t page_directory[1024] __attribute__((aligned(4096)));
+	uint32_t first_page_table[1024] __attribute__((aligned(4096)));
+
 	void paging_install(uint32_t memsize) {
+		/*for (unsigned int i = 0; i < 1024; i++)
+			page_directory[i] = 0x00000007;
+		page_directory[0] = ((unsigned int)first_page_table) | 3;
+		
+		for (unsigned int i = 0; i < 1024; i++)
+			first_page_table[i] = (i * 0x1000) | 7; // attributes: supervisor level, read/write, present.
+		/*
+		asm volatile (
+			"mov %0, %%cr3\n"
+			"mov %%cr0, %%eax\n"
+			"orl $0x80000000, %%eax\n"
+			"mov %%eax, %%cr0\n"
+			:: "r"(page_directory)
+			: "%eax");
+
+		uint32_t *ptr = (uint32_t*)kmalloc(1);
+		Kernel::term.printf("%d", *ptr);
+
+		for(;;);*/
 		mem_size = memsize;
 		
 		/* Allocate frame bitmap: */
@@ -318,15 +343,9 @@ namespace Man {
 		/* Map memory (identity) on kernel directory: */
 		create_table(0, kernel_directory)->present = 0;
 		set_frame(0);
-
-		for(uintptr_t i = 0x1000; i < 0x80000; i += MEM_PAGE_SIZE)
+		for(uintptr_t i = 0x1000; i < frame_ptr + 0x3000; i += MEM_PAGE_SIZE)
 			dma_frame(create_table(i, kernel_directory), 1, 0, i);
-		for (uintptr_t i = 0x80000; i < 0x100000; i += MEM_PAGE_SIZE)
-			dma_frame(create_table(i, kernel_directory), 1, 0, i);
-		for (uintptr_t i = 0x100000; i < frame_ptr + 0x3000; i += MEM_PAGE_SIZE)
-			dma_frame(create_table(i, kernel_directory), 1, 0, i);
-		/* VGA Text mode (in user mode): */
-		for (uintptr_t i = 0xb8000; i < 0xc0000; i += MEM_PAGE_SIZE)
+		for (uintptr_t i = 0xb8000; i < 0xc0000; i += MEM_PAGE_SIZE) /* VGA Text mode (in user mode): */
 			dma_frame(get_page(i, 0, kernel_directory), 0, 1, i);
 		
 		/* Install page fault handler: */

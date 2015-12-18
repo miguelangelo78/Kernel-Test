@@ -21,7 +21,7 @@ main_make_path = "toolchain" # Where the final makefile.mak will go
 execname = "ksharp.bin" # Final executable/file that will be outputted by the linker
 linker = "linker.ld" # The linker that will be used while linking the final binary file
 include_path = "-Itoolchain\\Tools\\Cross\\i686-elf\\lib\\gcc\\i686-elf\\4.8.2\\include -Isrc"
-cflags = "-T $(TOOLCH)\$(LINKER) " + include_path + " -O2 -finline-functions -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions" # C/C++ flags
+cflags = "-T $(TOOLCH)\$(LINKER) " + include_path + " -O -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions" # C/C++ flags
 asmflags = ""
 nasmflags = "-g -f elf" # Flags for the nasm assembler
 
