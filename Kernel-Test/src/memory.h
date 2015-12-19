@@ -47,7 +47,7 @@ typedef struct page_directory_table {
 } page_directory_table_t __packed;
 
 typedef struct page_directory {
-	page_directory_table_t physical_tables[PAG_TABLES_PER_DIR]; /* Page tables' table (a table with flags for each table) */
+	uintptr_t physical_tables[PAG_TABLES_PER_DIR]; /* Page tables' table (a table with flags for each table) */
 	page_table_t * tables[PAG_TABLES_PER_DIR]; /* Array of page tables, covers entire memory space */
 	uintptr_t physical_address; /* The physical address of physical_tables */
 	int32_t ref_count;

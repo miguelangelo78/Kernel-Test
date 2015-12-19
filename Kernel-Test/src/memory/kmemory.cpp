@@ -169,21 +169,32 @@ namespace Man {
 		set_frame(physical_address);
 	}
 
-	page_t * get_page(uintptr_t address, int make_table, page_directory_t * dir) {
+	page_table_t * get_table(uintptr_t address, page_directory_t * dir) {
 		address /= MEM_PAGE_SIZE;
 		uint32_t table_index = INDEX_FROM_BIT(address, 1024);
+		if(dir->tables[table_index])
+			return dir->tables[table_index];
+		else 
+			return 0;
+	}
+
+	page_t * get_page(uintptr_t address, int make_table, page_directory_t * dir) {
+		address /= MEM_PAGE_SIZE;
+		uint32_t table_index = INDEX_FROM_BIT(address, PAG_PAGES_PER_TABLE);
+		uint32_t table_offset = OFFSET_FROM_BIT(address, PAG_PAGES_PER_TABLE);
 		if (dir->tables[table_index]) {
-			return &dir->tables[table_index]->pages[OFFSET_FROM_BIT(address, PAG_TABLES_PER_DIR)];
+			return &dir->tables[table_index]->pages[table_offset];
 		}
 		else if (make_table) {
 			uint32_t tmp;
 			dir->tables[table_index] = (page_table_t*)kvmalloc_p(sizeof(page_table_t), (uintptr_t *)(&tmp));
 			memset(dir->tables[table_index], 0, sizeof(page_table_t));
-			dir->physical_tables[table_index].table_address = tmp >> 12;
+			dir->physical_tables[table_index] = tmp | 7;
+			/*dir->physical_tables[table_index].table_address = tmp;
 			dir->physical_tables[table_index].present = 1;
 			dir->physical_tables[table_index].rw = 1;
-			dir->physical_tables[table_index].user = 1;
-			return &dir->tables[table_index]->pages[OFFSET_FROM_BIT(address, PAG_TABLES_PER_DIR)];
+			dir->physical_tables[table_index].user = 1;*/
+			return &dir->tables[table_index]->pages[table_offset];
 		}
 		else {
 			return 0;
@@ -191,7 +202,7 @@ namespace Man {
 	}
 
 	inline page_t * create_table(uintptr_t address, page_directory_t * dir) {
-		get_page(address, 1, dir);
+		return get_page(address, 1, dir);
 	}
 
 	uintptr_t map_to_physical(uintptr_t virtual_addr) {
@@ -245,10 +256,11 @@ namespace Man {
 					/* User tables must be cloned */
 					uintptr_t phys;
 					dir->tables[i] = clone_table(src->tables[i], &phys);
-					dir->physical_tables[i].table_address = phys;
+					dir->physical_tables[i] = phys | 7;
+					/*dir->physical_tables[i].table_address = phys;
 					dir->physical_tables[i].present = 1;
 					dir->physical_tables[i].rw = 1;
-					dir->physical_tables[i].user = 1;
+					dir->physical_tables[i].user = 1;*/
 				}
 			}
 		}
@@ -288,20 +300,44 @@ namespace Man {
 		/* TODO */
 	}
 
-	extern "C" { void loadPageDirectory(unsigned int*); }
-	extern "C" { void enablePaging(); }
+	void dump_directory(page_directory_t * dir) {
+		Kernel::term.clear();
+		Kernel::term.printf("Dir address: 0x%x\n", dir);
+		for (uintptr_t i = 0; i < 1; i++) { /* Iterate every table */
+			if(!dir->tables[i] || (uintptr_t)dir->tables[i] == (uintptr_t)0xFFFFFFFF) continue;
+			
+			/* Show table: */
+			Kernel::term.printf("Table: (%d) 0x%x - 0x%x 0x%x %s%s(\n", i, dir->tables[i], i * 0x1000 * 1024, &dir->tables[i], (dir->physical_tables[i] & 1)? "p" : "", dir->physical_tables[i] & (1<<2) ? "u" : "k");
+			for (uint16_t j = 0, out_ctr = 0; j < 1024; ++j) { /* Iterate every page */
+				page_t *  p = &dir->tables[i]->pages[j];
+				if (p->frame) { /* Show only the allocated ones */
+					Kernel::term.printf("%d-0x%x 0x%x %s%s,", j, (i * 1024 + j) * 0x1000, ALIGN(p->frame), p->present ? "p" : "", p->user ? "u" : "k");
+				
+					if(!(out_ctr++ % 1)) Kernel::term.printf("\n"); /* Exceeded screen's width */
+				}
+			}
+			Kernel::term.printf(")\n");
+		}
 
-	uint32_t page_directory[1024] __attribute__((aligned(4096)));
-	uint32_t first_page_table[1024] __attribute__((aligned(4096)));
+		Kernel::term.printf(" ---- [done]");
+#if 1
+		for(;;);
+#endif
+	}
 
-	void paging_install(uint32_t memsize) {
-		/*for (unsigned int i = 0; i < 1024; i++)
-			page_directory[i] = 0x00000007;
-		page_directory[0] = ((unsigned int)first_page_table) | 3;
-		
-		for (unsigned int i = 0; i < 1024; i++)
-			first_page_table[i] = (i * 0x1000) | 7; // attributes: supervisor level, read/write, present.
-		/*
+	unsigned int page_directory[1024] __attribute__((aligned(4096)));
+	unsigned int page_tables[1024][1024] __attribute__((aligned(4096)));
+	void paging_install_example() {
+		uint32_t phys_addr = 0;
+		uint32_t table_count = 512;
+		for (int i = 0; i < table_count; i++) /* for every table ...*/
+			for (int j = 0; j < 1024; j++) { /* and every page ...  */
+				page_tables[i][j] = (phys_addr & 0xFFFFF000) | 3; // attributes: supervisor level, read/write, present.
+				phys_addr += 0x1000;
+			}
+		for (int i = 0; i < table_count; i++) /* for every table pointer ... */
+			page_directory[i] = ((unsigned int)page_tables[i] & 0xFFFFF000) | 0x00000003;
+		/* Enable paging: */
 		asm volatile (
 			"mov %0, %%cr3\n"
 			"mov %%cr0, %%eax\n"
@@ -309,11 +345,14 @@ namespace Man {
 			"mov %%eax, %%cr0\n"
 			:: "r"(page_directory)
 			: "%eax");
+		/* Test it: */
+		uintptr_t * c = (uintptr_t*)-10;
+		Kernel::term.printf("%c", *c);
+		for (;;);
+	}
 
-		uint32_t *ptr = (uint32_t*)kmalloc(1);
-		Kernel::term.printf("%d", *ptr);
-
-		for(;;);*/
+	void paging_install(uint32_t memsize) {
+		paging_install_example();
 		mem_size = memsize;
 		
 		/* Allocate frame bitmap: */
@@ -344,8 +383,8 @@ namespace Man {
 		create_table(0, kernel_directory)->present = 0;
 		set_frame(0);
 		for(uintptr_t i = 0x1000; i < frame_ptr + 0x3000; i += MEM_PAGE_SIZE)
-			dma_frame(create_table(i, kernel_directory), 1, 0, i);
-		for (uintptr_t i = 0xb8000; i < 0xc0000; i += MEM_PAGE_SIZE) /* VGA Text mode (in user mode): */
+			dma_frame(create_table(i, kernel_directory), 1, 0, i); /* ONLY creates a table if it doesn't exist, other wise it just gets it */
+		for (uintptr_t i = 0xB8000; i <= 0xBF000; i += MEM_PAGE_SIZE) /* VGA Text mode (in user mode): */
 			dma_frame(get_page(i, 0, kernel_directory), 0, 1, i);
 		
 		/* Install page fault handler: */
@@ -369,6 +408,7 @@ namespace Man {
 		
 		/* Switch page directory and enable paging: */
 		current_directory = clone_directory(kernel_directory);
+		//dump_directory(kernel_directory);
 		switch_page_directory(kernel_directory);
 	}
 

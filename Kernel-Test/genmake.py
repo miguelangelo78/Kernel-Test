@@ -21,7 +21,8 @@ main_make_path = "toolchain" # Where the final makefile.mak will go
 execname = "ksharp.bin" # Final executable/file that will be outputted by the linker
 linker = "linker.ld" # The linker that will be used while linking the final binary file
 include_path = "-Itoolchain\\Tools\\Cross\\i686-elf\\lib\\gcc\\i686-elf\\4.8.2\\include -Isrc"
-cflags = "-T $(TOOLCH)\$(LINKER) " + include_path + " -O -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions" # C/C++ flags
+cppflags = "-T $(TOOLCH)\$(LINKER) " + include_path + " -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions" # C/C++ flags
+cflags = "-T $(TOOLCH)\$(LINKER) " + include_path + " -g -ffreestanding -fbuiltin -Wall -Wextra"
 asmflags = ""
 nasmflags = "-g -f elf" # Flags for the nasm assembler
 
@@ -105,10 +106,11 @@ def gen_make(tree):
 			fformat = ffile[ffile.index('.'):]
 			toolname = "Cross i686-elf GCC Compiler"
 			compiler_to_use = "CXX" # C++ by default
-			flags_to_use = "CFLAGS"
+			flags_to_use = "CPPFLAGS"
 			is_asm = "-c" # If the file is an assembly file then we must remove the '-c' option, which will only work for C/C++
 			if fformat == '.c':
 				compiler_to_use = "CC"
+				flags_to_use = "CFLAGS"
 			elif fformat == '.s' or fformat == '.S':
 				toolname = "Cross i686-elf GCC Assembler"
 				compiler_to_use = 'AS'
@@ -139,7 +141,8 @@ CXX = " + compiler_cpp + "\n\
 CC = " + compiler_c + "\n\
 AS = " + assembler + "\n\
 NAS = " + assembler_nasm + "\n\
-CFLAGS = " + cflags + "\n\n\
+CPPFLAGS = " + cppflags + "\n\
+CFLAGS = " + cflags + "\n\
 ASFLAGS = " + asmflags + "\n\
 NASFLAGS = " + nasmflags + "\n\
 # Output constants (filenames and paths)\n\
@@ -157,7 +160,7 @@ kernel-link: $(OBJS)\n\
 	@echo '----------'\n\
 	@echo '>>>> Linking Kernel <<<<'\n\
 	@echo '>>>> Invoking: Cross i686-elf GCC Linker <<<<'\n\
-	$(CXX) $(CFLAGS) -o $(DISKPATH)\$(KOUT) $(OBJS)\n\
+	$(CXX) $(CPPFLAGS) -o $(DISKPATH)\$(KOUT) $(OBJS)\n\
 	@echo '>>>> Finished building target: $@ <<<<'\n\
 	@echo '----------'\n\n\
 clean:\n\

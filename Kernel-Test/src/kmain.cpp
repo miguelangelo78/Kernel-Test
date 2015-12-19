@@ -37,6 +37,8 @@ namespace Kernel {
 		}
 	}
 
+	extern "C" { void enable_paging(); }
+
 	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
 		/******* Initialize everything: *******/
