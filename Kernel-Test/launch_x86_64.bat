@@ -2,8 +2,8 @@
 @echo off
 
 printf "\nLaunching Kernel... (x86_64)\n"
-@rem "C:\Program Files (x86)\qemu\qemu-system-x86_64" -cdrom iso\KernelSharp.iso -m 512
-VirtualBox --startvm KernelSharp --dbg
+"C:\Program Files (x86)\qemu\qemu-system-x86_64" -cdrom iso\KernelSharp.iso -m 512
+@rem VirtualBox --startvm KernelSharp --dbg
 if ERRORLEVEL 1 ( call:errorhandle "Launching Virtual Box" )
 
 @echo on

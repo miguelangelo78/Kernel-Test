@@ -5,25 +5,28 @@ namespace Kernel {
 namespace Memory {
 namespace Man {
 	
-	#define MEM_FRAMES_PER_BYTE 8
 	#define MEM_FRAME_SIZE 0x1000
 	#define MEM_PAGE_SIZE MEM_FRAME_SIZE
 	#define MEM_FRAME_ALIGN MEM_FRAME_SIZE
 
 	#define ALIGN(frame) (frame) * MEM_FRAME_ALIGN
 
+	/* Returns a table from the directory */
+	#define TABLE(dir, addr) (dir)->tables[INDEX_FROM_BIT((addr/0x1000), PAG_TABLES_PER_DIR)]
+	/* Returns a page from a table from the directory */
+	#define PAGE(dir, addr) TABLE((dir),(addr))->pages[OFFSET_FROM_BIT((addr/0x1000), PAG_PAGES_PER_TABLE)]
+
 	static spin_lock_t frame_alloc_lock = { 0 };
 
 	static uint32_t mem_size = 0;
 	static uint32_t nframes = 0;
-	static uint32_t * frames; /* Memory map bit array */
-
+	
 	uintptr_t frame_ptr = (uintptr_t)&end; /* Placement pointer to allocate raw frames */
 	uintptr_t heap_top = 0; /* Top of the heap's address. Only used after paging is enabled */
 	uintptr_t kernel_heap_alloc_point = KERNEL_HEAP_INIT;
 
 	page_directory_t * kernel_directory;
-	page_directory * current_directory;
+	page_directory_t * current_directory;
 
 	void page_fault(struct regs *r);
 	void switch_page_directory(page_directory_t * dir);
@@ -81,67 +84,29 @@ namespace Man {
 	}
 
 	inline void set_frame(uintptr_t frame_addr) {
-		if(frame_addr < get_memsize() * 1024) {
-			frame_addr /= MEM_FRAME_ALIGN;
-			BIT_SET(frames[INDEX_FROM_BIT_SZ32(frame_addr)], OFFSET_FROM_BIT_SZ32(frame_addr));
-		}
+		PAGE(kernel_directory, frame_addr).frame = frame_addr;
 	}
 
-	inline void clear_frame(uintptr_t frame_addr) {
-		frame_addr /= MEM_FRAME_ALIGN;
-		BIT_CLEAR(frames[INDEX_FROM_BIT_SZ32(frame_addr)], OFFSET_FROM_BIT_SZ32(frame_addr));
+	inline void free_frame(uintptr_t frame_addr) {
+		PAGE(kernel_directory, frame_addr).frame = 0;
 	}
 
 	inline uint32_t test_frame(uintptr_t frame_addr) {
-		frame_addr /= MEM_FRAME_ALIGN;
-		return IS_BIT_SET(frames[INDEX_FROM_BIT_SZ32(frame_addr)], OFFSET_FROM_BIT_SZ32(frame_addr));
+		return PAGE(kernel_directory, frame_addr).frame > 0;
 	}
 
 	uint32_t first_frame(void) {
-		for (uint32_t i = 0; i < INDEX_FROM_BIT_SZ32(nframes); i++) {
-			if (frames[i] != 0xFFFFFFFF) {
-				for (uint32_t j = 0; j < 32; j++)
-					if(!IS_BIT_SET(frames[i], j))
-						return i * 32 + j;
-			}
+		for (uint32_t i = 0; i < nframes; i++) {
+			page_t * page = &PAGE(kernel_directory, ALIGN(i));
+			if (page->frame != 0xFFFFFFFF && !page->frame)
+				return ALIGN(i);
 		}
 		Kernel::Error::panic("Couldn't find a new frame. Out of memory!");
 		return -1;
 	}
 
-	uint32_t first_n_frames(int frame_count) {
-		for (uint32_t i = 0; i < nframes * MEM_FRAME_SIZE; i += MEM_FRAME_SIZE) {
-			int bad = 0;
-			for (uint32_t j = 0; j < frame_count; j++)
-				if(test_frame(i + MEM_FRAME_SIZE * j))
-					bad = j + 1;
-			if(!bad)
-				return i / MEM_FRAME_SIZE;
-		}
-		return (uint32_t)-1;
-	}
-
-	uintptr_t memory_use(void) {
-		uintptr_t ret = 0;
-		uint32_t i, j;
-		for (i = 0; i < INDEX_FROM_BIT_SZ32(nframes); i++)
-			for(j = 0; j < 32; j++)
-				if(IS_BIT_SET(frames[i], j))
-					ret++;
-		return ret * 4;
-	}
-
-	void free_frame(page_t * page) {
-		uint32_t frame;
-		if (!(frame = page->frame)) {
-			ASSERT(0, "Couldn't free frame with address 0");
-			return;
-		} else {
-			clear_frame(ALIGN(frame));
-			page->frame = 0;
-		}
-	}
-
+	/* Allocates a NEW frame, in case the page given is not allocated,
+	which is searched and not given the physical address */
 	void alloc_frame(page_t * page, int is_kernel, int is_writeable) {
 		if (page->frame) { /* Already allocated */
 			page->present = 1;
@@ -151,7 +116,6 @@ namespace Man {
 			spin_lock(frame_alloc_lock);
 			uint32_t index = first_frame();
 			ASSERT(index != (uint32_t)-1, "Out of frames");
-			set_frame(ALIGN(index));
 			page->frame = index;
 			spin_unlock(frame_alloc_lock);
 			page->present = 1;
@@ -160,26 +124,24 @@ namespace Man {
 		}
 	}
 
+	/* Same as alloc_frame, except the physical address is provided */
 	void dma_frame(page_t * page, int is_kernel, int is_writeable, uintptr_t physical_address) {
 		/* Set physical address to a certain page */
 		page->present = 1;
 		page->rw = is_writeable;
 		page->user = !is_kernel;
-		page->frame = physical_address / MEM_PAGE_SIZE;
-		set_frame(physical_address);
+		page->frame = physical_address;
 	}
 
 	page_table_t * get_table(uintptr_t address, page_directory_t * dir) {
-		address /= MEM_PAGE_SIZE;
-		uint32_t table_index = INDEX_FROM_BIT(address, 1024);
+		uint32_t table_index = INDEX_FROM_BIT(address, PAG_PAGES_PER_TABLE);
 		if(dir->tables[table_index])
 			return dir->tables[table_index];
 		else 
 			return 0;
 	}
 
-	page_t * get_page(uintptr_t address, int make_table, page_directory_t * dir) {
-		address /= MEM_PAGE_SIZE;
+	inline page_t * get_page(uintptr_t address, int make_table, page_directory_t * dir) {
 		uint32_t table_index = INDEX_FROM_BIT(address, PAG_PAGES_PER_TABLE);
 		uint32_t table_offset = OFFSET_FROM_BIT(address, PAG_PAGES_PER_TABLE);
 		if (dir->tables[table_index]) {
@@ -190,10 +152,6 @@ namespace Man {
 			dir->tables[table_index] = (page_table_t*)kvmalloc_p(sizeof(page_table_t), (uintptr_t *)(&tmp));
 			memset(dir->tables[table_index], 0, sizeof(page_table_t));
 			dir->physical_tables[table_index] = tmp | 7;
-			/*dir->physical_tables[table_index].table_address = tmp;
-			dir->physical_tables[table_index].present = 1;
-			dir->physical_tables[table_index].rw = 1;
-			dir->physical_tables[table_index].user = 1;*/
 			return &dir->tables[table_index]->pages[table_offset];
 		}
 		else {
@@ -206,18 +164,10 @@ namespace Man {
 	}
 
 	uintptr_t map_to_physical(uintptr_t virtual_addr) {
-		uintptr_t remaining = OFFSET_FROM_BIT(virtual_addr, MEM_PAGE_SIZE);
-		uintptr_t frame = INDEX_FROM_BIT(virtual_addr, MEM_PAGE_SIZE);
-		uintptr_t table = INDEX_FROM_BIT(frame, PAG_TABLES_PER_DIR);
-		uintptr_t subframe = OFFSET_FROM_BIT(frame, PAG_TABLES_PER_DIR);
-	
-		if (current_directory->tables[table]) {
-			page_t * page = &current_directory->tables[table]->pages[subframe];
-			return ALIGN(page->frame) + remaining;
-		}
-		else {
+		if (TABLE(current_directory, virtual_addr)) 
+			return PAGE(current_directory, virtual_addr).frame;
+		else 
 			return 0;
-		}
 	}
 
 	uintptr_t map_to_virtual(uintptr_t physical_addr) {
@@ -238,8 +188,6 @@ namespace Man {
 		memset(dir, 0, sizeof(page_directory_t));
 		dir->ref_count = 1;
 
-		/* And store it... */
-		dir->physical_address = phys;
 		uint32_t i;
 		for (i = 0; i < 1024; ++i) {
 			/* Copy each table */
@@ -311,7 +259,7 @@ namespace Man {
 			for (uint16_t j = 0, out_ctr = 0; j < 1024; ++j) { /* Iterate every page */
 				page_t *  p = &dir->tables[i]->pages[j];
 				if (p->frame) { /* Show only the allocated ones */
-					Kernel::term.printf("%d-0x%x 0x%x %s%s,", j, (i * 1024 + j) * 0x1000, ALIGN(p->frame), p->present ? "p" : "", p->user ? "u" : "k");
+					Kernel::term.printf("%d-0x%x 0x%x %s%s,", j, (i * 1024 + j) * 0x1000, p->frame, p->present ? "p" : "", p->user ? "u" : "k");
 				
 					if(!(out_ctr++ % 1)) Kernel::term.printf("\n"); /* Exceeded screen's width */
 				}
@@ -330,13 +278,15 @@ namespace Man {
 	void paging_install_example() {
 		uint32_t phys_addr = 0;
 		uint32_t table_count = 512;
-		for (int i = 0; i < table_count; i++) /* for every table ...*/
+		for (int i = 0; i < table_count; i++) { /* for every table ...*/
 			for (int j = 0; j < 1024; j++) { /* and every page ...  */
 				page_tables[i][j] = (phys_addr & 0xFFFFF000) | 3; // attributes: supervisor level, read/write, present.
 				phys_addr += 0x1000;
 			}
-		for (int i = 0; i < table_count; i++) /* for every table pointer ... */
+			/* for every table pointer ... */
 			page_directory[i] = ((unsigned int)page_tables[i] & 0xFFFFF000) | 0x00000003;
+		}
+			
 		/* Enable paging: */
 		asm volatile (
 			"mov %0, %%cr3\n"
@@ -352,19 +302,39 @@ namespace Man {
 	}
 
 	void paging_install(uint32_t memsize) {
+#if 0
 		paging_install_example();
+#endif
 		mem_size = memsize;
-		
-		/* Allocate frame bitmap: */
-		nframes = (mem_size * 1024) / MEM_FRAME_SIZE;
-		uint32_t frame_bitmap_count_alloc = INDEX_FROM_BIT_SZ32(nframes * 8);
-		frames = (uint32_t*)kmalloc(frame_bitmap_count_alloc);
-		memset(frames, 0, frame_bitmap_count_alloc);
+
+		nframes = mem_size / 4;
 	
 		/* Initialize kernel page directory: */
 		kernel_directory = (page_directory_t*)kvmalloc(sizeof(page_directory_t));
 		memset(kernel_directory, 0, sizeof(page_directory_t));
+		for(uintptr_t i,table_i=0, page_i=0; table_i < 1024; i+=0x1000) {
+			kernel_directory->tables[table_i]->pages[page_i].frame = i;
+			kernel_directory->tables[table_i]->pages[page_i].present = 1;
+			kernel_directory->physical_tables[table_i] = (unsigned int)kernel_directory->tables[table_i] | 3;
+			if (page_i++ > 1023) {
+				table_i++;
+				page_i=0;
+			}
+			//dma_frame(create_table(i, kernel_directory), 1, 0, i);
+		}
+		//dump_directory(kernel_directory);
+		asm volatile (
+			"mov %0, %%cr3\n"
+			"mov %%cr0, %%eax\n"
+			"orl $0x80000000, %%eax\n"
+			"mov %%eax, %%cr0\n"
+			:: "r"(&kernel_directory->physical_tables)
+			: "%eax");
 
+		Kernel::term.printf("Done");
+		uintptr_t * c = (uintptr_t*)-10;
+		Kernel::term.printf("%c", *c);
+		for(;;);
 		/* Parse memory map: */
 		if (IS_BIT_SET(mboot_ptr->flags, 6)) {
 			mboot_memmap_t * mmap = (mboot_memmap_t*)mboot_ptr->mmap_addr;
@@ -389,9 +359,6 @@ namespace Man {
 		
 		/* Install page fault handler: */
 		CPU::ISR::isr_install_handler(CPU::IDT::IDT_IVT::ISR_PAGEFAULT, (CPU::ISR::isr_handler_t)page_fault);
-
-		/* MMU needs this to enable paging: */
-		kernel_directory->physical_address = (uintptr_t)kernel_directory->physical_tables;
 
 		uintptr_t tmp_heap_start = KERNEL_HEAP_INIT;
 		if (tmp_heap_start <= frame_ptr + 0x3000) {
@@ -423,7 +390,7 @@ namespace Man {
 			"mov %%cr0, %%eax\n"
 			"orl $0x80000000, %%eax\n"
 			"mov %%eax, %%cr0\n"
-			:: "r"(dir->physical_address)
+			:: "r"(&dir->physical_tables)
 			: "%eax");
 	}
 

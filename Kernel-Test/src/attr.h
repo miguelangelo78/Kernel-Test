@@ -33,7 +33,7 @@
 #define __pure attr(pure)
 #define __weak attr(weak)
 
-#define __align(al) attr(align(al))
+#define __align(al) attr(aligned(al))
 
 #define __optimize attr(optimize)
 #define __hot attr(hot)

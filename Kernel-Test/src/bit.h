@@ -6,7 +6,7 @@
 
 #define BIT_SET(p, n) ((p) |= NTH_BIT((n)))
 #define BIT_CLEAR(p, n) ((p) &= ~NTH_BIT((n)))
-#define BIT_WRITE(c, p, n) (c ? BIT_SET(p, n) : BIT_CLEAR(p, n)
+#define BIT_WRITE(c, p, n) (c ? BIT_SET(p, n) : BIT_CLEAR(p, n))
 
 #define INDEX_FROM_BIT(b, arr_size) ((b) / (arr_size)) 
 #define OFFSET_FROM_BIT(b, arr_size) ((b) % (arr_size))
