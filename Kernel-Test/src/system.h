@@ -7,6 +7,7 @@
 #include <attr.h>
 #include <bit.h>
 #include <process.h>
+#include <memory.h>
 
 /* Memory segment selectors: */
 enum SEGSEL {
@@ -37,7 +38,7 @@ extern uintptr_t init_esp;
 #define asm __asm__
 #define volatile __volatile__
 
-#define ASSERT(cond, msg) { if(!(cond)) { char buff[256]; sprintf(buff, "Assert (%s): %s", STR(cond), msg); Error::panic(buff, __LINE__, __FILE__, 0); } }
+#define ASSERT(cond, msg) { if(!(cond)) { char buff[256]; sprintf(buff, "Assert (%s): %s", STR(cond), msg); Kernel::Error::panic(buff, __LINE__, __FILE__, 0); } }
 
 #define IRQ_OFF() Kernel::CPU::IRQ::int_disable()
 #define IRQ_RES() Kernel::CPU::IRQ::int_resume()
@@ -180,14 +181,24 @@ namespace Kernel {
 			uintptr_t kvmalloc(size_t size);
 			uintptr_t kmalloc_p(size_t size, uintptr_t *phys);
 			uintptr_t kvmalloc_p(size_t size, uintptr_t *phys);
+			void *sbrk(uintptr_t increment);
 
 			void paging_enable(uint32_t memsize);
 			void heap_install(void);
+
+			extern page_directory_t kerneldir;
+			extern page_directory_t * curr_dir;
+
+			extern uintptr_t frame_ptr;
 		}
 
 		/* Proper memory allocator to be used after paging and heap are fully installed: */
 		namespace Alloc {
-
+			void * __malloc malloc(size_t size);
+			void * __malloc realloc(void *ptr, size_t size);
+			void * __malloc calloc(size_t nmemb, size_t size);
+			void * __malloc valloc(size_t size);
+			void free(void *ptr);
 		}
 	}
 

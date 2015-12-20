@@ -1,5 +1,4 @@
 #include <system.h>
-#include <memory.h>
 
 namespace Kernel {
 namespace Memory {
@@ -190,6 +189,10 @@ void paging_enable(uint32_t memsize) {
 
 void heap_install(void) {
 	heap_top = (frame_ptr + PAGE_SIZE) & ~0xFFF;
+}
+
+void * sbrk(uintptr_t increment) { 
+
 }
 
 void page_fault(struct regs *r) {

@@ -24,9 +24,6 @@ typedef struct {
 	unsigned int page_tables[1024][1024] __align(PAGE_SIZE);
 } page_directory_t;
 
-extern page_directory_t kerneldir;
-extern page_directory_t * curr_dir;
-
 /* UNUSED PAGING DATA STRUCTURES: */
 //typedef struct page {
 //	unsigned int present:1; /* 0: NOT PRESENT 1: PRESENT */
