@@ -167,6 +167,8 @@ void paging_install_example() {
 	Kernel::term.printf("%c", *c);
 }
 
+uint32_t phys_addr = 0;
+
 void paging_enable(uint32_t memsize) {
 #if 0
 	paging_install_example();
@@ -178,7 +180,6 @@ void paging_enable(uint32_t memsize) {
 	/* Install page fault handler: */
 	Kernel::CPU::ISR::isr_install_handler(Kernel::CPU::IDT::IDT_IVT::ISR_PAGEFAULT, (Kernel::CPU::ISR::isr_handler_t)page_fault);
 
-	uint32_t phys_addr = 0;
 	for (int i = 0; i < table_count; i++) { /* for every table ...*/
 		for (int j = 0; j < PAGES_PER_TABLE; j++, phys_addr += PAGE_SIZE) /* every page ...  */
 			alloc_page(curr_dir, 1, 0, phys_addr);
@@ -192,7 +193,18 @@ void heap_install(void) {
 }
 
 void * sbrk(uintptr_t increment) { 
-
+	uintptr_t * address = (uintptr_t*)heap_top;
+	if(heap_top + increment > kernel_heap_alloc_point) {
+		for (uintptr_t i = heap_top; i < heap_top + increment; i += 0x1000) {
+			/* TODO: Alloc pages without providing physical address */
+			alloc_page(curr_dir, 1, 0, phys_addr);
+			phys_addr += 0x1000;
+		}
+		invalidate_page_tables();
+	}
+	heap_top += increment;
+	memset(address, 0x0, increment);
+	return address;
 }
 
 void page_fault(struct regs *r) {
