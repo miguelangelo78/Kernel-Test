@@ -1,7 +1,6 @@
 OBJS += \
 $(BOUT)\error.o \
 $(BOUT)\kmain.o \
-$(BOUT)\mem.o \
 $(BOUT)\spin.o \
 $(BOUT)\terminal.o
 
@@ -13,13 +12,6 @@ $(BOUT)\error.o: src\error.cpp
 	@echo ' '
 
 $(BOUT)\kmain.o: src\kmain.cpp 
-	@echo '>> Building file $<'
-	@echo '>> Invoking Cross i686-elf GCC Compiler'
-	$(CXX) $(CPPFLAGS)  -o $@ -c $<  
-	@echo '>> Finished building: $<'
-	@echo ' '
-
-$(BOUT)\mem.o: src\mem.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking Cross i686-elf GCC Compiler'
 	$(CXX) $(CPPFLAGS)  -o $@ -c $<  

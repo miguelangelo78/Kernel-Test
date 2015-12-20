@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <log.h>
 
-extern void paging_enable(uintptr_t memsize);
-
 namespace Kernel {
 	namespace KInit {
 		/* Multiboot pointer: */
@@ -90,7 +88,6 @@ namespace Kernel {
 
 		DEBUG("> Installing paging and heap - ");
 		paging_enable(MEMSIZE());
-		//paging_install(MEMSIZE());
 		heap_install();
 		DEBUGOK();
 

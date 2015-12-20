@@ -181,7 +181,7 @@ namespace Kernel {
 			uintptr_t kmalloc_p(size_t size, uintptr_t *phys);
 			uintptr_t kvmalloc_p(size_t size, uintptr_t *phys);
 
-			void paging_install(uint32_t memsize);
+			void paging_enable(uint32_t memsize);
 			void heap_install(void);
 		}
 

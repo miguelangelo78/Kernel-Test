@@ -1,8 +1,8 @@
 OBJS += \
-$(BOUT)\kmemory.o \
+$(BOUT)\mem.o \
 $(BOUT)\mem_copy_page_phys.o
 
-$(BOUT)\kmemory.o: src\memory\kmemory.cpp 
+$(BOUT)\mem.o: src\memory\mem.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking Cross i686-elf GCC Compiler'
 	$(CXX) $(CPPFLAGS)  -o $@ -c $<  
