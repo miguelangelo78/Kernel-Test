@@ -86,6 +86,7 @@ namespace Kernel {
 		relocate_stack();
 		DEBUGOK();
 
+		/* Enable paging and heap: */
 		DEBUG("> Installing paging and heap - ");
 		paging_enable(MEMSIZE());
 		heap_install();

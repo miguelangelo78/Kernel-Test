@@ -4,9 +4,13 @@
 namespace Kernel {
 namespace Memory {
 namespace Man {
-#define ALIGN(frame) (frame) * PAGE_SIZE
 
+#define ALIGN(frame) (frame) * PAGE_SIZE
+#define DEALIGN(frame) (frame) / PAGE_SIZE
+
+/* Returns a table from the directory */
 #define TABLE(dir, address) (dir).page_tables[INDEX_FROM_BIT((address/PAGE_SIZE), PAGES_PER_TABLE)]
+/* Returns a page from a table from the directory */
 #define PAGE(dir, address) TABLE((dir), address)[OFFSET_FROM_BIT((address/PAGE_SIZE), PAGES_PER_TABLE)]
 
 #define DIR_PAGE_IT() for (uintptr_t table_ctr = 0; table_ctr < table_count; table_ctr++) { \
@@ -17,7 +21,7 @@ page_directory_t * curr_dir = &kerneldir;
 uintptr_t frame_count;
 uintptr_t table_count;
 
-uintptr_t frame_ptr = (uintptr_t)&end; /* Placement pointer to allocate raw frames */
+uintptr_t frame_ptr = (uintptr_t)&end; /* Placement pointer to allocate data on the heap */
 uintptr_t heap_top = 0; /* Top of the heap's address. Only used after paging is enabled */
 uintptr_t kernel_heap_alloc_point = KERNEL_HEAP_INIT;
 
@@ -71,6 +75,14 @@ uintptr_t kvmalloc_p(size_t size, uintptr_t *phys) {
 	return kmalloc(size, 1, phys);
 }
 
+uintptr_t clone_directory(page_directory_t * src) {
+
+}
+
+uintptr_t clone_table(page_directory_t * src, uintptr_t physical_address) {
+	
+}
+
 void switch_directory(page_directory_t * dir) {
 	curr_dir = dir;
 	/* Enable paging: */
@@ -101,28 +113,32 @@ uintptr_t map_to_physical(uintptr_t virtual_addr) {
 	return PAGE(*curr_dir, virtual_addr) & 0xFFFFF000;
 }
 
-void alloc_page(page_directory_t * dir, int is_kernel, int is_writeable, uintptr_t physical_address) {
-	unsigned int * page = &PAGE(*dir, physical_address);
-	*page = (physical_address & 0xFFFFF000) | 1;
-	BIT_WRITE(is_writeable, *page, 1);
-	BIT_WRITE(is_kernel, *page, 2);
-}
-
-void dealloc_page(page_directory_t * dir, uintptr_t physical_address) {
-	unsigned int * page = &PAGE(*dir, physical_address);
-	BIT_CLEAR(*page, 0);
-}
-
 void alloc_table(page_directory_t * dir, int is_kernel, int is_writeable, uintptr_t physical_address) {
 	unsigned int * page_dir_ptr = &dir->page_directory[INDEX_FROM_BIT((physical_address - 0x1000) / 0x1000, 1024)];
 	*page_dir_ptr = ((unsigned int)dir->page_tables[INDEX_FROM_BIT((physical_address - 0x1000) / 0x1000, 1024)] & 0xFFFFF000) | 1;
-	BIT_WRITE(is_writeable, *page_dir_ptr, 1);
-	BIT_WRITE(is_kernel, *page_dir_ptr, 2);
+	BIT_WRITE(is_writeable, *page_dir_ptr, 1); /* RW */
+	BIT_WRITE(is_kernel, *page_dir_ptr, 2); /* User */
 }
 
-void dealloc_table(page_directory_t * dir, uintptr_t physical_address) {
-	unsigned int * page_dir_ptr = &dir->page_directory[INDEX_FROM_BIT((physical_address - 0x1000) / 0x1000, 1024)];
-	BIT_CLEAR(*page_dir_ptr, 0);
+void dealloc_table(page_directory_t * dir, uintptr_t virtual_address) {
+	unsigned int * page_dir_ptr = &dir->page_directory[INDEX_FROM_BIT((virtual_address - 0x1000) / 0x1000, 1024)];
+	BIT_CLEAR(*page_dir_ptr, 0); /* Not present */
+}
+
+void alloc_page(page_directory_t * dir, int is_kernel, int is_writeable, uintptr_t physical_address) {
+	unsigned int * page = &PAGE(*dir, physical_address);
+	*page = (physical_address & 0xFFFFF000) | 1;
+	BIT_WRITE(is_writeable, *page, 1); /* RW */
+	BIT_WRITE(is_kernel, *page, 2); /* User */
+
+	/* Alloc table in case it wasn't already: */
+	if(!OFFSET_FROM_BIT((physical_address - 0x1000) / 0x1000, PAGES_PER_TABLE))
+		alloc_table(curr_dir, is_kernel, is_writeable, physical_address);
+}
+
+void dealloc_page(page_directory_t * dir, uintptr_t page_index) {
+	unsigned int * page = &PAGE(*dir, ALIGN(page_index));
+	BIT_CLEAR(*page, 0); /* Not present */
 }
 
 unsigned int page_directory[1024] __attribute__((aligned(4096)));
@@ -158,16 +174,17 @@ void paging_enable(uint32_t memsize) {
 	return;
 #endif
 	frame_count = memsize / 4;
-
+	table_count = frame_count / TABLES_PER_DIR + 1;
+	
 	/* Install page fault handler: */
 	Kernel::CPU::ISR::isr_install_handler(Kernel::CPU::IDT::IDT_IVT::ISR_PAGEFAULT, (Kernel::CPU::ISR::isr_handler_t)page_fault);
 
 	uint32_t phys_addr = 0;
-	for (int i = 0; i < (table_count = frame_count / TABLES_PER_DIR + 1); i++) { /* for every table ...*/
+	for (int i = 0; i < table_count; i++) { /* for every table ...*/
 		for (int j = 0; j < PAGES_PER_TABLE; j++, phys_addr += PAGE_SIZE) /* every page ...  */
 			alloc_page(curr_dir, 1, 0, phys_addr);
-		alloc_table(curr_dir, 1, 0, phys_addr);
 	}
+
 	switch_directory(curr_dir);
 }
 
