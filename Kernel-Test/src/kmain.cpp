@@ -92,6 +92,15 @@ namespace Kernel {
 		heap_install();
 		DEBUGOK();
 
+		term.clear();
+		char * c = (char*) malloc(10);
+		strcpy(c, "banana");
+		malloc(10);
+		char * c2 = (char*) malloc(10);
+		strcpy(c2, "mole");
+		malloc(10);
+		term.printf("%s %s", c, c2);
+
 		/* TODO List: */
 		DEBUGC("\nTODO:\n", COLOR_WARNING);
 		DEBUG("1 - Set up command line\n");

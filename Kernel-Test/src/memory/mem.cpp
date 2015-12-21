@@ -13,7 +13,11 @@ namespace Man {
 #define PAGE(dir, address) TABLE((dir), address)[OFFSET_FROM_BIT((address/PAGE_SIZE), PAGES_PER_TABLE)]
 
 #define DIR_PAGE_IT() for (uintptr_t table_ctr = 0; table_ctr < table_count; table_ctr++) { \
-						for (int page_ctr = 0; page_ctr < PAGES_PER_TABLE; page_ctr++) \
+						for (int page_ctr = 0; page_ctr < PAGES_PER_TABLE; page_ctr++)
+#define DIR_PAGE_ITST(startaddr) for (uintptr_t table_ctr = startaddr; table_ctr < table_count; table_ctr++) { \
+								for (int page_ctr = 0; page_ctr < PAGES_PER_TABLE; page_ctr++)
+#define DIR_PAGE_ITADDR() for(uintptr_t page_ctr = 0; page_ctr < PAGES_PER_TABLE * frame_count; page_ctr += PAGE_SIZE)
+#define DIR_PAGE_ITADDRST(startaddr) for(uintptr_t page_ctr = startaddr; page_ctr < ALIGN(PAGES_PER_TABLE * frame_count); page_ctr += PAGE_SIZE)
 
 page_directory_t kerneldir;
 page_directory_t * curr_dir = &kerneldir;
@@ -112,6 +116,16 @@ uintptr_t map_to_physical(uintptr_t virtual_addr) {
 	return PAGE(*curr_dir, virtual_addr) & 0xFFFFF000;
 }
 
+uintptr_t last_known_newpage = 0;
+uint32_t phys_addr = 0;
+
+uintptr_t find_new_page(page_directory_t * dir) {
+	DIR_PAGE_ITADDRST(last_known_newpage)
+		if(!IS_BIT_SET(PAGE(*dir, page_ctr), 0))
+			return (last_known_newpage = page_ctr);
+	return 0;
+}
+
 void alloc_table(page_directory_t * dir, int is_kernel, int is_writeable, uintptr_t physical_address) {
 	unsigned int * page_dir_ptr = &dir->page_directory[INDEX_FROM_BIT((physical_address - 0x1000) / 0x1000, 1024)];
 	*page_dir_ptr = ((unsigned int)dir->page_tables[INDEX_FROM_BIT((physical_address - 0x1000) / 0x1000, 1024)] & 0xFFFFF000) | 1;
@@ -121,7 +135,7 @@ void alloc_table(page_directory_t * dir, int is_kernel, int is_writeable, uintpt
 
 void dealloc_table(page_directory_t * dir, uintptr_t virtual_address) {
 	unsigned int * page_dir_ptr = &dir->page_directory[INDEX_FROM_BIT((virtual_address - 0x1000) / 0x1000, 1024)];
-	BIT_CLEAR(*page_dir_ptr, 0); /* Not present */
+	BIT_CLEAR(*page_dir_ptr, 0); /* Not present */ 
 }
 
 void alloc_page(page_directory_t * dir, int is_kernel, int is_writeable, uintptr_t physical_address) {
@@ -135,9 +149,15 @@ void alloc_page(page_directory_t * dir, int is_kernel, int is_writeable, uintptr
 		alloc_table(curr_dir, is_kernel, is_writeable, physical_address);
 }
 
+void alloc_page(page_directory_t * dir, int is_kernel, int is_writeable) {
+	alloc_page(dir, is_kernel, is_writeable, find_new_page(dir));
+}
+
 void dealloc_page(page_directory_t * dir, uintptr_t page_index) {
-	unsigned int * page = &PAGE(*dir, ALIGN(page_index));
+	page_index = ALIGN(page_index);
+	unsigned int * page = &PAGE(*dir, page_index);
 	BIT_CLEAR(*page, 0); /* Not present */
+	last_known_newpage = page_index;
 }
 
 unsigned int page_directory[1024] __attribute__((aligned(4096)));
@@ -167,8 +187,6 @@ void paging_install_example() {
 	Kernel::term.printf("%c", *c);
 }
 
-uint32_t phys_addr = 0;
-
 void paging_enable(uint32_t memsize) {
 #if 0
 	paging_install_example();
@@ -177,14 +195,30 @@ void paging_enable(uint32_t memsize) {
 	frame_count = memsize / 4;
 	table_count = frame_count / TABLES_PER_DIR + 1;
 	
+	DIR_PAGE_IT() 
+		curr_dir->page_tables[table_ctr][page_ctr] = 0;
+	}
+
 	/* Install page fault handler: */
 	Kernel::CPU::ISR::isr_install_handler(Kernel::CPU::IDT::IDT_IVT::ISR_PAGEFAULT, (Kernel::CPU::ISR::isr_handler_t)page_fault);
 
-	for (int i = 0; i < table_count; i++) { /* for every table ...*/
-		for (int j = 0; j < PAGES_PER_TABLE; j++, phys_addr += PAGE_SIZE) /* every page ...  */
-			alloc_page(curr_dir, 1, 0, phys_addr);
-	}
+	/* Main allocations: */
+	for (uintptr_t i = 0; i < frame_ptr + 0x3000; i++) /* (for every table and every page ...) */
+		alloc_page(curr_dir, 1, 0, ALIGN(i));
 
+	/* VGA Text mode (user mode): */
+	for (uintptr_t j = 0xB8000; j <= 0xBF000; j += PAGE_SIZE)
+		alloc_page(curr_dir, 0, 1, j);
+
+	/* Preallocate some extra heap: */
+	uintptr_t tmp_heap_start = KERNEL_HEAP_INIT;
+	if (tmp_heap_start <= frame_ptr + 0x3000) {
+		tmp_heap_start = frame_ptr + 0x100000;
+		kernel_heap_alloc_point = tmp_heap_start;
+	}
+	for (uintptr_t i = frame_ptr + 0x3000; i < tmp_heap_start; i += PAGE_SIZE)
+		alloc_page(curr_dir, 1, 0, ALIGN(i));
+	
 	switch_directory(curr_dir);
 }
 
@@ -195,15 +229,12 @@ void heap_install(void) {
 void * sbrk(uintptr_t increment) { 
 	uintptr_t * address = (uintptr_t*)heap_top;
 	if(heap_top + increment > kernel_heap_alloc_point) {
-		for (uintptr_t i = heap_top; i < heap_top + increment; i += 0x1000) {
-			/* TODO: Alloc pages without providing physical address */
-			alloc_page(curr_dir, 1, 0, phys_addr);
-			phys_addr += 0x1000;
-		}
+		for (uintptr_t i = heap_top; i < heap_top + increment; i += PAGE_SIZE)
+			alloc_page(curr_dir, 1, 0);
 		invalidate_page_tables();
 	}
 	heap_top += increment;
-	memset(address, 0x0, increment);
+	memset(address, 0, increment);
 	return address;
 }
 
