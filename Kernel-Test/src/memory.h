@@ -20,8 +20,8 @@ directory index    page table index  offset into page
 #define PAGE_SIZE 0x1000
 
 typedef struct {
-	unsigned int page_directory[1024] __align(PAGE_SIZE);
-	unsigned int page_tables[1024][1024] __align(PAGE_SIZE);
+	unsigned int page_directory[TABLES_PER_DIR] __align(PAGE_SIZE);
+	unsigned int page_tables[TABLES_PER_DIR][PAGES_PER_TABLE] __align(PAGE_SIZE);
 } page_directory_t;
 
 /* UNUSED PAGING DATA STRUCTURES: */

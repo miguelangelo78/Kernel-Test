@@ -2,6 +2,7 @@
 #include <module.h>
 #include <stdint.h>
 #include <log.h>
+#include <args.h>
 
 namespace Kernel {
 	namespace KInit {
@@ -35,6 +36,11 @@ namespace Kernel {
 			}
 			kmalloc_starts(last_mod); /* Set new heap pointer */
 		}
+	}
+
+	void setup_cmdline(void* cmdline) { 
+		if (cmdline) 
+			args_parse((char*)cmdline);
 	}
 
 	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
@@ -92,14 +98,17 @@ namespace Kernel {
 		heap_install();
 		DEBUGOK();
 
+		DEBUG("> Setting up command line - ");
+		setup_cmdline((void*)mboot_ptr->cmdline);
+		DEBUGOK();
+
 		/* TODO List: */
 		DEBUGC("\nTODO:\n", COLOR_WARNING);
-		DEBUG("1 - Set up command line\n");
-		DEBUG("2 - Set up: \n  2.1 - VFS\n  2.2 - Tasking"
-			"\n  2.3 - Timer\n  2.4 - FPU"
-			"\n  2.5 - Syscalls\n  2.6 - Shared memory"
-			"\n  2.7 - Init modules\n")
-		DEBUG("3 - Code up modules and load them\n");
+		DEBUG("1 - Set up: \n  1.1 - VFS\n  1.2 - Tasking"
+			"\n  1.3 - Timer\n  1.4 - FPU"
+			"\n  1.5 - Syscalls\n  1.6 - Shared memory"
+			"\n  1.7 - Init modules\n")
+		DEBUG("2 - Code up modules and load them\n");
 
 		/* All done! */
 		DEBUGC("\nReady", COLOR_GOOD);

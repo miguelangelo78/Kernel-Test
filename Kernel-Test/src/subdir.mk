@@ -1,8 +1,16 @@
 OBJS += \
+$(BOUT)\args.o \
 $(BOUT)\error.o \
 $(BOUT)\kmain.o \
 $(BOUT)\spin.o \
 $(BOUT)\terminal.o
+
+$(BOUT)\args.o: src\args.cpp 
+	@echo '>> Building file $<'
+	@echo '>> Invoking Cross i686-elf GCC Compiler'
+	$(CXX) $(CPPFLAGS)  -o $@ -c $<  
+	@echo '>> Finished building: $<'
+	@echo ' '
 
 $(BOUT)\error.o: src\error.cpp 
 	@echo '>> Building file $<'
