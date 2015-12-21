@@ -32,7 +32,7 @@ char * args_value(char * karg) {
 */
 void args_parse(char * _arg) {
 	/* Sanity check... */
-	if (!_arg) { return; }
+	if (!_arg) return;
 
 	char * arg = strdup(_arg);
 	char * argv[1024];

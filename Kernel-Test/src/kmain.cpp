@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <log.h>
 #include <args.h>
+#include <fs.h>
 
 namespace Kernel {
 	namespace KInit {
@@ -102,12 +103,16 @@ namespace Kernel {
 		setup_cmdline((void*)mboot_ptr->cmdline);
 		DEBUGOK();
 
+		DEBUG("> Installing VFS - ");
+		vfs_install();
+		DEBUGOK();
+
 		/* TODO List: */
 		DEBUGC("\nTODO:\n", COLOR_WARNING);
-		DEBUG("1 - Set up: \n  1.1 - VFS\n  1.2 - Tasking"
-			"\n  1.3 - Timer\n  1.4 - FPU"
-			"\n  1.5 - Syscalls\n  1.6 - Shared memory"
-			"\n  1.7 - Init modules\n")
+		DEBUG("1 - Set up: \n  1.1 - Tasking"
+			"\n  1.2 - Timer\n  1.3 - FPU"
+			"\n  1.4 - Syscalls\n  1.5 - Shared memory"
+			"\n  1.6 - Init modules\n")
 		DEBUG("2 - Code up modules and load them\n");
 
 		/* All done! */
