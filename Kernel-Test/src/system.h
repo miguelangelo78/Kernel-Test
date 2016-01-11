@@ -171,7 +171,6 @@ namespace Kernel {
 	}
 
 	namespace Memory {
-
 		/* Kernel memory manager. Contains paging/physical memory functions and a Kernel memory 
 		allocator (kmalloc, a dumb version of Alloc's malloc to be used before paging is enabled) */
 		namespace Man {

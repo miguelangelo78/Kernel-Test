@@ -3,10 +3,14 @@ TOOLCH = toolchain
 LINKER = linker.ld
 CXX = $(TOOLCH)\Tools\Cross\i686-elf\bin\i686-elf-g++.exe
 CC = $(TOOLCH)\Tools\Cross\i686-elf\bin\i686-elf-gcc.exe
+CXX_LLVM = clang++
+CC_LLVM = clang
 AS = $(TOOLCH)\Tools\Cross\i686-elf\bin\i686-elf-as.exe
 NAS = $(TOOLCH)\Tools\NASM\nasm.exe
 CPPFLAGS = -T $(TOOLCH)\$(LINKER) -Itoolchain\Tools\Cross\i686-elf\lib\gcc\i686-elf\4.8.2\include -Isrc -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions
+LLVMCPPFLAGS = -ffreestanding -nostdlib -nodefaultlibs -target i686-pc-none-elf -O2 -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions -IC:\llvm\lib\clang\3.8.0\include -Isrc
 CFLAGS = -T $(TOOLCH)\$(LINKER) -Itoolchain\Tools\Cross\i686-elf\lib\gcc\i686-elf\4.8.2\include -Isrc -g -ffreestanding -fbuiltin -Wall -Wextra
+LLVMCFLAGS = -ffreestanding -nostdlib -nodefaultlibs -target i686-pc-none-elf -O2 -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions -IC:\llvm\lib\clang\3.8.0\include -Isrc
 ASFLAGS = 
 NASFLAGS = -g -f elf
 # Output constants (filenames and paths)
@@ -36,6 +40,7 @@ all: kernel-link
 # Link all those subdir.mk object files into the whole Kernel:
 kernel-link: $(OBJS)
 	@echo '----------'
+	@echo 'Toolchain: LLVM Toolchain'
 	@echo '>>>> Linking Kernel <<<<'
 	@echo '>>>> Invoking: Cross i686-elf GCC Linker <<<<'
 	$(CXX) $(CPPFLAGS) -o $(DISKPATH)\$(KOUT) $(OBJS)

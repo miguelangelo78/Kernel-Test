@@ -1,3 +1,4 @@
+// $LLVMDISABLE(1)
 #include <system.h>
 #include <module.h>
 #include <stdint.h>
@@ -44,15 +45,23 @@ namespace Kernel {
 			args_parse((char*)cmdline);
 	}
 
+	void setup_linker_pointers(void) {
+		ld_segs.ld_code = &code;
+		ld_segs.ld_end = &end;
+		ld_segs.ld_data = &data;
+		ld_segs.ld_bss = &bss;
+		ld_segs.ld_rodata = &rodata;
+	}
+
 	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
 		/******* Initialize everything: *******/
 		term.init();
-
+		
 		/* Initialize critical data: */
 		init_esp = initial_stack;
 		mboot_ptr = mboot;
-		ld_segs = { &code, &end, &data, &bss, &rodata };
+		setup_linker_pointers();
 
 		/* Output initial data from multiboot: */
 		DEBUGF("> Bootloader: %s| Module Count: %d at 0x%x\n> Memory: 0x%x\n", 
@@ -61,7 +70,7 @@ namespace Kernel {
 			mboot_ptr->mods_addr,
 			MEMSIZE());
 		DEBUGF("> ESP: 0x%x\n\n", init_esp);
-
+		
 		/* Validate Multiboot: */
 		DEBUGC(">> Initializing Kernel <<\n", COLOR_INFO);
 		DEBUG("> Checking Multiboot...");

@@ -4,8 +4,8 @@ $(BOUT)\isr_defs.o
 
 $(BOUT)\isr.o: src\arch\x86\isr\isr.cpp 
 	@echo '>> Building file $<'
-	@echo '>> Invoking Cross i686-elf GCC Compiler'
-	$(CXX) $(CPPFLAGS)  -o $@ -c $<  
+	@echo '>> Invoking LLVM C++ Clang++'
+	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  
 	@echo '>> Finished building: $<'
 	@echo ' '
 
