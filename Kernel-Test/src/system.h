@@ -98,7 +98,7 @@ namespace Kernel {
 				uint32_t	ldt;
 				uint16_t	trap;
 				uint16_t	iomap_base;
-			} tss_entry_t __packed;
+			} __packed tss_entry_t;
 			void set_kernel_stack(uintptr_t stack);
 		}
 

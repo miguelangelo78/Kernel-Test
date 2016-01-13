@@ -120,7 +120,7 @@ namespace IRQ {
 	/* Implementation and initialization functions: */
 	#define irq_is_valid(int_no) ((int_no) >= IRQ_OFFSET && (int_no) <= IRQ_OFFSET + (IRQ_COUNT - 1)) /* IRQ_COUNT - 1 because it starts from 0 */
 
-	void __interrupt irq_handler(CPU::regs_t * r) {
+	void irq_handler(CPU::regs_t * r) {
 		/* Disable interrupts when handling */
 		int_disable();
 		if (irq_is_valid(r->int_no)) {

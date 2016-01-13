@@ -19,7 +19,7 @@ namespace IDT {
 			uint16_t limit;
 			uintptr_t base;
 		} __packed * pointer;
-	} idt __used;
+	} idt;
 
 	void idt_set_gate(uint8_t num, uintptr_t isr_addr, uint16_t sel, uint8_t flags) {
 		idt.entries[num].base_low = ((uintptr_t)isr_addr & 0xFFFF); /* Mask low 16 bit (low half) */

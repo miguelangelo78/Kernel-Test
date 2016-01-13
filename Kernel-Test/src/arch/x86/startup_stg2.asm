@@ -26,7 +26,7 @@ mboot:
     dd  MBOOT_CHECKSUM          ; To ensure that the above values are correct
 
     dd  mboot                   ; Location of this descriptor
-    dd  code                    ; Start of kernel '.text' (code) section.
+    dd  code                    ; start of kernel '.text' (code) section.
     dd  bss                     ; End of kernel '.data' section.
     dd  end                     ; End of kernel.
     dd  start                   ; Kernel entry point (initial EIP).
@@ -43,4 +43,7 @@ start:
     cli
     call _ZN6Kernel5kmainEPNS_5KInit11multiboot_tEjj ; Call Kernel Main function
 	call _ZN6Kernel5kexitEv ; Call Kernel Exit function
+    cli
+    hlt
 	jmp $ ; It is impossible to reach this, but, just in case
+    

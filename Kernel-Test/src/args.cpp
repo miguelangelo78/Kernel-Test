@@ -36,7 +36,7 @@ void args_parse(char * _arg) {
 
 	char * arg = strdup(_arg);
 	char * argv[1024];
-	int argc = tokenize(arg, " ", argv);
+	int argc = tokenize(arg, (char*)" ", argv);
 
 	/* New let's parse the tokens into the arguments list so we can index by key */
 

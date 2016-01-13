@@ -7,13 +7,13 @@ typedef struct node {
 	struct node * prev;
 	void * value;
 	void * owner;
-} node_t __packed;
+} __packed node_t;
 
 typedef struct {
 	node_t * head;
 	node_t * tail;
 	size_t length;
-} list_t __packed;
+} __packed list_t;
 
 void list_destroy(list_t * list);
 void list_free(list_t * list);

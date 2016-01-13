@@ -57,7 +57,7 @@ namespace Kernel {
 	{
 		/******* Initialize everything: *******/
 		term.init();
-		
+			
 		/* Initialize critical data: */
 		init_esp = initial_stack;
 		mboot_ptr = mboot;

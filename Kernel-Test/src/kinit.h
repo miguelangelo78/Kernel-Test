@@ -71,14 +71,14 @@ namespace KInit {
 		uintptr_t mod_end;
 		uintptr_t cmdline;
 		uintptr_t reserved;
-	} mboot_mod_t __packed;
+	} __packed mboot_mod_t;
 
 	typedef struct {
 		uint32_t size;
 		uint64_t base_addr;
 		uint64_t length;
 		uint32_t type;
-	} mboot_memmap_t __packed;
+	} __packed mboot_memmap_t;
 
 	/* Defined in kmain.cpp */
 	extern struct multiboot_t * mboot_ptr;

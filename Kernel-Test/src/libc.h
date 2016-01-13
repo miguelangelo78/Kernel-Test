@@ -20,7 +20,7 @@
 int sprintf(char * buf, const char *fmt, ...);
 size_t vasprintf(char * buf, const char * fmt, va_list args);
 
-void * memset(void * dest, int c, size_t n);
+extern "C" { void * memset(void * dest, int c, size_t n); }
 unsigned short * memsetw(unsigned short * dest, unsigned short val, int count);
 void * memcpy(void * __restrict__  dest, const void * __restrict__ src, size_t n);
 int memcmp(const void * vl, const void * vr, size_t n);

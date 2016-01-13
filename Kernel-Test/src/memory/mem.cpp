@@ -4,8 +4,8 @@ namespace Kernel {
 namespace Memory {
 namespace Man {
 
-#define ALIGN(frame) (frame) * PAGE_SIZE
-#define DEALIGN(frame) (frame) / PAGE_SIZE
+#define ALIGNP(frame) (frame) * PAGE_SIZE
+#define DEALIGNP(frame) (frame) / PAGE_SIZE
 
 /* Returns a table from the directory */
 #define TABLE(dir, address) (dir).page_tables[INDEX_FROM_BIT(((address)/PAGE_SIZE), PAGES_PER_TABLE)]
@@ -17,7 +17,7 @@ namespace Man {
 #define DIR_PAGE_ITST(startaddr) for (uintptr_t table_ctr = startaddr; table_ctr < table_count; table_ctr++) { \
 								for (int page_ctr = 0; page_ctr < PAGES_PER_TABLE; page_ctr++)
 #define DIR_PAGE_ITADDR() for(uintptr_t page_ctr = 0; page_ctr < PAGES_PER_TABLE * frame_count; page_ctr += PAGE_SIZE)
-#define DIR_PAGE_ITADDRST(startaddr) for(uint32_t page_ctr = startaddr; page_ctr < ALIGN(PAGES_PER_TABLE * frame_count); page_ctr += PAGE_SIZE)
+#define DIR_PAGE_ITADDRST(startaddr) for(uint32_t page_ctr = startaddr; page_ctr < ALIGNP(PAGES_PER_TABLE * frame_count); page_ctr += PAGE_SIZE)
 
 page_directory_t kerneldir;
 page_directory_t * curr_dir = &kerneldir;
@@ -80,11 +80,11 @@ uintptr_t kvmalloc_p(size_t size, uintptr_t *phys) {
 }
 
 uintptr_t clone_directory(page_directory_t * src) {
-
+	return 0; /* xxx */
 }
 
 uintptr_t clone_table(page_directory_t * src, uintptr_t physical_address) {
-	
+	return 0; /* xxx */
 }
 
 void switch_directory(page_directory_t * dir) {
@@ -153,7 +153,7 @@ void alloc_page(page_directory_t * dir, int is_kernel, int is_writeable) {
 }
 
 void dealloc_page(page_directory_t * dir, uintptr_t page_index) {
-	page_index = ALIGN(page_index);
+	page_index = ALIGNP(page_index);
 	unsigned int * page = &PAGE(*dir, page_index);
 	BIT_CLEAR(*page, 0); /* Not present */
 	last_known_newpage = page_index;
@@ -163,7 +163,7 @@ unsigned int page_directory[1024] __attribute__((aligned(4096)));
 unsigned int page_tables[1024][1024] __attribute__((aligned(4096)));
 void paging_install_example() {
 	uint32_t phys_addr = 0;
-	uint32_t table_count = 512;
+	int table_count = 512;
 	for (int i = 0; i < table_count; i++) { /* for every table ...*/
 		for (int j = 0; j < 1024; j++) { /* and every page ...  */
 			page_tables[i][j] = (phys_addr & 0xFFFFF000) | 3; // attributes: supervisor level, read/write, present.
@@ -217,7 +217,7 @@ void paging_enable(uint32_t memsize) {
 		kernel_heap_alloc_point = tmp_heap_start;
 	}
 	for (uintptr_t i = frame_ptr; i < tmp_heap_start; i++)
-		alloc_page(curr_dir, 1, 0, ALIGN(i));
+		alloc_page(curr_dir, 1, 0, ALIGNP(i));
 	
 	switch_directory(curr_dir);
 }

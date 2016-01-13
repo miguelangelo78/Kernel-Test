@@ -33,7 +33,7 @@ namespace GDT {
 			uintptr_t base;
 		} __packed * pointer;
 		CPU::TSS::tss_entry_t tss;
-	} gdt __used;
+	} gdt;
 
 	void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran) {
 		/* Base Address */

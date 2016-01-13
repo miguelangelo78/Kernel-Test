@@ -17,7 +17,7 @@ namespace Module {
 	typedef struct {
 		char * name;
 		uintptr_t addr;
-	} sym_t __packed;
+	} __packed sym_t;
 
 	inline void * symbol_find(const char * name) {
 		sym_t * sym = (sym_t *)&kernel_symbols_start;
@@ -44,6 +44,7 @@ namespace Module {
 			sym = SYM_NEXT(sym);
 		}
 		Kernel::term.puts("Dump done\n");
+		return 0;
 	}
 
 	inline void * symbol_call(const char * name, void * params) {

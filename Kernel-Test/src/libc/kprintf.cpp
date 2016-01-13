@@ -77,7 +77,7 @@ size_t vasprintf(char * buf, const char * fmt, va_list args) {
 		case 's': /* String pointer -> String */
 			s = (char *)va_arg(args, char *);
 			if (s == NULL) {
-				s = "(null)";
+				s = (char*)"(null)";
 			}
 			while (*s) {
 				*b++ = *s++;

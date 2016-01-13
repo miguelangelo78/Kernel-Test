@@ -66,7 +66,7 @@ namespace ISR {
 		IDT::idt_set_gate(IDT::SYSCALL_VECTOR, (uintptr_t)Module::symbol_find("_isr127"), SEG_KERNEL_CS, ISR_DEFAULT_FLAG);
 	}
 
-	void __interrupt fault_handler(CPU::regs_t * r) { /* Gets called for EVERY ISR and IRQ interrupt */
+	void fault_handler(CPU::regs_t * r) { /* Gets called for EVERY ISR and IRQ interrupt */
 		isr_handler_t handler = isr_routines[r->int_no];
 		if (handler) {
 			/* This handler was installed. */

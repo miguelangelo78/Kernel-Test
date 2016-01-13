@@ -1,11 +1,5 @@
 #include <libc.h>
 
-void * memset(void * dest, int c, size_t n) {
-	uint8_t *ptr = (uint8_t*)dest;
-	while(n--) *ptr++ = c;
-	return dest;
-}
-
 unsigned short * memsetw(unsigned short * dest, unsigned short val, int count) {
 	int i = 0;
 	for (; i < count; ++i) dest[i] = val;
