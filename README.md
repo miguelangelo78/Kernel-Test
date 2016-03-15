@@ -47,10 +47,10 @@ You'll be required to make small preparations before compiling and testing the k
 **>> For Windows**
 
 > Access the folder 'toolchain/Windows/' and there you'll find 5 batch scripts:
-	> 1- **build.bat**: Build the Kernel and run it immediately
-	> 2- **rebuild.bat**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it
-	> 3 - **clean.bat**: Delete all object files from the folder build
-	> 4 - **launch_i386.bat / launch_x86_64.bat**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).
+	> 1- **build.bat**: Build the Kernel and run it immediately  
+	> 2- **rebuild.bat**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it  
+	> 3 - **clean.bat**: Delete all object files from the folder build  
+	> 4 - **launch_i386.bat / launch_x86_64.bat**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).  
 
 For a more productive way of development, simply use Eclipse IDE (with CDT plugin) and import this repository into the workspace. The scripts are already set up and ready to be built and run.
 
