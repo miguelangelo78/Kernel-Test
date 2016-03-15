@@ -3,6 +3,58 @@ An experimental project for training and testing with a Kernel for x86 systems (
 
 ![Kernel screenshot](http://i.imgur.com/pccSWrE.png)
 
+# Before Building and Running
+You'll be required to make small preparations before compiling and testing the kernel.
+**Steps:**
+**Step 1)** Download this repository, and put it wherever you want (Desktop maybe?)
+
+ **Step 2)**
+**For Windows**
+
+> Download the prebuilt cross compiler i686-elf for Windows from here: [i686-elf Windows Cross Compiler Download](https://docs.google.com/uc?export=download&confirm=o2Dx&id=0B85K_c7mx3QjUnZuaFRPWlBIcXM).
+> Extract it and rename the folder to i686-elf.
+
+**For Linux**
+
+> (Soon...)
+
+**Step 3)** Create a new folder inside toolchain/Tools/{Windows|Linux} (Linux soon...) named 'Cross', and put the previous folder (i686-elf) inside the Cross folder. For example, you'd have the path: toolchain/Tools/Windows/Cross/i686-elf/ ......
+
+**Step 4)**
+**For Windows**
+
+> Install Prebuilt Clang from here: [Clang Download](http://llvm.org/releases/download.html)
+
+**For Linux**
+
+> (Soon...)
+
+
+**Step 5)**
+**For Windows**
+> Download QEMU binaries for windows from here: [QEMU Download](http://qemu.weilnetz.de/) and install them normally on your computer
+
+**For Linux**
+> (Soon...)
+
+# How to Build and Run
+**For Windows**
+
+> Access the folder 'toolchain/Windows/' and there you'll find 5 batch scripts:
+	> 1- **build.bat**: Build the Kernel and run it immediately
+	> 2- **rebuild.bat**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it
+	> 3 - **clean.bat**: Delete all object files from the folder build
+	> 4 - **launch_i386.bat / launch_x86_64.bat**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).
+
+For a more productive way of development, simply use Eclipse IDE (with CDT plugin) and import this repository into the workspace. The scripts are already set up and ready to be built and run.
+
+**For Linux**
+> (Soon...)
+
+# How to Run on real machines
+If you want a more realistic approach to Kernel Development, you can simply access the folder 'iso' and run the script bootable_usb.bat. It'll ask what drive letter you want to install the kernel to, and you should select the Pendrive's correct letter. Then, simply boot the pendrive on any machine and it should work.
+These scripts were prepared for only Windows for now. Linux will come soon.
+
 # x86 References
 1 - FlingOS Project (http://www.flingos.co.uk/, https://www.youtube.com/watch?v=_xlO9MawAqY)
 
