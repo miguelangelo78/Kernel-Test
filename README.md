@@ -5,10 +5,13 @@ An experimental project for training and testing with a Kernel for x86 systems (
 
 # Before Building and Running
 You'll be required to make small preparations before compiling and testing the kernel.
+
 **Steps:**
+
 **Step 1)** Download this repository, and put it wherever you want (Desktop maybe?)
 
  **Step 2)**
+ 
 **For Windows**
 
 > Download the prebuilt cross compiler i686-elf for Windows from here: [i686-elf Windows Cross Compiler Download](https://docs.google.com/uc?export=download&confirm=o2Dx&id=0B85K_c7mx3QjUnZuaFRPWlBIcXM).
@@ -21,6 +24,7 @@ You'll be required to make small preparations before compiling and testing the k
 **Step 3)** Create a new folder inside toolchain/Tools/{Windows|Linux} (Linux soon...) named 'Cross', and put the previous folder (i686-elf) inside the Cross folder. For example, you'd have the path: toolchain/Tools/Windows/Cross/i686-elf/ ......
 
 **Step 4)**
+
 **For Windows**
 
 > Install Prebuilt Clang from here: [Clang Download](http://llvm.org/releases/download.html)
@@ -31,6 +35,7 @@ You'll be required to make small preparations before compiling and testing the k
 
 
 **Step 5)**
+
 **For Windows**
 > Download QEMU binaries for windows from here: [QEMU Download](http://qemu.weilnetz.de/) and install them normally on your computer
 
