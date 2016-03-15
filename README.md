@@ -1,5 +1,5 @@
 # Kernel-Test
-An experimental project for training and testing with a Kernel for x86 systems (and maybe more) using C++ language. There will be no OS as this is focused specifically on the Kernel domain. I will however add userspace and some test programs.
+An experimental project for training and testing with a Kernel for x86 systems (and maybe more) using C++ language. There will be no OS as this is focused specifically on the Kernel domain. We will however add userspace and some test programs.
 
 ![Kernel screenshot](http://i.imgur.com/pccSWrE.png)
 
@@ -7,17 +7,18 @@ An experimental project for training and testing with a Kernel for x86 systems (
 You'll be required to make small preparations before compiling and testing the kernel.
 
 **Steps:**
+----------
 
 **Step 1)** Download this repository, and put it wherever you want (Desktop maybe?)
 
  **Step 2)**
  
-**For Windows**
+**>> For Windows**
 
 > Download the prebuilt cross compiler i686-elf for Windows from here: [i686-elf Windows Cross Compiler Download](https://docs.google.com/uc?export=download&confirm=o2Dx&id=0B85K_c7mx3QjUnZuaFRPWlBIcXM).
 > Extract it and rename the folder to i686-elf.
 
-**For Linux**
+**>> For Linux**
 
 > (Soon...)
 
@@ -25,25 +26,25 @@ You'll be required to make small preparations before compiling and testing the k
 
 **Step 4)**
 
-**For Windows**
+**>> For Windows**
 
 > Install Prebuilt Clang from here: [Clang Download](http://llvm.org/releases/download.html)
 
-**For Linux**
+**>> For Linux**
 
 > (Soon...)
 
 
 **Step 5)**
 
-**For Windows**
+**>> For Windows**
 > Download QEMU binaries for windows from here: [QEMU Download](http://qemu.weilnetz.de/) and install them normally on your computer
 
-**For Linux**
+**>> For Linux**
 > (Soon...)
 
 # How to Build and Run
-**For Windows**
+**>> For Windows**
 
 > Access the folder 'toolchain/Windows/' and there you'll find 5 batch scripts:
 	> 1- **build.bat**: Build the Kernel and run it immediately
@@ -53,7 +54,7 @@ You'll be required to make small preparations before compiling and testing the k
 
 For a more productive way of development, simply use Eclipse IDE (with CDT plugin) and import this repository into the workspace. The scripts are already set up and ready to be built and run.
 
-**For Linux**
+**>> For Linux**
 > (Soon...)
 
 # How to Run on real machines
