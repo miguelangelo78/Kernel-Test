@@ -1,7 +1,7 @@
 # Kernel-Test
 An experimental project for training and testing with a Kernel for x86 systems (and maybe more) using C++ language. There will be no OS as this is focused specifically on the Kernel domain. We will however add userspace and some test programs.
 
-![Kernel screenshot](http://i.imgur.com/pccSWrE.png)
+![Kernel screenshot](http://i.imgur.com/RnIwlZA.png)
 
 # Before Building and Running
 You'll be required to make small preparations before compiling and testing the kernel.
@@ -49,8 +49,8 @@ You'll be required to make small preparations before compiling and testing the k
 > Access the folder 'toolchain/Windows/' and there you'll find 5 batch scripts:  
 	> 1- **build.bat**: Build the Kernel and run it immediately  
 	> 2- **rebuild.bat**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it  
-	> 3 - **clean.bat**: Delete all object files from the folder build  
-	> 4 - **launch_i386.bat / launch_x86_64.bat**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).  
+	> 3- **clean.bat**: Delete all object files from the folder build  
+	> 4- **launch_i386.bat / launch_x86_64.bat**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).  
 
 For a more productive way of development, simply use Eclipse IDE (with CDT plugin) and import this repository into the workspace. The scripts are already set up and ready to be built and run.
 
