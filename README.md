@@ -46,7 +46,7 @@ You'll be required to make small preparations before compiling and testing the k
 # How to Build and Run
 **>> For Windows**
 
-> Access the folder 'toolchain/Windows/' and there you'll find 5 batch scripts:
+> Access the folder 'toolchain/Windows/' and there you'll find 5 batch scripts:  
 	> 1- **build.bat**: Build the Kernel and run it immediately  
 	> 2- **rebuild.bat**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it  
 	> 3 - **clean.bat**: Delete all object files from the folder build  
