@@ -36,6 +36,7 @@ uintptr_t last_known_newpage = 0;
 bool is_paging_enabled = 0;
 
 void page_fault(struct regs *r); /* Function Prototype */
+uintptr_t map_to_physical(uintptr_t virtual_addr); /* Function Prototype */
 
 void kmalloc_starts(uintptr_t start_addr) {
 	frame_ptr = start_addr;
@@ -45,8 +46,9 @@ void kmalloc_starts(uintptr_t start_addr) {
 uintptr_t kmalloc(size_t size, char align, uintptr_t * phys) {
 	if (heap_tail) {
 		/* Use proper malloc */
-		void * address = 0;
-		/* TODO */
+		void * address = align ? valloc(size) : malloc(size);
+		if(phys)
+			*phys = map_to_physical((uintptr_t)address);
 		return (uintptr_t)address;
 	}
 
@@ -85,24 +87,44 @@ uintptr_t kvmalloc_p(size_t size, uintptr_t *phys) {
 	return kmalloc(size, 1, phys);
 }
 
-uintptr_t clone_directory(paging_directory_t * src) {
-	return 0; /* xxx */
+paging_directory_t * clone_directory(paging_directory_t * src) {
+	paging_directory_t * new_dir = (paging_directory_t*)kvmalloc(sizeof(paging_directory_t));
+	memcpy(new_dir, src, sizeof(paging_directory_t));
+	return new_dir;
 }
 
-uintptr_t clone_table(paging_directory_t * src, uintptr_t physical_address) {
-	return 0; /* xxx */
+bool check_paging(void) {
+	return is_paging_enabled;
+}
+
+void enable_paging(void) {
+	/* Enable paging: */
+	asm volatile (
+		"mov %cr0, %eax\n"
+		"orl $0x80000000, %eax\n"
+		"mov %eax, %cr0\n"
+	);
+	is_paging_enabled = 1;
+}
+
+void disable_paging(void) {
+	/* Disable paging: */
+	asm volatile (
+		"mov %cr0, %eax\n"
+		"xorl $0x80000000, %eax\n"
+		"mov %eax, %cr0\n"
+	);
+	is_paging_enabled = 0;
 }
 
 void switch_directory(paging_directory_t * dir) {
 	curr_dir = dir;
-	/* Enable paging: */
+	/* Install directory pointer to cr3: */
 	asm volatile (
 		"mov %0, %%cr3\n"
-		"mov %%cr0, %%eax\n"
-		"orl $0x80000000, %%eax\n"
-		"mov %%eax, %%cr0\n"
-		:: "r"(&dir->table_entries[0])
-		: "%eax");
+		:: "r"(dir->table_entries)
+		: "%eax"
+	);
 }
 
 void invalidate_page_tables(void) {
@@ -123,7 +145,7 @@ uintptr_t map_to_physical(uintptr_t virtual_addr) {
 	return PAGE(virtual_addr)->phys_addr << 12;
 }
 
-/* Returns the address of the next available page: */
+/* Returns the address of the next available (non-present) page: */
 uintptr_t find_new_page(void) {
 	DIR_PAGE_ITADDRST(last_known_newpage) /* Iterate through all pages starting at a given location, in order to find a non-present page */
 		if(!PAGE(page_ctr)->present) return page_ctr; /* Check if it's present. Note: page_ctr is already ALIGNED */
@@ -175,7 +197,18 @@ void dealloc_page(uintptr_t physical_address) {
 	last_known_newpage = ALIGNP(physical_address);
 }
 
-/****** PAGING EXAMPLE  ******/
+/* Simply remaps physical address to a virtual one: */
+void map_page(uintptr_t physical_address, uintptr_t virtual_address) {
+	PAGE(physical_address)->phys_addr = virtual_address >> 12;
+}
+
+/* Simply remaps physical address to a virtual one, and "updates"/invalidates the table */
+void map_page_update(uintptr_t physical_address, uintptr_t virtual_address) {
+	map_page(physical_address, virtual_address);
+	invalidate_tables_at(physical_address);
+}
+
+/****** PAGING EXAMPLE  ************/
 unsigned int page_directory[1024] __attribute__((aligned(4096)));
 unsigned int page_tables[1024][1024] __attribute__((aligned(4096)));
 void paging_install_example() {
@@ -202,6 +235,12 @@ void paging_install_example() {
 	kprintf("%c", *c);
 }
 /****** PAGING EXAMPLE - END ******/
+
+void mem_test(void) {
+	/* All memory testing will go here */
+	#define mem(addr) (*(char*)addr)
+
+}
 
 void paging_install(uint32_t memsize) {
 #if 0
@@ -240,9 +279,10 @@ void paging_install(uint32_t memsize) {
 		alloc_page(1, 0);
 
 	switch_directory(curr_dir);
+	enable_paging();
 	/* Finally, set up heap pointer to the start of the heap:  */
 	heap_install();
-	is_paging_enabled = 1;
+	mem_test();
 }
 
 void heap_install(void) {
@@ -263,10 +303,6 @@ void * sbrk(uintptr_t increment) {
 
 void page_fault(struct regs *r) {
 	Kernel::Error::panic("Page fault");
-}
-
-bool check_paging(void) {
-	return is_paging_enabled;
 }
 
 }
