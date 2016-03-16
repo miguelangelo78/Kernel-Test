@@ -90,6 +90,13 @@ uintptr_t kvmalloc_p(size_t size, uintptr_t *phys) {
 paging_directory_t * clone_directory(paging_directory_t * src) {
 	paging_directory_t * new_dir = (paging_directory_t*)kvmalloc(sizeof(paging_directory_t));
 	memcpy(new_dir, src, sizeof(paging_directory_t));
+
+	/* Now point the table_entries' address to the new directory's tables, but still preserve its properties: */
+	for(uintptr_t i = 0; i < TABLES_PER_DIR;i++)
+		new_dir->table_entries[i].table_address = ((uintptr_t)&new_dir->tables[i]) >> 12;
+
+	/* Remember that the pages' addressess still point to the src's contents, which would make sense */
+
 	return new_dir;
 }
 
@@ -154,7 +161,7 @@ uintptr_t find_new_page(void) {
 
 void alloc_table(int is_kernel, int is_writeable, uintptr_t physical_address) {
 	page_table_entry * table = TABLE_ENTRY(physical_address);
-	table->table_address = (uintptr_t)&curr_dir->tables[INDEX_FROM_BIT((physical_address)/PAGE_SIZE, PAGES_PER_TABLE)] >> 12; /* THIS IS IMPORTANT */
+	table->table_address = (uintptr_t)&curr_dir->tables[INDEX_FROM_BIT((physical_address)/PAGE_SIZE, PAGES_PER_TABLE)] >> 12; /* THIS IS IMPORTANT!! */
 	table->rw = is_writeable ? 1 : 0; /* RW */
 	table->user = is_kernel ? 0 : 1; /* User */
 	table->present = 1; /* Table is present */
