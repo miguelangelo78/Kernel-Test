@@ -51,9 +51,17 @@ namespace Kernel {
 		ld_segs.ld_rodata = &rodata;
 	}
 
+	extern int serial_cback(Kernel::CPU::regs_t * regs);
+
 	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
 		/******* Initialize everything: *******/
+		/* Install the core components very early (because of Serial): */
+		CPU::GDT::gdt_init();
+		CPU::IDT::idt_init();
+		CPU::ISR::isrs_install();
+		CPU::IRQ::irq_install();
+
 		term.init();
 		serial.init(COM1);
 
@@ -79,25 +87,14 @@ namespace Kernel {
 		ASSERT(magic == MULTIBOOT_HEADER_MAGIC, "Multiboot is not valid!");
 		DEBUGVALID();
 		
-		/* Install GDT: */
-		kputs("> Installing GDT - ");
-		CPU::GDT::gdt_init();
-		DEBUGOK();
-
-		/* Install IDT: */
-		kputs("> Installing IDT - ");
-		CPU::IDT::idt_init();
-		DEBUGOK();
-
-		/* Install ISRs: */
-		kputs("> Installing ISRs - ");
-		CPU::ISR::isrs_install();
-		DEBUGOK();
-
-		/* Install IRQs: */
-		kputs("> Installing IRQs (PIC) - ");
-		CPU::IRQ::irq_install();
-		DEBUGOK();
+		/* GDT was installed early: */
+		kputs("> Installing GDT - "); DEBUGOK();
+		/* IDT was installed early: */
+		kputs("> Installing IDT - "); DEBUGOK();
+		/* ISRs were installed early: */
+		kputs("> Installing ISRs - "); DEBUGOK();
+		/* IRQs were installed early: */
+		kputs("> Installing IRQs (PIC) - "); DEBUGOK();
 		
 		/* Move stack up because of modules: */
 		kputs("> Relocating stack - ");
@@ -128,7 +125,15 @@ namespace Kernel {
 		/* All done! */
 		kputsc("\nReady", COLOR_GOOD);
 
-		for(;;);
+		Log::redirect_log(LOG_VGA);
+		kputsc("Ready", COLOR_GOOD);
+
+		for(;;) if(serial.is_ready()) {
+			char c = serial.read_async();
+			// Echo back:
+			kprintf("%c", c);
+			serial.write(c);
+		}
 		return 0;
 	}
 

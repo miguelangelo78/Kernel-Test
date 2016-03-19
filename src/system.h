@@ -10,6 +10,7 @@
 #include <process.h>
 #include <memory.h>
 #include <log.h>
+#include <arch/x86/cpu.h>
 
 /* Memory segment selectors: */
 enum SEGSEL {
@@ -65,13 +66,6 @@ namespace Kernel {
 	/* All CPU Related components, such as GDT,
 	IDT (which includes ISR and PIC / IRQ) and registers */
 	namespace CPU {
-		typedef struct {
-			unsigned int gs, fs, es, ds;
-			unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
-			unsigned int int_no, err_code;
-			unsigned int eip, cs, eflags, useresp, ss;
-		} regs_t;
-
 		namespace TSS {
 			typedef struct tss_entry {
 				uint32_t	prev_tss;
