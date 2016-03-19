@@ -41,8 +41,8 @@ class Terminal {
 		void putc(const char chr, uint8_t color);
 		void puts(const char * str, uint8_t color);
 		void puts(const char * str);
-		int printf(uint8_t color, const char *fmt, ...);
-		int printf(const char *fmt, ...); 
+		void printf(uint8_t color, const char *fmt, ...);
+		void printf(const char *fmt, ...);
 		void clear(void);
 		void fill(uint8_t color);
 		void reset_cursor(void);

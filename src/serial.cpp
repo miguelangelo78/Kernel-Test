@@ -40,10 +40,7 @@ void Serial::send(char * buffer, int buffer_size) {
 char serial_printf_buff[512];
 
 void Serial::printf(char * fmt, ...) {
-	va_list args;
-	va_start(args, fmt); \
-	int ret = vasprintf(serial_printf_buff, fmt, args); \
-	va_end(args); \
+	strfmt(serial_printf_buff, fmt);
 	puts(serial_printf_buff);
 }
 

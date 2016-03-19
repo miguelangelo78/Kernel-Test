@@ -17,6 +17,8 @@
 #define BITOP(A, B, OP) \
  ((A)[(size_t)(B)/(8*sizeof *(A))] OP (size_t)1<<((size_t)(B)%(8*sizeof *(A))))
 
+#define strfmt(buffer, fmt) do { va_list args; va_start(args, fmt); vasprintf(buffer, fmt, args); va_end(args); } while(0)
+
 int sprintf(char * buf, const char *fmt, ...);
 size_t vasprintf(char * buf, const char * fmt, va_list args);
 

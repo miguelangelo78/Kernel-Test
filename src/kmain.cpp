@@ -127,7 +127,7 @@ namespace Kernel {
 
 		/* All done! */
 		kputsc("\nReady", COLOR_GOOD);
-		
+
 		for(;;);
 		return 0;
 	}
