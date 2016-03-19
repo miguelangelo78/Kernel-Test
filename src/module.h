@@ -34,16 +34,16 @@ namespace Module {
 
 	inline void * symbols_dump(void) {
 		sym_t * sym = (sym_t *)&kernel_symbols_start;
-		Kernel::term.printf("Symbol Section Start: 0x%x - End: 0x%x Size: 0x%x\n", 
+		kprintf("Symbol Section Start: 0x%x - End: 0x%x Size: 0x%x\n",
 			&kernel_symbols_start, 
 			&kernel_symbols_end, 
 			(uintptr_t)&kernel_symbols_end - (uintptr_t)&kernel_symbols_start);
 		
 		for(int i = 1; (uintptr_t)sym < (uintptr_t)&kernel_symbols_end; i++) {
-			Kernel::term.printf("%d - %s: 0x%x\n", i, sym->name, sym->addr);
+			kprintf("%d - %s: 0x%x\n", i, sym->name, sym->addr);
 			sym = SYM_NEXT(sym);
 		}
-		Kernel::term.puts("Dump done\n");
+		kputs("Dump done\n");
 		return 0;
 	}
 

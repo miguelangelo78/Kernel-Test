@@ -1,5 +1,5 @@
-// $LLVMDISABLE(1)
 #include <system.h>
+#include <libc.h>
 #include <module.h>
 #include <stdint.h>
 #include <log.h>
@@ -44,14 +44,14 @@ namespace Kernel {
 	}
 
 	void setup_linker_pointers(void) {
+		ld_segs.ld_kstart = &kstart;
 		ld_segs.ld_code = &code;
 		ld_segs.ld_end = &end;
+		ld_segs.ld_kend = &end;
 		ld_segs.ld_data = &data;
 		ld_segs.ld_bss = &bss;
 		ld_segs.ld_rodata = &rodata;
 	}
-
-	extern int serial_cback(Kernel::CPU::regs_t * regs);
 
 	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
 	{
@@ -78,7 +78,8 @@ namespace Kernel {
 			mboot_ptr->mods_count,
 			mboot_ptr->mods_addr,
 			MEMSIZE());
-		kprintfc(COLOR_WARNING, "(%d MB)\n", MEMSIZE()/1024);
+		kprintfc(COLOR_WARNING, "* %d MB *", MEMSIZE()/1024);
+		kprintf(" (start: 0x%x end: 0x%x = 0x%x)\n", ld_segs.ld_kstart, ld_segs.ld_kend, KERNELSIZE());
 		kprintf("> ESP: 0x%x\n\n", init_esp);
 		
 		/* Validate Multiboot: */
@@ -128,12 +129,13 @@ namespace Kernel {
 		Log::redirect_log(LOG_VGA);
 		kputsc("Ready", COLOR_GOOD);
 
-		for(;;) if(serial.is_ready()) {
-			char c = serial.read_async();
-			// Echo back:
-			kprintf("%c", c);
-			serial.write(c);
-		}
+		for(;;)
+			if(serial.is_ready()) {
+				char c = serial.read_async();
+				/* Echo back: */
+				kprintf("%c", c);
+				serial.write(c);
+			}
 		return 0;
 	}
 

@@ -26,8 +26,8 @@ public:
 	#define SERIAL_READ_BUFF_SIZE 16
 
 	Serial();
-
 	void init(uint16_t port);
+
 	void write(char byte);
 	void puts(char * str);
 	void send(char * buffer, int buffer_size);
@@ -47,8 +47,8 @@ private:
 	char is_rx_empty(void);
 	char pop(void);
 	friend int serial_cback(Kernel::CPU::regs_t * regs);
-	uint8_t serial_cback_buffer[SERIAL_CBACK_BUFFER_SIZE];
-	uint8_t serial_read_buff[SERIAL_READ_BUFF_SIZE];
+	uint8_t serial_cback_buffer[SERIAL_CBACK_BUFFER_SIZE]; /* One buffer to be used for interrupts */
+	uint8_t serial_read_buff[SERIAL_READ_BUFF_SIZE]; /* And another one in case the interrupts are disabled */
 };
 
 #endif /* SRC_SERIAL_H_ */

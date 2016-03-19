@@ -21,7 +21,13 @@ enum SEGSEL {
 	SEG_USER_DS = 0x20
 };
 
+/* Returns the size of a section (in relation to another section): */
+#define SEGSIZE(seg_start, seg_end) ((uintptr_t)&seg_end - (uintptr_t)&seg_start)
+/* Returns the difference between the end of the kernel binary and the start */
+#define KERNELSIZE() SEGSIZE(kstart, end)
+
 /* Segments from the linker */
+extern void * kstart;
 extern void * code;
 extern void * end;
 extern void * data;
@@ -29,8 +35,10 @@ extern void * bss;
 extern void * rodata;
 /* Segments from the linker (in struct form) */
 struct ld_seg {
+	void * ld_kstart;
 	void * ld_code;
 	void * ld_end;
+	void * ld_kend;
 	void * ld_data;
 	void * ld_bss;
 	void * ld_rodata;
@@ -182,7 +190,7 @@ namespace Kernel {
 			void paging_install(uint32_t memsize);
 			void heap_install(void);
 
-			extern paging_directory_t kernel_directory;
+			extern paging_directory_t * kernel_directory;
 			extern paging_directory_t * curr_dir;
 
 			extern uintptr_t frame_ptr;

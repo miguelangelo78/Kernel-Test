@@ -24,7 +24,7 @@ namespace Man {
 #define DIR_PAGE_ITADDRST(startaddr) for(uint32_t page_ctr = startaddr; page_ctr < ALIGNP(PAGES_PER_TABLE * page_count); page_ctr += PAGE_SIZE)
 /*************************************************************************/
 
-paging_directory_t kernel_directory; /* Declare kernel_directory "statically" */
+paging_directory_t * kernel_directory; /* Declare kernel_directory "statically" */
 paging_directory_t * curr_dir;
 uintptr_t page_count; /* How many pages in TOTAL */
 uintptr_t table_count; /* How many tables in TOTAL */
@@ -253,8 +253,9 @@ void paging_install(uint32_t memsize) {
 #if 0
 	paging_install_example(); return;
 #endif
+	kernel_directory = (paging_directory_t*)kvmalloc(sizeof(paging_directory_t));
 	/* Point current directory to kernel_directory: */
-	curr_dir = &kernel_directory;
+	curr_dir = kernel_directory;
 
 	page_count = memsize / 4;
 	table_count = page_count / TABLES_PER_DIR + 1;
