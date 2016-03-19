@@ -38,7 +38,7 @@ bool is_paging_enabled = 0;
 void page_fault(struct regs *r); /* Function Prototype */
 uintptr_t map_to_physical(uintptr_t virtual_addr); /* Function Prototype */
 
-void kmalloc_starts(uintptr_t start_addr) {
+void kheap_starts(uintptr_t start_addr) {
 	frame_ptr = start_addr;
 }
 

@@ -1,3 +1,3 @@
 #pragma once
 
-void vfs_install(void);
+extern void vfs_install(void);

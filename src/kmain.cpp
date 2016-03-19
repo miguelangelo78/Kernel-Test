@@ -15,6 +15,8 @@ namespace Kernel {
 
 	/* Terminal which uses text-mode video */
 	Terminal term;
+	/* Serial port (COM1) which will be used for logging: */
+	Serial serial;
 
 	/* Initial stack pointer: */
 	uintptr_t init_esp = 0;
@@ -28,6 +30,7 @@ namespace Kernel {
 
 			mboot_mods = (mboot_mod_t*)mboot_ptr->mods_addr;
 
+			/* Iterate through all mods: */
 			for (uint32_t i = 0; i < mboot_ptr->mods_count; ++i) {
 				mboot_mod_t * mod = &mboot_mods[i];
 				if ((uintptr_t)mod + sizeof(mboot_mod_t) > last_mod)
@@ -36,13 +39,8 @@ namespace Kernel {
 				if(last_mod < mod->mod_end)
 					last_mod = mod->mod_end;
 			}
-			kmalloc_starts(last_mod); /* Set new heap pointer */
+			kheap_starts(last_mod); /* Set new heap pointer */
 		}
-	}
-
-	void setup_cmdline(void* cmdline) { 
-		if (cmdline) 
-			args_parse((char*)cmdline);
 	}
 
 	void setup_linker_pointers(void) {
@@ -57,7 +55,10 @@ namespace Kernel {
 	{
 		/******* Initialize everything: *******/
 		term.init();
-			
+		serial.init(COM1);
+
+		Log::redirect_log(LOG_SERIAL);
+
 		/* Initialize critical data: */
 		init_esp = initial_stack;
 		mboot_ptr = mboot;
@@ -108,12 +109,12 @@ namespace Kernel {
 		paging_install(MEMSIZE());
 		DEBUGOK();
 
-		kputs("> Setting up command line - ");
-		setup_cmdline((void*)mboot_ptr->cmdline);
-		DEBUGOK();
-
 		kputs("> Installing VFS - ");
 		vfs_install();
+		DEBUGOK();
+
+		kputs("> Setting up command line - ");
+		if (mboot_ptr->cmdline) args_parse((char*)mboot_ptr->cmdline);
 		DEBUGOK();
 
 		/* TODO List: */

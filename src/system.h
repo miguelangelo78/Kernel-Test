@@ -2,6 +2,7 @@
 
 #include <kinit.h>
 #include <terminal.h>
+#include <Serial.h>
 #include <libc.h>
 #include <io.h>
 #include <attr.h>
@@ -59,6 +60,7 @@ extern void switch_task(uint8_t reschedule);
 
 namespace Kernel {
 	extern Terminal term;
+	extern Serial serial;
 
 	/* All CPU Related components, such as GDT,
 	IDT (which includes ISR and PIC / IRQ) and registers */
@@ -175,7 +177,7 @@ namespace Kernel {
 		/* Kernel memory manager. Contains paging/physical memory functions and a Kernel memory 
 		allocator (kmalloc, a dumb version of Alloc's malloc to be used before paging is enabled) */
 		namespace Man {
-			void kmalloc_starts(uintptr_t start_addr);
+			void kheap_starts(uintptr_t start_addr);
 			uintptr_t kmalloc(size_t size, char align, uintptr_t * phys);
 			uintptr_t kmalloc(size_t size);
 			uintptr_t kvmalloc(size_t size);
