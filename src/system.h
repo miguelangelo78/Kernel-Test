@@ -26,26 +26,6 @@ enum SEGSEL {
 /* Returns the difference between the end of the kernel binary and the start */
 #define KERNELSIZE() SEGSIZE(kstart, end)
 
-/* Segments from the linker */
-extern void * kstart;
-extern void * code;
-extern void * end;
-extern void * data;
-extern void * bss;
-extern void * rodata;
-/* Segments from the linker (in struct form) */
-struct ld_seg {
-	void * ld_kstart;
-	void * ld_code;
-	void * ld_end;
-	void * ld_kend;
-	void * ld_data;
-	void * ld_bss;
-	void * ld_rodata;
-};
-extern struct ld_seg ld_segs;
-extern uintptr_t init_esp;
-
 #define asm __asm__
 #define volatile __volatile__
 

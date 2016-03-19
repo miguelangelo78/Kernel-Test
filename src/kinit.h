@@ -5,6 +5,14 @@
 
 #define MEMSIZE() (mboot_ptr->mem_upper + mboot_ptr->mem_lower)
 
+/* Segments from the linker */
+extern void * kstart;
+extern void * code;
+extern void * end;
+extern void * data;
+extern void * bss;
+extern void * rodata;
+
 /* Initialization data goes here, like the Multiboot, for example */
 namespace Kernel {
 namespace KInit {
@@ -80,8 +88,21 @@ namespace KInit {
 		uint32_t type;
 	} __packed mboot_memmap_t;
 
+	/* Segments from the linker (in struct form) */
+	struct ld_seg {
+		void * ld_kstart;
+		void * ld_code;
+		void * ld_end;
+		void * ld_kend;
+		void * ld_data;
+		void * ld_bss;
+		void * ld_rodata;
+	};
+	extern struct ld_seg ld_segs;
+
 	/* Defined in kmain.cpp */
 	extern struct multiboot_t * mboot_ptr;
 	extern mboot_mod_t * mboot_mods;
+	extern uintptr_t init_esp;
 }
 }

@@ -11,22 +11,33 @@ namespace Kernel {
 		/* Multiboot pointer: */
 		struct multiboot_t * mboot_ptr = 0;
 		mboot_mod_t * mboot_mods = (mboot_mod_t*)0;
+
+		/* Initial stack pointer: */
+		uintptr_t init_esp = 0;
+
+		/* Linker segments: */
+		struct ld_seg ld_segs;
+
+		void setup_linker_pointers(void) {
+			ld_segs.ld_kstart = &kstart;
+			ld_segs.ld_code = &code;
+			ld_segs.ld_end = &end;
+			ld_segs.ld_kend = &end;
+			ld_segs.ld_data = &data;
+			ld_segs.ld_bss = &bss;
+			ld_segs.ld_rodata = &rodata;
+		}
 	}
 
 	/* Terminal which uses text-mode video */
 	Terminal term;
 	/* Serial port (COM1) which will be used for logging: */
 	Serial serial;
-
-	/* Initial stack pointer: */
-	uintptr_t init_esp = 0;
 	
-	/* Linker segments: */
-	struct ld_seg ld_segs;
 
 	void relocate_stack(void) {
 		if ((IS_BIT_SET(mboot_ptr->flags, 3)) && mboot_ptr->mods_count > 0) {
-			uintptr_t last_mod = (uintptr_t)&ld_segs.ld_end;
+			uintptr_t last_mod = (uintptr_t)&KInit::ld_segs.ld_end;
 
 			mboot_mods = (mboot_mod_t*)mboot_ptr->mods_addr;
 
@@ -43,19 +54,14 @@ namespace Kernel {
 		}
 	}
 
-	void setup_linker_pointers(void) {
-		ld_segs.ld_kstart = &kstart;
-		ld_segs.ld_code = &code;
-		ld_segs.ld_end = &end;
-		ld_segs.ld_kend = &end;
-		ld_segs.ld_data = &data;
-		ld_segs.ld_bss = &bss;
-		ld_segs.ld_rodata = &rodata;
-	}
-
-	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_stack) 
+	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_esp)
 	{
 		/******* Initialize everything: *******/
+		/* Initialize critical data: */
+		KInit::init_esp = initial_esp;
+		mboot_ptr = mboot;
+		setup_linker_pointers();
+
 		/* Install the core components very early (because of Serial): */
 		CPU::GDT::gdt_init();
 		CPU::IDT::idt_init();
@@ -67,11 +73,6 @@ namespace Kernel {
 
 		Log::redirect_log(LOG_SERIAL);
 
-		/* Initialize critical data: */
-		init_esp = initial_stack;
-		mboot_ptr = mboot;
-		setup_linker_pointers();
-
 		/* Output initial data from multiboot: */
 		kprintf("> Bootloader: %s| Module Count: %d at 0x%x\n> Memory: 0x%x ",
 			mboot_ptr->boot_loader_name,
@@ -79,7 +80,7 @@ namespace Kernel {
 			mboot_ptr->mods_addr,
 			MEMSIZE());
 		kprintfc(COLOR_WARNING, "* %d MB *", MEMSIZE()/1024);
-		kprintf(" (start: 0x%x end: 0x%x = 0x%x)\n", ld_segs.ld_kstart, ld_segs.ld_kend, KERNELSIZE());
+		kprintf(" (start: 0x%x end: 0x%x = 0x%x)\n", KInit::ld_segs.ld_kstart, KInit::ld_segs.ld_kend, KERNELSIZE());
 		kprintf("> ESP: 0x%x\n\n", init_esp);
 		
 		/* Validate Multiboot: */

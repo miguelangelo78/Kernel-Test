@@ -46,4 +46,3 @@ start:
     cli
     hlt
 	jmp $ ; It is impossible to reach this, but, just in case
-    

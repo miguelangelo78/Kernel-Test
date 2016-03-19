@@ -272,7 +272,7 @@ void paging_install(uint32_t memsize) {
 			memset(&curr_dir->tables[table_ctr].pages[page_ctr], 0, sizeof(page_t));
 	}
 
-	/* Main allocations: */
+	/* Allocate entire kernel (from address 0 to frame_ptr): */
 	for (uintptr_t i = 0; i <= frame_ptr; i += PAGE_SIZE)
 		alloc_page(1, 0);
 	
@@ -280,14 +280,13 @@ void paging_install(uint32_t memsize) {
 	for (uintptr_t i = 0xB8000; i <= 0xBF000; i += PAGE_SIZE)
 		alloc_page(0, 1, i);
 
-	/* Preallocate some extra heap: */
-	if (KERNEL_HEAP_INIT <= frame_ptr)
-		heap_head = frame_ptr + (memsize*1024); /* Allocate the rest of the memory (TODO: FIX THIS, we don't want to allocate for the entire memory...) */
-	for (uintptr_t i = frame_ptr; i < heap_head; i += PAGE_SIZE)
-		alloc_page(1, 0);
+	/* And finally allocate the stack, from the base to the top: */
+	for(uintptr_t i = CPU::read_reg(CPU::esp); i > CPU::read_reg(CPU::ebp)-PAGE_SIZE * 2; i-=PAGE_SIZE)
+		alloc_page(1, 1, i);
 
 	switch_directory(curr_dir);
 	enable_paging();
+
 	/* Finally, set up heap pointer to the start of the heap:  */
 	heap_install();
 	mem_test();
