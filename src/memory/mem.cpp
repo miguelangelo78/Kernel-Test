@@ -280,8 +280,8 @@ void paging_install(uint32_t memsize) {
 	for (uintptr_t i = 0xB8000; i <= 0xBF000; i += PAGE_SIZE)
 		alloc_page(0, 1, i);
 
-	/* And finally allocate the stack, from the base to the top: */
-	for(uintptr_t i = CPU::read_reg(CPU::esp); i > CPU::read_reg(CPU::ebp)-PAGE_SIZE * 2; i-=PAGE_SIZE)
+	/* And finally allocate space for the stack: */
+	for(uintptr_t i = KInit::init_esp; i > CPU::read_reg(CPU::ebp)-(PAGE_SIZE * STACK_SIZE); i-=PAGE_SIZE)
 		alloc_page(1, 1, i);
 
 	switch_directory(curr_dir);

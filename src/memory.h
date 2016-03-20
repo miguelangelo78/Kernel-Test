@@ -7,13 +7,11 @@ AAAAAAAAAA         BBBBBBBBBB        CCCCCCCCCCCC
 directory index    page table index  offset into page
 (http://www.brokenthorn.com/Resources/OSDev18.html) */
 
-#define USER_STACK_BOTTOM 0xAFF00000
-#define USER_STACK_TOP    0xB0000000
-#define SHM_START         0xB0000000
-
 #define KERNEL_HEAP_INIT 0x00800000
 #define KERNEL_HEAP_END  0x20000000
 #define KERNEL_HEAP_SIZE KERNEL_HEAP_END - KERNEL_HEAP_INIT
+
+#define STACK_SIZE 20 /* Block count, that is, page (4kb) */
 
 #define PAGES_PER_TABLE 1024
 #define TABLES_PER_DIR 1024
