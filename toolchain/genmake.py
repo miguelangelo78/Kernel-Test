@@ -129,6 +129,7 @@ class Metadata_injector():
 	flags = ""
 	deps = ""
 	misc = ""
+	mods = ""
 	disable_llvm = LLVM_ENABLED
 
 # Parses one source file and injects into the makefile some flags, dependencies or something else that the programmer wants
@@ -148,6 +149,13 @@ def parse_injections_sourcefile(source_content):
 	match_misc = re.search(r'\$INJ\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_misc:
 		meta.misc = match_misc.group(1)
+
+	match_ismod = re.search(r'\$MOD\((.+)?\)', source_content, re.M)
+	if match_ismod:
+		meta.mods = 1
+	else:
+		meta.mods = 0
+
 	match_llvm_disable = re.search(r'\$LLVMDISABLE\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_llvm_disable:
 		try:
@@ -189,11 +197,15 @@ def parseFileFormat(fileformat):
 
 	return dat
 
-def write_subdir_entry(subdirmk_file, toolchain, file_objname, file_path, customflags, deps, injection):
-	subdirmk_file.write('\n$(BOUT)\\' + file_objname + '.o: ' + file_path + ' ' + deps + '\n\
+def write_subdir_entry(subdirmk_file, toolchain, file_objname, file_path, customflags, deps, injection, ismod):
+	entry_output_path = "$@"
+	if ismod:
+		entry_output_path = "build/modules/"+file_objname+".mod"
+	
+	subdirmk_file.write('\n$(BOUT)\\'+('modules\\' if ismod else'') + file_objname + ('.o' if not ismod else'.mod')+': ' + file_path + ' ' + deps + '\n\
 	@echo \'>> Building file $<\'\n\
 	@echo \'>> Invoking ' + toolchain.toolname + '\'\n\
-	$(' + toolchain.compiler_in_use  + ') $(' + toolchain.flags_in_use + ') ' + customflags + ' -o $@ '+ ('-c' if not toolchain.is_asm else '') +' $< '+ deps + ' '+ injection +'\n\
+	$(' + toolchain.compiler_in_use  + ') $(' + toolchain.flags_in_use + ') ' + customflags + ' -o '+entry_output_path+' '+ ('-c' if not toolchain.is_asm else '') +' $< '+ deps + ' '+ injection +'\n\
 	@echo \'>> Finished building: $<\'\n\
 	@echo \' \'\n')
 
@@ -211,11 +223,24 @@ def gen_make(tree):
 		# Write obj list into the current subdir.mk:
 		subdirmk.write('OBJS +=')
 		files = [] # File without extension nor path
+		modcount = []
 		for ffile in dir:
 			files.append(ffile[ffile.rfind('\\')+1:ffile.rfind('.')])
+			
+			# Prevent this mod from being linked to the core kernel:
+			if re.search(r'\$MOD\((.+)?\)', open(ffile).read(), re.M):
+				modcount.append(ffile)
+				continue
+			
 			# Append objects to $(OBJS):
 			subdirmk.write(' \\\n$(BOUT)\\' + files[-1] + '.o')
 		subdirmk.write('\n')
+
+		if len(modcount) > 0:
+			subdirmk.write('MODS +=')
+			for ffile in files:
+				subdirmk.write(' \\\n$(BOUT)\\modules\\' + ffile + '.mod')
+			subdirmk.write('\n')
 
 		# Add targets:
 		i = 0
@@ -233,7 +258,7 @@ def gen_make(tree):
 			# Decide what compiler/assembler/other tool to use for this file:
 			toolchainData = parseFileFormat(ffile[ffile.index('.'):][1:])
 			# Input object entry into the current subdir.mk
-			write_subdir_entry(subdirmk, toolchainData, files[i], ffile, src_file_meta.flags, src_file_meta.deps, src_file_meta.misc)
+			write_subdir_entry(subdirmk, toolchainData, files[i], ffile, src_file_meta.flags, src_file_meta.deps, src_file_meta.misc, src_file_meta.mods)
 
 			toggle_llvm(LLVM_ENABLED) # Restore llvm flag to default
 
@@ -269,7 +294,7 @@ STAGE2OBJ = " + stage2obj + "\n\n\
 ############### Main targets ###############\n\n\
 all: kernel-link\n\n\
 # Link all those subdir.mk object files into the whole Kernel:\n\
-kernel-link: $(OBJS)\n\
+kernel-link: $(OBJS) $(MODS)\n\
 	@echo '----------'\n\
 	@echo 'Toolchain: " + ct.toolname + "'\n\
 	@echo '>>>> Linking Kernel <<<<'\n\
@@ -278,7 +303,8 @@ kernel-link: $(OBJS)\n\
 	@echo '>>>> Finished building target: $@ <<<<'\n\
 	@echo '----------'\n\n\
 clean:\n\
-	rm $(BOUT)/*.o\n")
+	rm $(BOUT)/*.o\n\
+	rm $(BOUT)/modules/*.mod\n")
 	makefile.close()
 
 print "**** Generating Makefile project. ****\n**** Source code's top path: '"+ct.top_path+"'. ****\n**** Main makefile's path: '"+ct.make_path+"'. ****"

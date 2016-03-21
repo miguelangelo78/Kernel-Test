@@ -71,7 +71,7 @@ namespace Kernel {
 
 		term.init();
 		serial.init(COM1);
-		//Log::redirect_log(LOG_SERIAL);
+		Log::redirect_log(LOG_SERIAL);
 
 		/* Output initial data from multiboot: */
 		kprintf("> Bootloader: %s| Module Count: %d at 0x%x\n> Memory: 0x%x ",
@@ -117,10 +117,13 @@ namespace Kernel {
 		if (mboot_ptr->cmdline) args_parse((char*)mboot_ptr->cmdline);
 		DEBUGOK();
 
+		/* Load modules: */
+		kputs("> Loading up modules - "); Module::modules_load(); DEBUGOK();
+
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1 - Set up: \n  1.1 - Modules\n  1.2 - Timer/FPU/CMOS"
-		"\n  1.3 - Tasking\n  1.4 - Syscalls\n  1.5 - Shared memory");
+		kputs("1 - Set up: \n  1.1 - Timer/FPU/CMOS"
+		"\n  1.2 - Tasking\n  1.3 - Syscalls\n  1.4 - Shared memory");
 
 		/* All done! */
 		kputsc("\nReady", COLOR_GOOD);

@@ -7,13 +7,15 @@ namespace Module {
 	extern "C" { void kernel_symbols_start(void); }
 	extern "C" { void kernel_symbols_end(void); }
 
+	extern void modules_load(void);
+
 	#define EXPORT_SYMBOL(sym) \
 		Module::sym_t _sym_## sym __attribute__((section(".symbols"))) = {(char*)#sym, (uintptr_t)&sym}
 
 	/* Calculate the next symbol's address: */
 	#define SYM_NEXT(sym_ptr) (sym_t*)((uintptr_t)sym_ptr + sizeof(sym_ptr->name) + sizeof(sym_ptr->addr))
 
-	/* Used to iterate the symbol section and to declare symbols */
+	/* Used to iterate the symbol section and to declare symbols: */
 	typedef struct {
 		char * name;
 		uintptr_t addr;
@@ -50,14 +52,12 @@ namespace Module {
 	inline void * symbol_call(const char * name, void * params) {
 		typedef void * (*cback)(void*);
 		cback fptr = (cback)Module::symbol_find(name);
-		if (fptr) return fptr(params);
-		else return NULL;
+		return fptr ? fptr(params) : NULL;
 	}
 
 	inline void * symbol_call(const char * name) {
 		typedef void * (*cback)(void);
 		cback fptr = (cback)Module::symbol_find(name);
-		if (fptr) return fptr();
-		else return NULL;
+		return fptr ? fptr() : NULL;
 	}
 }

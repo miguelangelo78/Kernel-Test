@@ -4,6 +4,7 @@ $(BOUT)\error.o \
 $(BOUT)\initrd.o \
 $(BOUT)\kmain.o \
 $(BOUT)\log.o \
+$(BOUT)\module.o \
 $(BOUT)\serial.o \
 $(BOUT)\spin.o \
 $(BOUT)\terminal.o \
@@ -38,6 +39,13 @@ $(BOUT)\kmain.o: src\kmain.cpp
 	@echo ' '
 
 $(BOUT)\log.o: src\log.cpp 
+	@echo '>> Building file $<'
+	@echo '>> Invoking LLVM C++ Clang++'
+	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  
+	@echo '>> Finished building: $<'
+	@echo ' '
+
+$(BOUT)\module.o: src\module.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking LLVM C++ Clang++'
 	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  

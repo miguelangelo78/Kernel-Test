@@ -31,6 +31,7 @@ include src\arch\x86\isr\subdir.mk
 include src\libc\subdir.mk
 include src\libc\data_struct\subdir.mk
 include src\memory\subdir.mk
+include src\mod\subdir.mk
 include src\task\subdir.mk
 
 ############### Main targets ###############
@@ -38,7 +39,7 @@ include src\task\subdir.mk
 all: kernel-link
 
 # Link all those subdir.mk object files into the whole Kernel:
-kernel-link: $(OBJS)
+kernel-link: $(OBJS) $(MODS)
 	@echo '----------'
 	@echo 'Toolchain: LLVM Toolchain'
 	@echo '>>>> Linking Kernel <<<<'
@@ -49,3 +50,4 @@ kernel-link: $(OBJS)
 
 clean:
 	rm $(BOUT)/*.o
+	rm $(BOUT)/modules/*.mod
