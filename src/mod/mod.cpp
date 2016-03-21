@@ -5,7 +5,7 @@
  *      Author: Miguel
  */
 
-// $MOD()
+#include <module.h>
 
 static int mod_ini(void) {
 
@@ -16,4 +16,4 @@ static int mod_fini(void) {
 
 }
 
-
+MODULE_DEF(modtest, mod_ini, mod_fini);

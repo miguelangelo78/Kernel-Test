@@ -4,10 +4,26 @@
 #include <stdint.h>
 
 namespace Module {
-	extern "C" { void kernel_symbols_start(void); }
-	extern "C" { void kernel_symbols_end(void); }
+
+	/********** MODULES **********/
+	#define MODULE_DEF(name, ini, fini) Module::modent_t module_info_ ## name = { #name, &ini, &fini }
+
+	typedef struct {
+		char * name;
+		int (*init)(void);
+		int (*fini)(void);
+	} modent_t;
+
+	typedef struct {
+
+	} mod_t;
 
 	extern void modules_load(void);
+
+
+	/********** SYMBOLS **********/
+	extern "C" { void kernel_symbols_start(void); }
+	extern "C" { void kernel_symbols_end(void); }
 
 	#define EXPORT_SYMBOL(sym) \
 		Module::sym_t _sym_## sym __attribute__((section(".symbols"))) = {(char*)#sym, (uintptr_t)&sym}

@@ -150,7 +150,7 @@ def parse_injections_sourcefile(source_content):
 	if match_misc:
 		meta.misc = match_misc.group(1)
 
-	match_ismod = re.search(r'\$MOD\((.+)?\)', source_content, re.M)
+	match_ismod = re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?MODULE_DEF\((.+)?\)', source_content, re.M)
 	if match_ismod:
 		meta.mods = 1
 	else:
@@ -228,7 +228,7 @@ def gen_make(tree):
 			files.append(ffile[ffile.rfind('\\')+1:ffile.rfind('.')])
 			
 			# Prevent this mod from being linked to the core kernel:
-			if re.search(r'\$MOD\((.+)?\)', open(ffile).read(), re.M):
+			if re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?MODULE_DEF\((.+)?\)', open(ffile).read(), re.M):
 				modcount.append(ffile)
 				continue
 			
