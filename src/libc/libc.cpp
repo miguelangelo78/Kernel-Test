@@ -1,4 +1,4 @@
-#include <libc.h>
+#include <system.h>
 
 unsigned short * memsetw(unsigned short * dest, unsigned short val, int count) {
 	int i = 0;
@@ -103,10 +103,8 @@ size_t strlen(const char * s) {
 }
 
 char * strdup(const char * s) {
-	// TODO: Needs heap
-	//size_t l = strlen(s);
-	//return memcpy(malloc(l + 1), s, l + 1);
-	return (char*)NULL;
+	size_t l = strlen(s);
+	return (char*)memcpy((void*)malloc((uintptr_t)(l + 1)), s, l + 1);
 }
 
 char * stpcpy(char * __restrict__ d, const char * __restrict__ s) {

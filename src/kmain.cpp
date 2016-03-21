@@ -98,15 +98,10 @@ namespace Kernel {
 		/* IRQs were installed early: */
 		kputs("> Installing IRQs (PIC) - "); DEBUGOK();
 		
-		/* Move stack up because of modules: */
-		kputs("> Relocating heap - ");
-		relocate_heap();
-		DEBUGOK();
-
+		/* Move heap up because of modules: */
+		kputs("> Relocating heap - "); relocate_heap(); DEBUGOK();
 		/* Enable paging and heap: */
-		kputs("> Installing paging and heap - ");
-		paging_install(MEMSIZE());
-		DEBUGOK();
+		kputs("> Installing paging and heap - "); paging_install(MEMSIZE()); DEBUGOK();
 
 		/* Install VFS (with or without initrd): */
 		if(mboot_ptr->mods_count > 0) {
@@ -135,9 +130,6 @@ namespace Kernel {
 		for(;;)
 			if(serial.is_ready()) {
 				char c = serial.read_async();
-				if(c=='p') {
-					*(char*)-1='a';
-				}
 				/* Echo back: */
 				kprintf("%c", c);
 				serial.write(c);

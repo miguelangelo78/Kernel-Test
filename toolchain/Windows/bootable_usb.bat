@@ -6,11 +6,16 @@
 @if "%drive%" == "c" ( @printf "ERROR: Do not use an invalid drive (like C:)\n" && pause && exit )
 @if "%drive%" == "C" ( @printf "ERROR: Do not use an invalid drive (like C:)\n" && pause && exit )
 
+@cd ..\..\iso\Windows\syslinux
+
 syslinux.exe --mbr --active --directory / --install %drive%:
 copy isolinux.bin %drive%:\
 copy libcom32.c32 %drive%:\
 copy mboot.c32 %drive%:\
 copy syslinux.cfg %drive%:\
+
+@cd ..\..
+
 copy initrd.img %drive%:\
 copy ksharp.bin %drive%:\
 

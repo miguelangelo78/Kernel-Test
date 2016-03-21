@@ -25,8 +25,10 @@ printf "The modules' folder is empty. No modules will be installed.\n"
 :build_step3
 
 printf "\n\nSTEP 3 - Creating disk (ISO9660)...\n\n"
-del iso\KernelSharp.iso
-toolchain\Tools\Windows\ISO9660Generator.exe 4 "%CD%\iso\KernelSharp.iso" "%CD%\iso\isolinux.bin" true "%CD%\iso"
+del iso\KernelSharp.iso 2>NUL
+copy iso\initrd.img iso\Windows\syslinux >NUL
+copy iso\ksharp.bin iso\Windows\syslinux >NUL
+toolchain\Tools\Windows\ISO9660Generator.exe 4 "%CD%\iso\KernelSharp.iso" "%CD%\iso\Windows\syslinux\isolinux.bin" true "%CD%\iso\Windows\syslinux"
 if ERRORLEVEL 1 ( call:errorhandle "Creating Disk" )
 
 call toolchain\Windows\launch_x86_64.bat

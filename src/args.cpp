@@ -30,11 +30,12 @@ char * args_value(char * karg) {
 *
 * @param arg A string containing all arguments, separated by spaces.
 */
+
 void args_parse(char * _arg) {
-	/* Sanity check... */
 	if (!_arg) return;
 
 	char * arg = strdup(_arg);
+
 	char * argv[1024];
 	int argc = tokenize(arg, (char*)" ", argv);
 
