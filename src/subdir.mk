@@ -1,6 +1,7 @@
 OBJS += \
 $(BOUT)\args.o \
 $(BOUT)\error.o \
+$(BOUT)\initrd.o \
 $(BOUT)\kmain.o \
 $(BOUT)\log.o \
 $(BOUT)\serial.o \
@@ -16,6 +17,13 @@ $(BOUT)\args.o: src\args.cpp
 	@echo ' '
 
 $(BOUT)\error.o: src\error.cpp 
+	@echo '>> Building file $<'
+	@echo '>> Invoking LLVM C++ Clang++'
+	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  
+	@echo '>> Finished building: $<'
+	@echo ' '
+
+$(BOUT)\initrd.o: src\initrd.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking LLVM C++ Clang++'
 	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  

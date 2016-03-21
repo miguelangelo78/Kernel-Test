@@ -35,7 +35,7 @@ namespace Kernel {
 	Serial serial;
 	
 
-	void relocate_stack(void) {
+	void relocate_heap(void) {
 		if ((IS_BIT_SET(mboot_ptr->flags, 3)) && mboot_ptr->mods_count > 0) {
 			uintptr_t last_mod = (uintptr_t)&KInit::ld_segs.ld_end;
 
@@ -50,6 +50,7 @@ namespace Kernel {
 				if(last_mod < mod->mod_end)
 					last_mod = mod->mod_end;
 			}
+			kprintf("Moving heap to 0x%x! ", last_mod);
 			kheap_starts(last_mod); /* Set new heap pointer */
 		}
 	}
@@ -70,14 +71,13 @@ namespace Kernel {
 
 		term.init();
 		serial.init(COM1);
-
-		Log::redirect_log(LOG_SERIAL);
+		//Log::redirect_log(LOG_SERIAL);
 
 		/* Output initial data from multiboot: */
 		kprintf("> Bootloader: %s| Module Count: %d at 0x%x\n> Memory: 0x%x ",
 			mboot_ptr->boot_loader_name,
-			mboot_ptr->mods_count,
-			mboot_ptr->mods_addr,
+			(((initrd_header_t*)*(uint32_t*)mboot_ptr->mods_addr))->file_count,
+			*(uint32_t*)mboot_ptr->mods_addr,
 			MEMSIZE());
 		kprintfc(COLOR_WARNING, "* %d MB *", MEMSIZE()/1024);
 		kprintf(" (start: 0x%x end: 0x%x = 0x%x)\n", KInit::ld_segs.ld_kstart, KInit::ld_segs.ld_kend, KERNELSIZE());
@@ -99,8 +99,8 @@ namespace Kernel {
 		kputs("> Installing IRQs (PIC) - "); DEBUGOK();
 		
 		/* Move stack up because of modules: */
-		kputs("> Relocating stack - ");
-		relocate_stack();
+		kputs("> Relocating heap - ");
+		relocate_heap();
 		DEBUGOK();
 
 		/* Enable paging and heap: */
@@ -108,8 +108,14 @@ namespace Kernel {
 		paging_install(MEMSIZE());
 		DEBUGOK();
 
-		kputs("> Installing VFS - ");
-		vfs_install();
+		/* Install VFS (with or without initrd): */
+		if(mboot_ptr->mods_count > 0) {
+			kputs("> Installing VFS (with initrd) - ");
+			vfs_install(mboot->mods_addr);
+		} else {
+			kputs("> Installing VFS - ");
+			vfs_install();
+		}
 		DEBUGOK();
 
 		kputs("> Setting up command line - ");
@@ -118,15 +124,11 @@ namespace Kernel {
 
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1 - Set up: \n  1.1 - Tasking"
-			"\n  1.2 - Timer\n  1.3 - FPU"
-			"\n  1.4 - Syscalls\n  1.5 - Shared memory"
-			"\n  1.6 - Init modules\n")
-		kputs("2 - Code up modules and load them\n");
+		kputs("1 - Set up: \n  1.1 - Modules\n  1.2 - Timer/FPU/CMOS"
+		"\n  1.3 - Tasking\n  1.4 - Syscalls\n  1.5 - Shared memory");
 
 		/* All done! */
 		kputsc("\nReady", COLOR_GOOD);
-
 		Log::redirect_log(LOG_VGA);
 		kputsc("Ready", COLOR_GOOD);
 

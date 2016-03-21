@@ -52,6 +52,15 @@ void Terminal::reset_cursor() {
 	cursor_x = cursor_y = 0;
 }
 
+Point Terminal::go_to(uint8_t x, uint8_t y) {
+	Point oldp;
+	oldp.X = cursor_x;
+	oldp.Y = cursor_y;
+	cursor_x = x;
+	cursor_y = y;
+	return oldp;
+}
+
 char printf_buff[256];
 #define term_printf(fmt, color) strfmt(printf_buff, fmt); \
 								puts(printf_buff, color); \

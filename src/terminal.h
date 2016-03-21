@@ -46,6 +46,7 @@ class Terminal {
 		void clear(void);
 		void fill(uint8_t color);
 		void reset_cursor(void);
+		Point go_to(uint8_t x, uint8_t y);
 	private:
 		void hide_textmode_cursor(void);
 		int cursor_x, cursor_y;

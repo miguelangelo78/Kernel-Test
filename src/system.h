@@ -11,6 +11,8 @@
 #include <memory.h>
 #include <log.h>
 #include <arch/x86/cpu.h>
+#include <fs.h>
+#include <initrd.h>
 
 /* Memory segment selectors: */
 enum SEGSEL {
