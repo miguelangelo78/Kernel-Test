@@ -11,6 +11,7 @@ copy isolinux.bin %drive%:\
 copy libcom32.c32 %drive%:\
 copy mboot.c32 %drive%:\
 copy syslinux.cfg %drive%:\
+copy initrd.img %drive%:\
 copy ksharp.bin %drive%:\
 
 @printf "\nCongratulations. The USB %drive% is now bootable. Restart your computer to boot it.\n"

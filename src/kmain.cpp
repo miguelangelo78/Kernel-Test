@@ -71,7 +71,7 @@ namespace Kernel {
 
 		term.init();
 		serial.init(COM1);
-		Log::redirect_log(LOG_SERIAL);
+		//Log::redirect_log(LOG_SERIAL);
 
 		/* Output initial data from multiboot: */
 		kprintf("> Bootloader: %s| Module Count: %d at 0x%x\n> Memory: 0x%x ",
@@ -135,6 +135,9 @@ namespace Kernel {
 		for(;;)
 			if(serial.is_ready()) {
 				char c = serial.read_async();
+				if(c=='p') {
+					*(char*)-1='a';
+				}
 				/* Echo back: */
 				kprintf("%c", c);
 				serial.write(c);
