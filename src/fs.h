@@ -42,6 +42,7 @@ extern uint32_t fs_open(FILE* node, uint8_t read, uint8_t write);
 extern uint32_t fs_close(FILE* node);
 extern struct dirent * fs_readdir(FILE* node, uint32_t index);
 extern struct fs_node *fs_finddir(FILE* node, char * name);
+extern uint32_t fs_filesize(FILE * node);
 
 extern void vfs_install(void);
 extern void vfs_install(uintptr_t initrd_location); /* Install with Initrd's location */

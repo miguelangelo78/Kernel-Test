@@ -43,3 +43,7 @@ struct dirent * fs_readdir(FILE* node, uint32_t index) {
 struct fs_node * fs_finddir(FILE* node, char * name) {
 	return (fs_is_dir(node) && node->finddir) ? node->finddir(node, name) : 0;
 }
+
+uint32_t fs_filesize(FILE * node) {
+	return node->size;
+}

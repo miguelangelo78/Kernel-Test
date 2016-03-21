@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FILENAME_LENGTH 6
+#define FILENAME_LENGTH 64
 
 struct {
-	unsigned short header_size;
-	unsigned short file_count;
-	unsigned short * offset, * length;
+	unsigned int header_size;
+	unsigned int file_count;
+	unsigned int * offset, * length;
 	char ** filename;
 } __attribute__((packed)) initrd_header;
 
@@ -20,21 +20,21 @@ unsigned int filesize(char * filename) {
 }
 
 char * fileread(int buffer_size, char * filename) {
-	char * filebuff = (char*)malloc(buffer_size);
+	char * buff = (char*)malloc(buffer_size);
 	FILE * f = fopen(filename, "r");
-	fread(filebuff, sizeof(char), buffer_size, f);
+	fread(buff, sizeof(char), buffer_size, f);
 	fclose(f);
-	return filebuff;
+	return buff;
 }
 
-void create_initrd(void) {
+void create_initrd(char ** argv) {
 	printf("- Creating initrd.img ...\n");
 	FILE * initrd_file = fopen("iso/initrd.img", "w");
 
 	/* Write the entire struct into the file: */
-	fwrite((char*)&initrd_header.header_size, sizeof(unsigned short), 2, initrd_file);
-	fwrite(initrd_header.offset, sizeof(unsigned short), initrd_header.file_count, initrd_file);
-	fwrite(initrd_header.length, sizeof(unsigned short), initrd_header.file_count, initrd_file);
+	fwrite((char*)&initrd_header.header_size, sizeof(unsigned int), 2, initrd_file);
+	fwrite(initrd_header.offset, sizeof(unsigned int), initrd_header.file_count, initrd_file);
+	fwrite(initrd_header.length, sizeof(unsigned int), initrd_header.file_count, initrd_file);
 
 
 	int i;
@@ -43,7 +43,7 @@ void create_initrd(void) {
 
 	/* Now append the files: */
 	for(i = 0; i < initrd_header.file_count; i++) {
-		char * file_buff = fileread(initrd_header.length[i], initrd_header.filename[i]);
+		char * file_buff = fileread(initrd_header.length[i], argv[i+1]);
 		fwrite(file_buff, sizeof(char), initrd_header.length[i], initrd_file);
 		free(file_buff);
 	}
@@ -64,14 +64,14 @@ int main(char argc, char **argv) {
 
 	/* Allocate everything: */
 	initrd_header.file_count = argc - 1;
-	initrd_header.offset = (unsigned short*)malloc(sizeof(unsigned short) * initrd_header.file_count);
-	initrd_header.length = (unsigned short*)malloc(sizeof(unsigned short) * initrd_header.file_count);
+	initrd_header.offset = (unsigned int*)malloc(sizeof(unsigned int) * initrd_header.file_count);
+	initrd_header.length = (unsigned int*)malloc(sizeof(unsigned int) * initrd_header.file_count);
 	initrd_header.filename = (char**)malloc(sizeof(char*) * initrd_header.file_count);
 	
 	/* Calculate table size: */
 	initrd_header.header_size = 
-		sizeof(unsigned short) * 2
-		+ (sizeof(unsigned short) * initrd_header.file_count * 2) 
+		sizeof(unsigned int) * 2
+		+ (sizeof(unsigned int) * initrd_header.file_count * 2) 
 		+ (initrd_header.file_count * FILENAME_LENGTH);
 
 	/* Allocate the rest of the table (with respect to the files): */
@@ -88,7 +88,7 @@ int main(char argc, char **argv) {
 	}
 		
 	/* Now generate the initrd based on the table that we allocated: */
-	create_initrd();
+	create_initrd(argv);
 
 	/* Cleanup everything: */
 	free(initrd_header.offset);
