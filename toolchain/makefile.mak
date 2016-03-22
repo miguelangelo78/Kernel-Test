@@ -13,6 +13,7 @@ CFLAGS = -T $(TOOLCH)\$(LINKER) -Itoolchain\Tools\Windows\Cross\i686-elf\lib\gcc
 LLVMCFLAGS = -ffreestanding -nostdlib -nodefaultlibs -target i686-pc-none-elf -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -fno-exceptions -IC:\llvm\lib\clang\3.8.0\include -Isrc
 ASFLAGS = 
 NASFLAGS = -g -f elf32
+
 # Output constants (filenames and paths)
 DISKPATH = iso
 BOUT = build

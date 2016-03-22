@@ -74,9 +74,9 @@ namespace Kernel {
 		Log::redirect_log(LOG_SERIAL);
 
 		/* Output initial data from multiboot: */
-		kprintf("> Bootloader: %s| Module Count: %d at 0x%x\n> Memory: 0x%x ",
+		kprintf("> Bootloader: %s| Bootloader Mod Count: %d at 0x%x\n> Memory: 0x%x ",
 			mboot_ptr->boot_loader_name,
-			(((initrd_header_t*)*(uint32_t*)mboot_ptr->mods_addr))->file_count,
+			mboot_ptr->mods_count,
 			*(uint32_t*)mboot_ptr->mods_addr,
 			MEMSIZE());
 		kprintfc(COLOR_WARNING, "* %d MB *", MEMSIZE()/1024);
@@ -117,7 +117,7 @@ namespace Kernel {
 		if (mboot_ptr->cmdline) args_parse((char*)mboot_ptr->cmdline);
 		DEBUGOK();
 
-		/* Load modules: */
+		/* Load CORE modules ONLY: */
 		kputs("> Loading up modules - "); Module::modules_load(); DEBUGOK();
 
 		/* TODO List: */

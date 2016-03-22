@@ -7,13 +7,13 @@
 
 #include <module.h>
 
-static int mod_ini(void) {
-
+int mod_ini(void) {
+	kprintf("hello world");
 	return 0;
 }
 
-static int mod_fini(void) {
-
+int mod_fini(void) {
+	return 0;
 }
 
 MODULE_DEF(modtest, mod_ini, mod_fini);

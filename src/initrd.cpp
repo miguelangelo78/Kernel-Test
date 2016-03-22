@@ -7,6 +7,9 @@
 
 #include <system.h>
 
+#define MOD_EXTENTION ".mod"
+#define IS_FILE_MOD(filename) !strcmp(MOD_EXTENTION, strrchr(filename, '.'))
+
 initrd_header_t * initrd_header;
 
 FILE * initrd_root;
@@ -83,7 +86,7 @@ FILE * initrd_init(uint32_t location) {
 		root_files[i].close = 0;
 
 		if(Log::logging == LOG_SERIAL) {
-			kprintf("\n   * Module %d (@0x%x > @0x%x): %s", i+1,
+			kprintf("\n   * File %d (@0x%x > @0x%x): %s", i+1,
 					(uintptr_t)(&initrd_header->header_size) + ((unsigned int*)(&initrd_header->offset))[i],
 					root_files[i].size, filename_ptr);
 		}
@@ -94,24 +97,82 @@ FILE * initrd_init(uint32_t location) {
 	return initrd_root;
 }
 
-char * initrd_getmod(char * modname) {
-	FILE * node = fs_finddir(root, modname);
-	if(!node) return 0;
-
-	if(node->size > 1) {
-		char * buff = (char*)malloc(node->size+1);
-		fread(node, 0, node->size, (unsigned char*)buff);
-		buff[node->size] = 0;
+char * initrd_readfile(FILE * file, char alloc) {
+	if(alloc) {
+		char * buff = (char*)malloc(file->size + 1);
+		fread(file, 0, file->size, (unsigned char*)buff);
+		buff[file->size] = 0;
 		return buff;
 	} else {
-		return 0;
+		/* Do not allocate a buffer. Instead, return the ACTUAL address of the ACTUAL file */
+		return (char*)fs_getfile_addr(file);
 	}
 }
 
+char * initrd_readfile(FILE * file) {
+	return initrd_readfile(file, 0);
+}
+
+char * initrd_readfile(char * filename) {
+	FILE * node = fs_finddir(root, filename);
+	return (node && node->size) > 0 ? initrd_readfile(node) : 0;
+}
+
+char * initrd_readfile(int file_id) {
+	return file_id < initrd_filecount() ? initrd_readfile(initrd_readdir(root, file_id)->name) : 0;
+}
+
+char * initrd_getmod(char * modname) {
+	return IS_FILE_MOD(modname) ? initrd_readfile(modname) : 0;
+}
+
 char * initrd_getmod(int mod_id) {
-	return mod_id < initrd_modcount() ? initrd_getmod(initrd_readdir(root, mod_id)->name) : 0;
+	if(mod_id < initrd_modcount()) return 0;
+
+	int mod_ctr = 0;
+	char * mod_name;
+
+	for(int i = 0; i < initrd_filecount(); i++)
+		if(IS_FILE_MOD((mod_name = initrd_readdir(root, i)->name)))
+			if(mod_ctr++ == mod_id) break; /* We found our mod */
+
+	return initrd_getmod(mod_name);
+}
+
+char * initrd_getmod_name(int mod_id) {
+	char * modname;
+	for(int i = 0, mod_ctr = 0; i < initrd_filecount();i++)
+		if(IS_FILE_MOD((modname = initrd_readdir(root, i)->name)))
+			if(mod_ctr++ == mod_id)
+				return modname;
+	return 0; /* Module not found */
+}
+
+int initrd_filecount(void) {
+	return initrd_header->file_count;
 }
 
 int initrd_modcount(void) {
-	return initrd_header->file_count;
+	int modcount = 0;
+	for(int i = 0;i < initrd_filecount(); i++)
+		if(IS_FILE_MOD(initrd_readdir(root, i)->name))
+			modcount++;
+	return modcount;
+}
+
+FILE * initrd_getfile(char * filename) {
+	return fs_finddir(root, filename);
+}
+
+FILE * initrd_getfile(int file_id) {
+	return file_id < initrd_filecount() ? fs_finddir(root, initrd_readdir(root, file_id)->name) : 0;
+}
+
+FILE * initrd_getmod_file(char * modname) {
+	return IS_FILE_MOD(modname) ? initrd_getfile(modname) : 0;
+}
+
+FILE * initrd_getmod_file(int mod_id) {
+	char * modname = initrd_getmod_name(mod_id);
+	return modname ? fs_finddir(root, modname) : 0;
 }

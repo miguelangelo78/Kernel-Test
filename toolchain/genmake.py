@@ -137,7 +137,7 @@ def parse_injections_sourcefile(source_content):
 	meta = Metadata_injector()
 
 	# Search for flag injection (Format: $PROPERTY(VALUE) , it matches everything + the value and puts on group 1):
-	# Property list: $FLAGS(...), $DEPS(...), $INJ(...), $LLVMDISABLE(1/0)
+	# Property list: $FLAGS(...), $DEPS(...), $INJ(...), $LLVMENABLE(1/0)
 	match_flags = re.search(r'\$FLAGS\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_flags:
 		meta.flags = match_flags.group(1)
@@ -156,7 +156,7 @@ def parse_injections_sourcefile(source_content):
 	else:
 		meta.mods = 0
 
-	match_llvm_disable = re.search(r'\$LLVMDISABLE\(((?:\w|\n)+?)\)', source_content, re.M)
+	match_llvm_disable = re.search(r'\$LLVMENABLE\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_llvm_disable:
 		try:
 			meta.disable_llvm = int(match_llvm_disable.group(1)) 
@@ -200,15 +200,16 @@ def parseFileFormat(fileformat):
 def write_subdir_entry(subdirmk_file, toolchain, file_objname, file_path, customflags, deps, injection, ismod):
 	entry_output_path = "$@"
 	if ismod:
+		customflags += "-O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE"
 		entry_output_path = "build/modules/"+file_objname+".mod"
 	
-	subdirmk_file.write('\n$(BOUT)\\'+('modules\\' if ismod else'') + file_objname + ('.o' if not ismod else'.mod')+': ' + file_path + ' ' + deps + '\n\
+	subdirmk_file.write('\n$(BOUT)\\'+('modules\\' if ismod else '') + file_objname + ('.o' if not ismod else'.mod')+': ' + file_path + ' ' + deps + '\n\
 	@echo \'>> Building file $<\'\n\
 	@echo \'>> Invoking ' + toolchain.toolname + '\'\n\
 	$(' + toolchain.compiler_in_use  + ') $(' + toolchain.flags_in_use + ') ' + customflags + ' -o '+entry_output_path+' '+ ('-c' if not toolchain.is_asm else '') +' $< '+ deps + ' '+ injection +'\n\
 	@echo \'>> Finished building: $<\'\n\
 	@echo \' \'\n')
-
+	
 # Generates a makefile and the subdir makefiles:
 def gen_make(tree):
 	global gt, lt
@@ -283,6 +284,7 @@ LINKER = " + ct.linker_script 		+ "\n\
 " + lt.compiler_c.make_flagsym 		+ " = " + lt.compiler_c.flags 			+ "\n\
 " + ct.assembler_gas.make_flagsym 	+ " = " + ct.assembler_gas.flags 		+ "\n\
 " + ct.assembler_nasm.make_flagsym 	+ " = " + ct.assembler_nasm.flags 		+ "\n\
+\n\
 # Output constants (filenames and paths)\n\
 DISKPATH = " + ct.runnable_path + "\n\
 BOUT = " + ct.build_path + "\n\
