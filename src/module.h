@@ -14,14 +14,12 @@ namespace Module {
 		int (*fini)(void);
 	} modent_t;
 
-	typedef struct {
-
-	} mod_t;
-
 	extern void modules_load(void);
 
-
 	/********** SYMBOLS **********/
+	#define KERNEL_SYMBOLS_TABLE_START 0x100000 /* Very important macro!! */
+	#define KERNEL_SYMBOLS_TABLE_SIZE (PAGE_SIZE * 2) /* We reserved 2 pages for the symbol table at the very start of the kernel */
+	#define KERNEL_SYMBOLS_TABLE_END (KERNEL_SYMBOLS_TABLE_START + KERNEL_SYMBOLS_TABLE_SIZE) /* Very important macro!! */
 	extern "C" { void kernel_symbols_start(void); }
 	extern "C" { void kernel_symbols_end(void); }
 
@@ -38,8 +36,8 @@ namespace Module {
 	} __packed sym_t;
 
 	inline void * symbol_find(const char * name) {
-		sym_t * sym = (sym_t *)&kernel_symbols_start;
-		while((uintptr_t)sym < (uintptr_t)&kernel_symbols_end) {
+		sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
+		while((uintptr_t)sym < (uintptr_t)KERNEL_SYMBOLS_TABLE_END) {
 			if (strcmp(sym->name, name)) {
 				/* Fetch next symbol: */
 				sym = SYM_NEXT(sym);
@@ -51,13 +49,13 @@ namespace Module {
 	}
 
 	inline void * symbols_dump(void) {
-		sym_t * sym = (sym_t *)&kernel_symbols_start;
+		sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
 		kprintf("Symbol Section Start: 0x%x - End: 0x%x Size: 0x%x\n",
-			&kernel_symbols_start, 
-			&kernel_symbols_end, 
-			(uintptr_t)&kernel_symbols_end - (uintptr_t)&kernel_symbols_start);
+			KERNEL_SYMBOLS_TABLE_START,
+			KERNEL_SYMBOLS_TABLE_END,
+			(uintptr_t)KERNEL_SYMBOLS_TABLE_END - (uintptr_t)KERNEL_SYMBOLS_TABLE_START);
 		
-		for(int i = 1; (uintptr_t)sym < (uintptr_t)&kernel_symbols_end; i++) {
+		for(int i = 1; (uintptr_t)sym < (uintptr_t)KERNEL_SYMBOLS_TABLE_END; i++) {
 			kprintf("%d - %s: 0x%x\n", i, sym->name, sym->addr);
 			sym = SYM_NEXT(sym);
 		}
@@ -77,3 +75,5 @@ namespace Module {
 		return fptr ? fptr() : NULL;
 	}
 }
+
+using namespace Module;

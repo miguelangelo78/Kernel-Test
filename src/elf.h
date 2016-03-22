@@ -8,6 +8,8 @@
 #ifndef SRC_ELF_H_
 #define SRC_ELF_H_
 
+#include <libc.h>
+
 #define ELF_MAG 0x7F
 #define ELF_SIGN "ELF"
 
@@ -22,5 +24,7 @@ inline char elf32_is_elf(char * file_blob) {
 	signbuff[4] = 0;
 	return (!strcmp(signbuff + 1, ELF_SIGN) && signbuff[0] == ELF_MAG);
 }
+
+extern char * elf_parse(char * blob, int blobsize);
 
 #endif /* SRC_ELF_H_ */

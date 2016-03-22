@@ -86,11 +86,6 @@ void * memmove(void * dest, const void * src, size_t n) {
 	return dest;
 }
 
-int strcmp(const char * l, const char * r) {
-	for (; *l == *r && *l; l++, r++);
-	return *(uint8_t *)l - *(uint8_t *)r;
-}
-
 size_t strlen(const char * s) {
 	const char * a = s;
 	const size_t * w;

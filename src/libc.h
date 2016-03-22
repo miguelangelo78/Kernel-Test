@@ -30,7 +30,6 @@ void * memchr(const void * src, int c, size_t n);
 void * memrchr(const void * m, int c, size_t n);
 void * memmove(void * dest, const void * src, size_t n);
 
-int strcmp(const char * l, const char * r);
 size_t strlen(const char * s);
 char * strdup(const char * s);
 char * stpcpy(char * __restrict__ d, const char * __restrict__ s);
@@ -55,3 +54,8 @@ uint8_t startswith(const char * str, const char * accept);
 char * strtok_r(char * str, const char * delim, char ** saveptr);
 uint32_t __attribute__((pure)) krand(void);
 int tokenize(char * str, char * sep, char **buf);
+
+inline int strcmp(const char * l, const char * r) {
+	for (; *l == *r && *l; l++, r++);
+	return *(uint8_t *)l - *(uint8_t *)r;
+}

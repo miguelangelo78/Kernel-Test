@@ -222,7 +222,6 @@ namespace IRQ {
 	EXPORT_SYMBOL(_irq13);
 	EXPORT_SYMBOL(_irq14);
 	EXPORT_SYMBOL(_irq15);
-
 }
 }
 }

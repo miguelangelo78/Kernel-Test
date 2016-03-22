@@ -7,8 +7,11 @@
 
 #include <module.h>
 
+char hello[] = "hello world";
+
 int mod_ini(void) {
-	kprintf("hello world");
+	symbol_find("test");
+	hello[0] = 'c';
 	return 0;
 }
 

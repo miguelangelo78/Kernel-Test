@@ -12,7 +12,11 @@ SECTIONS
 	/* Kernel code: */
 	.text BLOCK(4K) : ALIGN(4K)
 	{
-		code = .;
+		PROVIDE(kernel_symbols_start = .);
+		*(.symbols);
+		. += 0x2000 - .; /* Allocate 2 pages for the symbol table */
+		PROVIDE(kernel_symbols_end = .);
+	 	code = .;
 		*(.multiboot)
 		*(.text)
 	}
@@ -29,9 +33,6 @@ SECTIONS
 	{
 		data = .;
 		*(.data)
-		PROVIDE(kernel_symbols_start = .);
-		*(.symbols)
-		PROVIDE(kernel_symbols_end = .);
 	}
 
 	/* Read-write data (uninitialized) plus stack */
