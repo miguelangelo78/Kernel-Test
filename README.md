@@ -62,7 +62,7 @@ You'll be required to make small preparations before compiling and testing the k
 	> 3- **build.bat**: Build the Kernel  
 	> 4- **build_and_run.bat**: Build the Kernel and run it immediately  
 	> 5- **clean.bat**: Delete all object files from the folder build  
-	> 6- **rebuild.bat**: Generates automatically the makefiles for all source files and rebuilds the Kernel
+	> 6- **rebuild.bat**: Generates automatically the makefiles for all source files and rebuilds the Kernel  
 	> 7- **rebuild_and_run.bat**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it  
 	> 8/9- **launch_i386.bat / launch_x86_64.bat**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).  
 
