@@ -18,7 +18,8 @@ namespace Module {
 
 	/********** SYMBOLS **********/
 	#define KERNEL_SYMBOLS_TABLE_START 0x100000 /* Very important macro!! */
-	#define KERNEL_SYMBOLS_TABLE_SIZE (PAGE_SIZE * 2) /* We reserved 2 pages for the symbol table at the very start of the kernel */
+	/* We reserved 2 pages for the symbol table at the very start of the kernel: */
+	#define KERNEL_SYMBOLS_TABLE_SIZE (PAGE_SIZE * 2) /* Each entry on the table is 8 bytes. This means the number of symbols that we can export is: TABLE_SIZE (in KiB) / 8 bytes  */
 	#define KERNEL_SYMBOLS_TABLE_END (KERNEL_SYMBOLS_TABLE_START + KERNEL_SYMBOLS_TABLE_SIZE) /* Very important macro!! */
 	extern "C" { void kernel_symbols_start(void); }
 	extern "C" { void kernel_symbols_end(void); }

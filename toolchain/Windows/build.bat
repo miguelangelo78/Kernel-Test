@@ -31,7 +31,7 @@ copy iso\ksharp.bin iso\Windows\syslinux >NUL
 toolchain\Tools\Windows\ISO9660Generator.exe 4 "%CD%\iso\KernelSharp.iso" "%CD%\iso\Windows\syslinux\isolinux.bin" true "%CD%\iso\Windows\syslinux"
 if ERRORLEVEL 1 ( call:errorhandle "Creating Disk" )
 
-call toolchain\Windows\launch_x86_64.bat
+@REM call toolchain\Windows\launch_x86_64.bat
 
 @GOTO:EOF
 

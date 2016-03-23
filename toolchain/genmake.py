@@ -200,7 +200,7 @@ def parseFileFormat(fileformat):
 def write_subdir_entry(subdirmk_file, toolchain, file_objname, file_path, customflags, deps, injection, ismod):
 	entry_output_path = "$@"
 	if ismod:
-		customflags += "-O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE"
+		customflags += "-fno-zero-initialized-in-bss -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE"
 		entry_output_path = "build/modules/"+file_objname+".mod"
 	
 	subdirmk_file.write('\n$(BOUT)\\'+('modules\\' if ismod else '') + file_objname + ('.o' if not ismod else'.mod')+': ' + file_path + ' ' + deps + '\n\
