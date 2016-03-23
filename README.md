@@ -44,6 +44,15 @@ You'll be required to make small preparations before compiling and testing the k
 **>> For Linux**
 > (Soon...)
 
+**Step 6)**
+
+**>> For Windows**
+> Download and install MINGW from here: [MINGW Download](http://www.mingw.org/). This will be necessary because of GDB.
+
+**>> For Linux**
+> Simply install GDB using ```> sudo apt-get install gdb```
+
+
 # How to Build and Run
 **>> For Windows**
 
