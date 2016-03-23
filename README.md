@@ -137,7 +137,7 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 
 	3. Memory
 		3.1. kmemory.cpp (Physical Memory Manager)
-		3.2. alloc.cpp (Slab allocator (malloc) by [Kevin Lange](https://github.com/klange))
+		3.2. alloc.cpp (Slab allocator (malloc) by Kevin Lange (https://github.com/klange))
 
 	4. IO
 		4.1. io.h (Input Output from/to the CPU)
