@@ -27,7 +27,7 @@ void modules_load(void) {
 		elf_parse(modblob, mod->size);
 	}
 
-	if(modcount) kprintf("\n\n");
+	if(modcount) kprintf("\n\n >> ");
 }
 
 }

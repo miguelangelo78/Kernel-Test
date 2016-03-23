@@ -63,15 +63,20 @@ namespace Kernel {
 		mboot_ptr = mboot;
 		setup_linker_pointers();
 
-		/* Install the core components very early (because of Serial): */
+		/* Install the core components very early (because of Serial and command line): */
 		CPU::GDT::gdt_init();
 		CPU::IDT::idt_init();
 		CPU::ISR::isrs_install();
 		CPU::IRQ::irq_install();
+		relocate_heap();
+		paging_install(MEMSIZE());
+
+		/* Initialize cmdline very early, because the cmdline might contain commands which indicate how to initialize the system */
+		if (mboot_ptr->cmdline)	args_parse((char*)mboot_ptr->cmdline);
 
 		term.init();
 		serial.init(COM1);
-		Log::redirect_log(LOG_SERIAL);
+		Log::redirect_log(LOG_SERIAL); /* TODO: Redirect the IO based on the cmdline */
 
 		/* Output initial data from multiboot: */
 		kprintf("> Bootloader: %s| Bootloader Mod Count: %d at 0x%x\n> Memory: 0x%x ",
@@ -89,6 +94,8 @@ namespace Kernel {
 		ASSERT(magic == MULTIBOOT_HEADER_MAGIC, "Multiboot is not valid!");
 		DEBUGVALID();
 		
+		/* Command line was initialized early: */
+		if (mboot_ptr->cmdline) { kputs("> Setting up command line - "); DEBUGOK(); }
 		/* GDT was installed early: */
 		kputs("> Installing GDT - "); DEBUGOK();
 		/* IDT was installed early: */
@@ -97,11 +104,10 @@ namespace Kernel {
 		kputs("> Installing ISRs - "); DEBUGOK();
 		/* IRQs were installed early: */
 		kputs("> Installing IRQs (PIC) - "); DEBUGOK();
-		
-		/* Move heap up because of modules: */
-		kputs("> Relocating heap - "); relocate_heap(); DEBUGOK();
-		/* Enable paging and heap: */
-		kputs("> Installing paging and heap - "); paging_install(MEMSIZE()); DEBUGOK();
+		/* Move heap up because of modules (DONE EARLY): */
+		kputs("> Relocating heap - "); DEBUGOK();
+		/* Enable paging and heap (DONE EARLY: */
+		kputs("> Installing paging and heap - "); DEBUGOK();
 
 		/* Install VFS (with or without initrd): */
 		if(mboot_ptr->mods_count > 0) {
@@ -111,10 +117,6 @@ namespace Kernel {
 			kputs("> Installing VFS - ");
 			vfs_install();
 		}
-		DEBUGOK();
-
-		kputs("> Setting up command line - ");
-		if (mboot_ptr->cmdline) args_parse((char*)mboot_ptr->cmdline);
 		DEBUGOK();
 
 		/* Load CORE modules ONLY: */
