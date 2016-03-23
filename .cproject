@@ -2,7 +2,7 @@
 <?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="0.1823920311">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="0.1823920311" moduleId="org.eclipse.cdt.core.settings" name="Default">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="0.1823920311" moduleId="org.eclipse.cdt.core.settings" name="Build">
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -14,7 +14,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="" id="0.1823920311" name="Default" parent="org.eclipse.cdt.build.core.prefbase.cfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="0.1823920311" name="Build" parent="org.eclipse.cdt.build.core.prefbase.cfg">
 					<folderInfo id="0.1823920311." name="/" resourcePath="">
 						<toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.1283347178" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
 							<targetPlatform id="org.eclipse.cdt.build.core.prefbase.toolchain.1283347178.746446343" name=""/>
@@ -103,6 +103,74 @@
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
+		<cconfiguration id="0.1823920311.1909232981">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="0.1823920311.1909232981" moduleId="org.eclipse.cdt.core.settings" name="Build and Run">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="0.1823920311.1909232981" name="Build and Run" parent="org.eclipse.cdt.build.core.prefbase.cfg">
+					<folderInfo id="0.1823920311.1909232981." name="/" resourcePath="">
+						<toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.1560874621" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
+							<targetPlatform id="org.eclipse.cdt.build.core.prefbase.toolchain.1560874621.1542491771" name=""/>
+							<builder cleanBuildTarget="${workspace_loc:/Kernel-Test}/toolchain/Windows/clean.bat" command="${workspace_loc:/Kernel-Test}/toolchain/Windows/build_and_run.bat" enabledIncrementalBuild="true" id="org.eclipse.cdt.build.core.settings.default.builder.457468125" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.libs.1763125385" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.1232373344" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1817411587" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.1961830307" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1230158555" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.925762900" name="GNU C" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.2088440223" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="0.1823920311.1948752707">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="0.1823920311.1948752707" moduleId="org.eclipse.cdt.core.settings" name="Rebuild and Run">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="0.1823920311.1948752707" name="Rebuild and Run" parent="org.eclipse.cdt.build.core.prefbase.cfg">
+					<folderInfo id="0.1823920311.1948752707." name="/" resourcePath="">
+						<toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.809688320" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
+							<targetPlatform id="org.eclipse.cdt.build.core.prefbase.toolchain.809688320.1144421323" name=""/>
+							<builder cleanBuildTarget="${workspace_loc:/Kernel-Test}/toolchain/Windows/clean.bat" command="${workspace_loc:/Kernel-Test}/toolchain/Windows/rebuild_and_run.bat" enabledIncrementalBuild="true" id="org.eclipse.cdt.build.core.settings.default.builder.1772272619" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.libs.1727217216" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.13390671" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.512682560" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.2030587231" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1695831107" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.856457979" name="GNU C" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1837686650" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="Kernel-Test.null.847718072" name="Kernel-Test"/>
@@ -115,6 +183,7 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Clean"/>
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
 		</configuration>
