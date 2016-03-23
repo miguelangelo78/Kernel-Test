@@ -121,10 +121,10 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 
 
 > - **Kernel**
-	 1. **Init**
-		 1.1. kmain.cpp (Start point)
-		 1.2. kinit.h (Multiboot header)
-		 1.3. initrd.cpp/.h (Allows modules to be loaded)
+	 1. **Init**  
+		 1.1. kmain.cpp (Start point)  
+		 1.2. kinit.h (Multiboot header)  
+		 1.3. initrd.cpp/.h (Allows modules to be loaded)  
 		 
 	 2. **Arch**
 		 2.1. x86
