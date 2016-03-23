@@ -72,7 +72,7 @@ You'll be required to make small preparations before compiling and testing the k
 > (Soon...)
 
 # How to Run on real machines
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If you want a more realistic approach to Kernel Development, you can simply access the folder 'iso' and run the script bootable_usb.bat. It'll ask what drive letter you want to install the kernel to, and you should select the Pendrive's correct letter. Then, simply boot the pendrive on any machine and it should work.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If you want a more realistic approach to Kernel Development, you can simply access the folder 'toolchain/Windows' and run the script bootable_usb.bat. It'll ask what drive letter you want to install the kernel to, and you should select the Pendrive's correct letter. Then, simply boot the pendrive on any machine and it should work.
 These scripts were prepared for only Windows for now. Linux will come soon.
 
 # x86 References
