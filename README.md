@@ -56,11 +56,15 @@ You'll be required to make small preparations before compiling and testing the k
 # How to Build and Run
 **>> For Windows**
 
-> Access the folder 'toolchain/Windows/' and there you'll find 5 batch scripts:  
-	> 1- **build.bat**: Build the Kernel and run it immediately  
-	> 2- **rebuild.bat**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it  
-	> 3- **clean.bat**: Delete all object files from the folder build  
-	> 4- **launch_i386.bat / launch_x86_64.bat**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).  
+> Access the folder 'toolchain/Windows/' and there you'll find 9 batch scripts:  
+	> 1- **bindump.bat**: Reads the kernel file with 'readelf' and opens a text editor with the result  
+	> 2- **bootable_usb.bat**: Makes your flash drive bootable with the kernel  
+	> 3- **build.bat**: Build the Kernel 
+	> 4- **build_and_run.bat**: Build the Kernel and run it immediately  
+	> 5- **clean.bat**: Delete all object files from the folder build  
+	> 6- **rebuild.bat**: Generates automatically the makefiles for all source files and rebuilds the Kernel
+	> 7- **rebuild_and_run.bat**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it  
+	> 8/9- **launch_i386.bat / launch_x86_64.bat**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).  
 
 For a more productive way of development, simply use Eclipse IDE (with CDT plugin) and import this repository into the workspace. The scripts are already set up and ready to be built and run.
 
@@ -101,43 +105,63 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 3 - VMware (http://www.vmware.com/)
 
 # Project structure
+>1) Documentation - The Documentation of this Kernel will progressively go here
 
->1) iso - **bootloader** (ISOLinux) files and **bootable HDD disk** (.iso), including **binary kernel**
+>2) build - All objects file will go here
+
+>2.1) build/modules - All built modules will go here
+
+>3) iso - **bootloader** (ISOLinux) files and **bootable HDD disk** (.iso), including **binary kernel**
 	
->2) src - **Entire source code** of the Project
+>4) src - **Entire source code** of the Project
 	
->3) toolchain - Tools for building (**nasm** + cross **compiler** (uncommitted)) and for **ISO generation**
-	
->4) scripts - **Launchers** and **generators** (aka Utility scritps, e.g. makefile generator)
+>5) toolchain\* - Tools for building (**nasm** + cross **compiler** (uncommitted)), for **ISO generation**, **Launchers** and **generators** (aka Utility scritps, e.g. makefile generator)
 
 # Source code structure
 
- 
 
 > - **Kernel**
 	 1. **Init**
-		 4. kmain.cpp (Start point)
-		 5. kinit.h (Multiboot header)
-	 2. **Arch**
-		 2. x86
-			 2. GDT (Global Descriptor Table)
-			 3. IDT (Interrupt Descriptor Table)
-			 4. ISR (Interrupt Service Routine)
-			 5. IRQ (Interrupt Request)
-			 6. **Bootloader Stage 2** (asm)
-	 3. **Memory**
-		 3. kmemory.cpp (Physical Memory Manager)
-	 4. **IO**
-		 5. io.h (Input Output from/to the CPU)
-		 6. terminal.cpp/.h (Text mode screen)
-	 5. **Error**
-		 5. error.cpp (Panic handler aka BSOD)
-	 6. **Debug**
-		 7. log.h (Error/Info/Warning logger)
+		 1.1. kmain.cpp (Start point)
+		 1.2. kinit.h (Multiboot header)
+		 1.3. initrd.cpp/.h (Allows modules to be loaded)
 		 
-> - **Modules**
-	 1. **module**.h (Installs/Uninstalls modules and Function/Variable Symbols)
+	 2. **Arch**
+		 2.1. x86
+			 2.1.1. GDT (Global Descriptor Table)
+			 2.1.2. IDT (Interrupt Descriptor Table)
+			 2.1.3. ISR (Interrupt Service Routine)
+			 2.1.4. IRQ (Interrupt Request)
+			 2.1.5. **Bootloader Stage 2** (asm)
 
+	 3. **Memory**
+		 3.1. kmemory.cpp (Physical Memory Manager)
+		 3.2. alloc.cpp (Slab allocator (malloc) by [Kevin Lange](https://github.com/klange))
+
+	 4. **IO**
+		 4.1. io.h (Input Output from/to the CPU)
+		 4.2. terminal.cpp/.h (Text mode screen)
+		 4.3. serial.cpp/.h (Serial COM port class (mainly for debugging))
+		 
+	 5. **Error**
+		 5.1. error.cpp (Panic handler aka BSOD)
+		 5.2. 
+
+	 6. **Debug**
+		 6.1. log.h (Error/Info/Warning logger)
+	
+	7. **VFS**
+		7.1. vfs.cpp / fs.h (Virtual File System. initrd "bypasses" this system only at startup)
+		  
+	 7. **Exec**
+	 	7.1. ELF (ELF object parser, loader and executor)
+
+	 8. ** Task **
+	 	8.1 - Soon...
+
+> - **Modules**
+	 1. **module**.cpp/.h (Installs/Uninstalls modules and Function/Variable Symbols)
+	 
 > - **Libraries**
 	 1. **libc**.cpp/.h (Essential C functions and macros)
 	 2. **kprintf.cpp** (Another essential C functions file)
@@ -146,6 +170,9 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 	 3. **stdint**.h (Declaration of types)
 	 3. **va_list**.h (Variable arguments macros)
 	 4. **limits**.h (Variable size limits macros)
+	 5. **hashmap.cpp/.h** (Hashmap **data structure**)
+	 6. **list.cpp/.h** (Linked list **data structure**)
+	 7. **tree.cpp/.h** (Tree **data structure**)
 
 **Important element:** system.h 
 **Description:** glue header for including all kernel features, such as:
