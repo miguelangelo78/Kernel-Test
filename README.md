@@ -59,7 +59,7 @@ You'll be required to make small preparations before compiling and testing the k
 > Access the folder 'toolchain/Windows/' and there you'll find 9 batch scripts:  
 	> 1- **bindump.bat**: Reads the kernel file with 'readelf' and opens a text editor with the result  
 	> 2- **bootable_usb.bat**: Makes your flash drive bootable with the kernel  
-	> 3- **build.bat**: Build the Kernel 
+	> 3- **build.bat**: Build the Kernel  
 	> 4- **build_and_run.bat**: Build the Kernel and run it immediately  
 	> 5- **clean.bat**: Delete all object files from the folder build  
 	> 6- **rebuild.bat**: Generates automatically the makefiles for all source files and rebuilds the Kernel
