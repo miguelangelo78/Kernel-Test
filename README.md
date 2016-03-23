@@ -12,7 +12,7 @@ You'll be required to make small preparations before compiling and testing the k
 
 **Step 1)** Download this repository, and put it wherever you want (Desktop maybe?)
 
- **Step 2)**
+**Step 2)**
  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
 
@@ -27,34 +27,34 @@ You'll be required to make small preparations before compiling and testing the k
 
 **Step 4)**
 
-**>> For Windows**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
 
 > Install Prebuilt Clang from here: [Clang Download](http://llvm.org/releases/download.html)
 
-**>> For Linux**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
 
 > (Soon...)
 
 
 **Step 5)**
 
-**>> For Windows**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
 > Download QEMU binaries for windows from here: [QEMU Download](http://qemu.weilnetz.de/) and install them normally on your computer
 
-**>> For Linux**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
 > (Soon...)
 
 **Step 6)**
 
-**>> For Windows**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
 > Download and install MINGW from here: [MINGW Download](http://www.mingw.org/). This will be necessary because of GDB.
 
-**>> For Linux**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
 > Simply install GDB using ```> sudo apt-get install gdb```
 
 
 # How to Build and Run
-**>> For Windows**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
 
 > Access the folder 'toolchain/Windows/' and there you'll find 9 batch scripts:  
 	> 1- **bindump.bat**: Reads the kernel file with 'readelf' and opens a text editor with the result  
@@ -68,7 +68,7 @@ You'll be required to make small preparations before compiling and testing the k
 
 For a more productive way of development, simply use Eclipse IDE (with CDT plugin) and import this repository into the workspace. The scripts are already set up and ready to be built and run.
 
-**>> For Linux**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
 > (Soon...)
 
 # How to Run on real machines
