@@ -120,7 +120,7 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 # Source code structure
 
 
-> - **Kernel**
+- **Kernel**
 
 	1. Init  
 		1.1. kmain.cpp (Start point)  
@@ -159,24 +159,24 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 	9. Task
 		9.1 - Soon...
 
-> - **Modules**
+- **Modules**
 
-	 1. **module**.cpp/.h (Installs/Uninstalls modules and Function/Variable Symbols)
+	 1. module.cpp/.h (Installs/Uninstalls modules and Function/Variable Symbols)
 	 
-> - **Libraries**
+- **Libraries**
 
-	 1. **libc**.cpp/.h (Essential C functions and macros)
-	 2. **kprintf.cpp** (Another essential C functions file)
-	 2. **attr**.h (Attribute macros)
-	 2. **bit**.h (Bit handler macros)
-	 3. **stdint**.h (Declaration of types)
-	 3. **va_list**.h (Variable arguments macros)
-	 4. **limits**.h (Variable size limits macros)
-	 5. **hashmap.cpp/.h** (Hashmap **data structure**)
-	 6. **list.cpp/.h** (Linked list **data structure**)
-	 7. **tree.cpp/.h** (Tree **data structure**)
+	 1. libc.cpp/.h (Essential C functions and macros)
+	 2. kprintf.cpp (Another essential C functions file)
+	 2. attr.h (Attribute macros)
+	 2. bit.h (Bit handler macros)
+	 3. stdint.h (Declaration of types)
+	 3. va_list.h (Variable arguments macros)
+	 4. limits.h (Variable size limits macros)
+	 5. hashmap.cpp/.h (Hashmap data structure)
+	 6. list.cpp/.h (Linked list data structure)
+	 7. tree.cpp/.h (Tree data structure)
 
-**Important element:** system.h 
+**Important element:** system.h  
 **Description:** glue header for including all kernel features, such as:
 
  1. Memory segment selectors
