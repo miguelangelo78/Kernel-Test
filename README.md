@@ -14,12 +14,12 @@ You'll be required to make small preparations before compiling and testing the k
 
  **Step 2)**
  
-	**>> For Windows**
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
 
 > Download the prebuilt cross compiler i686-elf for Windows from here: [i686-elf Windows Cross Compiler Download](https://docs.google.com/uc?export=download&confirm=o2Dx&id=0B85K_c7mx3QjUnZuaFRPWlBIcXM).
 > Extract it and rename the folder to i686-elf.
 
-**>> For Linux**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
 
 > (Soon...)
 
