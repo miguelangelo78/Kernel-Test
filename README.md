@@ -121,34 +121,34 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 
 
 > - **Kernel**
-	 1. **Init**  
-		 1.1. kmain.cpp (Start point)  
-		 1.2. kinit.h (Multiboot header)  
-		 1.3. initrd.cpp/.h (Allows modules to be loaded)  
+
+	1. **Init**  
+		1.1. kmain.cpp (Start point)  
+		1.2. kinit.h (Multiboot header)  
+		1.3. initrd.cpp/.h (Allows modules to be loaded)  
+
+	2. **Arch**
+		2.1. x86
+			2.1.1. GDT (Global Descriptor Table)  
+			2.1.2. IDT (Interrupt Descriptor Table)  
+			2.1.3. ISR (Interrupt Service Routine)  
+			2.1.4. IRQ (Interrupt Request)  
+			2.1.5. **Bootloader Stage 2** (asm)  
+
+	3. **Memory**
+		3.1. kmemory.cpp (Physical Memory Manager)
+		3.2. alloc.cpp (Slab allocator (malloc) by [Kevin Lange](https://github.com/klange))
+
+	4. **IO**
+		4.1. io.h (Input Output from/to the CPU)
+		4.2. terminal.cpp/.h (Text mode screen)
+		4.3. serial.cpp/.h (Serial COM port class (mainly for debugging))
 		 
-	 2. **Arch**
-		 2.1. x86
-			 2.1.1. GDT (Global Descriptor Table)
-			 2.1.2. IDT (Interrupt Descriptor Table)
-			 2.1.3. ISR (Interrupt Service Routine)
-			 2.1.4. IRQ (Interrupt Request)
-			 2.1.5. **Bootloader Stage 2** (asm)
-
-	 3. **Memory**
-		 3.1. kmemory.cpp (Physical Memory Manager)
-		 3.2. alloc.cpp (Slab allocator (malloc) by [Kevin Lange](https://github.com/klange))
-
-	 4. **IO**
-		 4.1. io.h (Input Output from/to the CPU)
-		 4.2. terminal.cpp/.h (Text mode screen)
-		 4.3. serial.cpp/.h (Serial COM port class (mainly for debugging))
-		 
-	 5. **Error**
-		 5.1. error.cpp (Panic handler aka BSOD)
-		 5.2. 
-
-	 6. **Debug**
-		 6.1. log.h (Error/Info/Warning logger)
+	5. **Error**
+		5.1. error.cpp (Panic handler aka BSOD)
+	
+	6. **Debug**
+		6.1. log.h (Error/Info/Warning logger)
 	
 	7. **VFS**
 		7.1. vfs.cpp / fs.h (Virtual File System. initrd "bypasses" this system only at startup)
@@ -160,9 +160,11 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 	 	8.1 - Soon...
 
 > - **Modules**
+
 	 1. **module**.cpp/.h (Installs/Uninstalls modules and Function/Variable Symbols)
 	 
 > - **Libraries**
+
 	 1. **libc**.cpp/.h (Essential C functions and macros)
 	 2. **kprintf.cpp** (Another essential C functions file)
 	 2. **attr**.h (Attribute macros)
