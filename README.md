@@ -66,13 +66,13 @@ You'll be required to make small preparations before compiling and testing the k
 	> 7- **rebuild_and_run.bat**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it  
 	> 8/9- **launch_i386.bat / launch_x86_64.bat**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).  
 
-For a more productive way of development, simply use Eclipse IDE (with CDT plugin) and import this repository into the workspace. The scripts are already set up and ready to be built and run.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For a more productive way of development, simply use Eclipse IDE (with CDT plugin) and import this repository into the workspace. The scripts are already set up and ready to be built and run.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
 > (Soon...)
 
 # How to Run on real machines
-If you want a more realistic approach to Kernel Development, you can simply access the folder 'iso' and run the script bootable_usb.bat. It'll ask what drive letter you want to install the kernel to, and you should select the Pendrive's correct letter. Then, simply boot the pendrive on any machine and it should work.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If you want a more realistic approach to Kernel Development, you can simply access the folder 'iso' and run the script bootable_usb.bat. It'll ask what drive letter you want to install the kernel to, and you should select the Pendrive's correct letter. Then, simply boot the pendrive on any machine and it should work.
 These scripts were prepared for only Windows for now. Linux will come soon.
 
 # x86 References
