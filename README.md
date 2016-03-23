@@ -1,5 +1,5 @@
 # Kernel-Test
-An experimental project for training and testing with a Kernel for x86 systems (and maybe more) using C++ language. There will be no OS as this is focused specifically on the Kernel domain. We will however add userspace and some test programs.
+	An experimental project for training and testing with a Kernel for x86 systems (and maybe more) using C++ language. There will be no OS as this is focused specifically on the Kernel domain. We will however add userspace and some test programs.
 
 ![Kernel screenshot](http://i.imgur.com/YqpOjJ2.png)
 ![Kernel screenshot 2](http://i.imgur.com/FxDpD1g.png)
@@ -14,7 +14,7 @@ You'll be required to make small preparations before compiling and testing the k
 
  **Step 2)**
  
-**>> For Windows**
+	**>> For Windows**
 
 > Download the prebuilt cross compiler i686-elf for Windows from here: [i686-elf Windows Cross Compiler Download](https://docs.google.com/uc?export=download&confirm=o2Dx&id=0B85K_c7mx3QjUnZuaFRPWlBIcXM).
 > Extract it and rename the folder to i686-elf.
