@@ -120,7 +120,7 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 # Source code structure
 
 
-- **Kernel**
+> - **Kernel**
 
 	1. Init  
 		1.1. kmain.cpp (Start point)  
@@ -133,7 +133,7 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 			2.1.2. IDT (Interrupt Descriptor Table)  
 			2.1.3. ISR (Interrupt Service Routine)  
 			2.1.4. IRQ (Interrupt Request)  
-			2.1.5. **Bootloader Stage 2** (asm)  
+			2.1.5. Bootloader Stage 2 (asm)  
 
 	3. Memory
 		3.1. kmemory.cpp (Physical Memory Manager)
@@ -159,11 +159,11 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 	9. Task
 		9.1 - Soon...
 
-- **Modules**
+> - **Modules**
 
 	 1. module.cpp/.h (Installs/Uninstalls modules and Function/Variable Symbols)
 	 
-- **Libraries**
+> - **Libraries**
 
 	 1. libc.cpp/.h (Essential C functions and macros)
 	 2. kprintf.cpp (Another essential C functions file)
