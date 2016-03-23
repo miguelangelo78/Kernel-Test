@@ -34,7 +34,6 @@ namespace Kernel {
 	/* Serial port (COM1) which will be used for logging: */
 	Serial serial;
 	
-
 	void relocate_heap(void) {
 		if ((IS_BIT_SET(mboot_ptr->flags, 3)) && mboot_ptr->mods_count > 0) {
 			uintptr_t last_mod = (uintptr_t)&KInit::ld_segs.ld_end;
