@@ -109,7 +109,7 @@ typedef struct {
 	Elf32_half e_shentsize; /* Section header's table entry size */
 	Elf32_half e_shnum; /* Number of entries on the Section header table */
 	Elf32_half e_shstrndx; /* Entry's index on the Section header table */
-} elf32_header;
+} elf32_ehdr;
 
 } using namespace ELF_START_HEADER;
 
@@ -216,6 +216,7 @@ namespace ELF_SECTION_HEADER {
 } using namespace ELF_SECTION_HEADER;
 
 namespace ELF_SYM_TABLE {
+	#define SHN_UNDEF 0x00
 	#define ELF32_ST_BIND(i) ((i) >> 4)
 	#define ELF32_ST_TYPE(i) ((i) & 0xF)
 	#define ELF32_ST_INFO(b,t)  (((b) << 4) + ((t) & 0xF)
@@ -279,13 +280,13 @@ namespace ELF_SYM_REL {
 
 /******************** ELF DEFINITION (END) ********************/
 
-inline char elf32_is_elf(char * file_blob) {
+inline char elf32_is_elf(uint8_t * file_blob) {
 	char signbuff[5];
 	memcpy(signbuff, file_blob, 4);
 	signbuff[4] = 0;
 	return (!strcmp(signbuff + 1, ELF_SIGN) && signbuff[0] == ELFMAG0);
 }
 
-extern char * elf_parse(char * blob, int blobsize);
+extern char * elf_parse(uint8_t * blob, int blobsize);
 
 #endif /* SRC_ELF_H_ */

@@ -16,7 +16,7 @@ void modules_load(void) {
 
 	for(int i = 0; i < modcount; i++) {
 		FILE * mod = initrd_getmod_file(i);
-		char * modblob = initrd_readfile(mod, 1);
+		uint8_t * modblob = (uint8_t*)initrd_readfile(mod, 1);
 		char is_elf = elf32_is_elf(modblob);
 
 		kprintf("\n * %d - Module (%s): %s", i+1, mod->name, is_elf ? "VALID ELF" : "!INVALID ELF!");

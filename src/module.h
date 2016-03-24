@@ -6,10 +6,10 @@
 namespace Module {
 
 	/********** MODULES **********/
-	#define MODULE_DEF(name, ini, fini) Module::modent_t module_info_ ## name = { #name, &ini, &fini }
+	#define MODULE_DEF(name, ini, fini) Module::modent_t modent_ ## name = { "modent_" #name, &ini, &fini }
 
 	typedef struct {
-		char * name;
+		char name[23];
 		int (*init)(void);
 		int (*fini)(void);
 	} modent_t;
