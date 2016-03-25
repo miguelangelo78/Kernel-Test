@@ -38,6 +38,7 @@ size_t strspn(const char * s, const char * c);
 char * strchrnul(const char * s, int c);
 char * strchr(const char * s, int c);
 char * strrchr(const char * s, int c);
+int strcmp(const char * l, const char * r);
 size_t strcspn(const char * s, const char * c);
 char * strpbrk(const char * s, const char * b);
 static char *strstr_2b(const unsigned char * h, const unsigned char * n);
@@ -54,8 +55,3 @@ uint8_t startswith(const char * str, const char * accept);
 char * strtok_r(char * str, const char * delim, char ** saveptr);
 uint32_t __attribute__((pure)) krand(void);
 int tokenize(char * str, char * sep, char **buf);
-
-inline int strcmp(const char * l, const char * r) {
-	for (; *l == *r && *l; l++, r++);
-	return *(uint8_t *)l - *(uint8_t *)r;
-}

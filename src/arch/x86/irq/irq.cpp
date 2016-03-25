@@ -184,7 +184,7 @@ namespace IRQ {
 		char buffer[16];
 		for (size_t i = 0; i < IRQ_COUNT; i++) {
 			sprintf(buffer, "_irq%d", i);
-			IDT::idt_set_gate(IRQ_OFFSET + i, (uintptr_t)Module::symbol_find(buffer), SEG_KERNEL_CS, IRQ_DEFAULT_FLAG);
+			IDT::idt_set_gate(IRQ_OFFSET + i, (uintptr_t)symbol_find(buffer), SEG_KERNEL_CS, IRQ_DEFAULT_FLAG);
 		}
 		pic8259_init(); /* Initialize the 8259 PIC */
 	}

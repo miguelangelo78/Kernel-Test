@@ -61,9 +61,9 @@ namespace ISR {
 		char buffer[16];
 		for (int i = 0; i < ISR_COUNT; i++) {
 			sprintf(buffer, "_isr%d", i);
-			IDT::idt_set_gate(i, (uintptr_t)Module::symbol_find(buffer), SEG_KERNEL_CS, ISR_DEFAULT_FLAG);
+			IDT::idt_set_gate(i, (uintptr_t)symbol_find(buffer), SEG_KERNEL_CS, ISR_DEFAULT_FLAG);
 		}
-		IDT::idt_set_gate(IDT::SYSCALL_VECTOR, (uintptr_t)Module::symbol_find("_isr127"), SEG_KERNEL_CS, ISR_DEFAULT_FLAG);
+		IDT::idt_set_gate(IDT::SYSCALL_VECTOR, (uintptr_t)symbol_find("_isr127"), SEG_KERNEL_CS, ISR_DEFAULT_FLAG);
 	}
 
 	void fault_handler(CPU::regs_t * r) { /* Gets called for EVERY ISR and IRQ interrupt */
