@@ -19,7 +19,7 @@ static inline elf32_shdr * elf_section(elf32_ehdr * elf_header, char section_idx
 	return &(elf_section(elf_header)[section_idx]);
 }
 
-static inline elf32_shdr * elf_section(elf32_ehdr * elf_header, SH_TYPES section_type) {
+static inline elf32_shdr * elf_section(elf32_ehdr * elf_header, SH_TYPES section_type, char ignore) {
 	for(int i = 0;i < elf_header->e_shnum; i++) {
 		elf32_shdr * sect = elf_section(elf_header, i);
 		if(sect->sh_type == section_type) return sect;
@@ -48,12 +48,12 @@ static inline char * elf_lookup_string(elf32_ehdr *elf_header, elf32_shdr * elf_
 }
 
 static inline char * elf_lookup_string(elf32_ehdr *elf_header, elf32_sym * elf_symtable) {
-	char * strtab = elf_string_table(elf_header);
+	char * strtab = (char*)(elf_header->e_shstrndx == SHN_UNDEF ? 0 : (BASE_OFF(elf_header) + elf_section(elf_header, ".strtab")->sh_offset));
 	return strtab ? strtab + elf_symtable->st_name: 0;
 }
 
 static inline elf32_shdr * elf_symsection(elf32_ehdr * header) {
-	return elf_section(header, SHT_SYMTAB);
+	return elf_section(header, SHT_SYMTAB, 0);
 }
 
 static inline elf32_sym * elf_symtable(elf32_ehdr * header) {
@@ -109,7 +109,7 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 }
 
 static inline modent_t * elf_find_mod(elf32_ehdr * header) {
-	modent_t * mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATURE0), MODULE_SIGNATURE1);
+	modent_t * mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB, 0), STR(MODULE_SIGNATURE0), MODULE_SIGNATURE1);
 	if(!mod) return 0;
 
 	/* Translate relative addresses to absolutes: */
@@ -123,7 +123,7 @@ char * elf_parse(uint8_t * blob, int blobsize) {
 	elf32_ehdr * head = (elf32_ehdr*)blob;
 	modent_t * mod = elf_find_mod(head);
 
-	kprintf(" | Module name: %s\nRunning ... ret: 0x%x", mod->name, mod->init());
+	kprintf(" | Module name: %s\nRunning ... ret: 0x%x", strchr(mod->name, MODULE_SIGNATURE1)+1, mod->init());
 
 	kprintf("\nDone");
 

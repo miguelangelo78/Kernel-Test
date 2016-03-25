@@ -48,7 +48,7 @@ inline void * symbol_find(const char * name) {
 	return 0;
 }
 
-inline void * symbol_call(const char * name, void * params) {
+inline void * symbol_call_param(const char * name, void * params) {
 	typedef void * (*cback)(void*);
 	cback fptr = (cback)symbol_find(name);
 	return fptr ? fptr(params) : 0;
