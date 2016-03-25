@@ -9,7 +9,7 @@
 
 static int mod_ini(void) {
 
-	static Terminal * t = (Terminal*)symbol_find("term");
+	//static Terminal * t = (Terminal*)symbol_find("term");
 	//t->puts("HELLO");
 
 	return 2;

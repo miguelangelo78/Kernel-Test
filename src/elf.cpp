@@ -108,8 +108,8 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 	return elf_get_symval(header, symsection, symname, 0);
 }
 
-static inline Module::modent_t * elf_find_mod(elf32_ehdr * header) {
-	Module::modent_t * mod = (Module::modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATURE0), MODULE_SIGNATURE1);
+static inline modent_t * elf_find_mod(elf32_ehdr * header) {
+	modent_t * mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATURE0), MODULE_SIGNATURE1);
 	if(!mod) return 0;
 
 	/* Translate relative addresses to absolutes: */
@@ -121,7 +121,7 @@ static inline Module::modent_t * elf_find_mod(elf32_ehdr * header) {
 
 char * elf_parse(uint8_t * blob, int blobsize) {
 	elf32_ehdr * head = (elf32_ehdr*)blob;
-	Module::modent_t * mod = elf_find_mod(head);
+	modent_t * mod = elf_find_mod(head);
 
 	kprintf(" | Module name: %s\nRunning ... ret: 0x%x", mod->name, mod->init());
 
