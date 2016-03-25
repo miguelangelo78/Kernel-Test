@@ -8,10 +8,13 @@ namespace Module {
 	/********** MODULES **********/
 	#define MODULE_DEF(name, ini, fini) Module::modent_t modent_ ## name = { "modent_" #name, &ini, &fini }
 
+	typedef int (*mod_init_t)(void);
+	typedef int (*mod_fini_t)(void);
+
 	typedef struct {
 		char name[23];
-		int (*init)(void);
-		int (*fini)(void);
+		mod_init_t init;
+		mod_fini_t finit;
 	} modent_t;
 
 	extern void modules_load(void);

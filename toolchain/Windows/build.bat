@@ -12,6 +12,7 @@ if ERRORLEVEL 1 ( call:errorhandle "Compiling and Linking" )
 printf "\nSTEP 2 - Generating initrd disk ...\n\n"
 
 del iso\initrd.img 2>NUL
+del iso\Windows\syslinux\initrd.img 2>NUL
 set MODLIST=
 for %%x in (build\modules\*) do set MODLIST=!MODLIST! %%x
 set MODLIST=%MODLIST:~1%

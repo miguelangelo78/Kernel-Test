@@ -12,7 +12,7 @@ struct {
 } __attribute__((packed)) initrd_header;
 
 unsigned int filesize(char * filename) {
-	FILE * f = fopen(filename, "r");
+	FILE * f = fopen(filename, "rb");
 	fseek(f, 0, SEEK_END);
 	unsigned int size = (unsigned int)ftell(f);
 	fclose(f);
@@ -21,7 +21,7 @@ unsigned int filesize(char * filename) {
 
 char * fileread(int buffer_size, char * filename) {
 	char * buff = (char*)malloc(buffer_size);
-	FILE * f = fopen(filename, "r");
+	FILE * f = fopen(filename, "rb");
 	fread(buff, sizeof(char), buffer_size, f);
 	fclose(f);
 	return buff;
@@ -29,13 +29,12 @@ char * fileread(int buffer_size, char * filename) {
 
 void create_initrd(char ** argv) {
 	printf("- Creating initrd.img ...\n");
-	FILE * initrd_file = fopen("iso/initrd.img", "w");
+	FILE * initrd_file = fopen("iso/initrd.img", "wb");
 
 	/* Write the entire struct into the file: */
-	fwrite((char*)&initrd_header.header_size, sizeof(unsigned int), 2, initrd_file);
+	fwrite((unsigned int*)&initrd_header.header_size, sizeof(unsigned int), 2, initrd_file);
 	fwrite(initrd_header.offset, sizeof(unsigned int), initrd_header.file_count, initrd_file);
 	fwrite(initrd_header.length, sizeof(unsigned int), initrd_header.file_count, initrd_file);
-
 
 	int i;
 	for(i = 0; i < initrd_header.file_count; i++)
@@ -43,6 +42,7 @@ void create_initrd(char ** argv) {
 
 	/* Now append the files: */
 	for(i = 0; i < initrd_header.file_count; i++) {
+		printf("size: %d\n", initrd_header.length[i]);
 		char * file_buff = fileread(initrd_header.length[i], argv[i+1]);
 		fwrite(file_buff, sizeof(char), initrd_header.length[i], initrd_file);
 		free(file_buff);

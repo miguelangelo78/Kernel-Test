@@ -7,19 +7,27 @@
 
 #include <module.h>
 
-char hello[] = "hello world";
-char find[] = "findme";
+#define VID_CALC_POS(x, y) (x + y * 80)
+static char * vidmem = (char*)0xB8000;
 
-#define VID_CALC_POS(x, y) (x + y * VID_WIDTH)
+int mod_ini(void) {
+	int i,j;
+	for(i=0;i<10;i++) {
+		for(j=0;j<10;j++){
+			int loc = VID_CALC_POS(i, j);
 
-static int mod_ini(void) {
+			vidmem[loc * 2] = 'c';
+				vidmem[loc * 2 + 1] = 0;
+		}
+	}
+
 	for(;;);
 
 	return 0;
 }
 
-static int mod_fini(void) {
+int mod_fini(void) {
 	return 0;
 }
 
-MODULE_DEF(modtest, mod_ini, mod_fini);
+MODULE_DEF(mod_test, mod_ini, mod_fini);

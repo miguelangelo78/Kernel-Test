@@ -91,7 +91,7 @@ lt.compiler_cpp.make_flagsym = "LLVMCPPFLAGS"
 lt.compiler_cpp.name = "LLVM C++ Clang++"
 lt.compiler_cpp.is_asm = 0
 lt.compiler_cpp.include_path = "-IC:\\llvm\\lib\\clang\\3.8.0\\include -Isrc"
-lt.compiler_cpp.flags = "-ffreestanding -nostdlib -nodefaultlibs -finline-functions -target i686-pc-none-elf -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions " + lt.compiler_cpp.include_path
+lt.compiler_cpp.flags = "-ffreestanding -nostdlib -nodefaultlibs -target i686-pc-none-elf -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions " + lt.compiler_cpp.include_path
 # Setup C compiler:
 lt.compiler_c.make_sym = "CC_LLVM"
 lt.compiler_c.execpath = "clang"
@@ -99,7 +99,7 @@ lt.compiler_c.make_flagsym = "LLVMCFLAGS"
 lt.compiler_c.name = "LLVM C Clang"
 lt.compiler_c.is_asm = 0
 lt.compiler_c.include_path = lt.compiler_cpp.include_path
-lt.compiler_c.flags = "-ffreestanding -nostdlib -nodefaultlibs -finline-functions -target i686-pc-none-elf -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -fno-exceptions " + lt.compiler_c.include_path
+lt.compiler_c.flags = "-ffreestanding -nostdlib -nodefaultlibs -target i686-pc-none-elf -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -fno-exceptions " + lt.compiler_c.include_path
 # Other compilers/assemblers/linkers:
 lt.linker = gt.linker
 lt.assembler_gas = gt.assembler_gas
