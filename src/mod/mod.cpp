@@ -7,26 +7,15 @@
 
 #include <module.h>
 
-#define VID_CALC_POS(x, y) (x + y * 80)
-static char * vidmem = (char*)0xB8000;
+static int mod_ini(void) {
 
-int mod_ini(void) {
-	int i,j;
-	for(i=0;i<10;i++) {
-		for(j=0;j<10;j++){
-			int loc = VID_CALC_POS(i, j);
+	static Terminal * t = (Terminal*)symbol_find("term");
+	//t->puts("HELLO");
 
-			vidmem[loc * 2] = 'c';
-				vidmem[loc * 2 + 1] = 0;
-		}
-	}
-
-	for(;;);
-
-	return 0;
+	return 2;
 }
 
-int mod_fini(void) {
+static int mod_fini(void) {
 	return 0;
 }
 

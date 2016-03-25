@@ -5,8 +5,11 @@
 
 namespace Module {
 
+	#define MODULE_SIGNATURE0 modent_
+	#define MODULE_SIGNATURE1 '_'
+
 	/********** MODULES **********/
-	#define MODULE_DEF(name, ini, fini) Module::modent_t modent_ ## name = { "modent_" #name, &ini, &fini }
+	#define MODULE_DEF(name, ini, fini) Module::modent_t MODULE_SIGNATURE0 = { STR(MODULE_SIGNATURE0) #name, &ini, &fini }
 
 	typedef int (*mod_init_t)(void);
 	typedef int (*mod_fini_t)(void);

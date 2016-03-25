@@ -27,6 +27,17 @@ static inline elf32_shdr * elf_section(elf32_ehdr * elf_header, SH_TYPES section
 	return (elf32_shdr *)SHT_NULL;
 }
 
+/* Prototype: */
+static inline char * elf_lookup_string(elf32_ehdr *elf_header, elf32_shdr * elf_sect);
+
+static inline elf32_shdr * elf_section(elf32_ehdr * elf_header, char * section_name) {
+	for(int i = 0;i < elf_header->e_shnum; i++) {
+		elf32_shdr * section = elf_section(elf_header, i);
+		if(!strcmp(elf_lookup_string(elf_header, section), section_name)) return section;
+	}
+	return SHN_UNDEF;
+}
+
 static inline char * elf_string_table(elf32_ehdr * elf_header) {
 	return (char*)(elf_header->e_shstrndx == SHN_UNDEF ? 0 : (BASE_OFF(elf_header) + elf_section(elf_header, elf_header->e_shstrndx)->sh_offset));
 }
@@ -97,16 +108,24 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 	return elf_get_symval(header, symsection, symname, 0);
 }
 
+static inline Module::modent_t * elf_find_mod(elf32_ehdr * header) {
+	Module::modent_t * mod = (Module::modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATURE0), MODULE_SIGNATURE1);
+	if(!mod) return 0;
+
+	/* Translate relative addresses to absolutes: */
+	elf32_shdr * text_sect = elf_section(header, ".text");
+	mod->init = (mod_init_t)(BASE_OFF(header)+(uintptr_t)mod->init + text_sect->sh_offset);
+	mod->finit = (mod_init_t)(BASE_OFF(header)+(uintptr_t)mod->finit + text_sect->sh_offset);
+	return mod;
+}
+
 char * elf_parse(uint8_t * blob, int blobsize) {
 	elf32_ehdr * head = (elf32_ehdr*)blob;
-	elf32_shdr * symsection = elf_section(head, SHT_SYMTAB);
-	elf32_sym * symtable = elf_symtable(head);
+	Module::modent_t * mod = elf_find_mod(head);
 
-	for(int i=0;i<elf_symtab_entry_count(symsection);i++)
-		kprintf("|%s|\n", elf_lookup_string(head, &symtable[i]));
+	kprintf(" | Module name: %s\nRunning ... ret: 0x%x", mod->name, mod->init());
 
 	kprintf("\nDone");
 
-	for(;;);
 	return 0;
 }

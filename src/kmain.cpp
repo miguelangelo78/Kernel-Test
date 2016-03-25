@@ -31,6 +31,7 @@ namespace Kernel {
 
 	/* Terminal which uses text-mode video */
 	Terminal term;
+	EXPORT_SYMBOL(term);
 	/* Serial port (COM1) which will be used for logging: */
 	Serial serial;
 	
