@@ -5,31 +5,29 @@ ELF Header:
   Version:                           1 (current)
   OS/ABI:                            UNIX - System V
   ABI Version:                       0
-  Type:                              EXEC (Executable file)
+  Type:                              REL (Relocatable file)
   Machine:                           Intel 80386
   Version:                           0x1
-  Entry point address:               0x80480a0
-  Start of program headers:          52 (bytes into file)
-  Start of section headers:          924 (bytes into file)
+  Entry point address:               0x0
+  Start of program headers:          0 (bytes into file)
+  Start of section headers:          280 (bytes into file)
   Flags:                             0x0
   Size of this header:               52 (bytes)
-  Size of program headers:           32 (bytes)
-  Number of program headers:         3
+  Size of program headers:           0 (bytes)
+  Number of program headers:         0
   Size of section headers:           40 (bytes)
-  Number of section headers:         9
-  Section header string table index: 6
+  Number of section headers:         7
+  Section header string table index: 1
 
 Section Headers:
   [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
   [ 0]                   NULL            00000000 000000 000000 00      0   0  0
-  [ 1] .text             PROGBITS        080480a0 0000a0 000150 00  AX  0   0 16
-  [ 2] .rodata           PROGBITS        080481f0 0001f0 00001c 01 AMS  0   0  1
-  [ 3] .eh_frame         PROGBITS        0804820c 00020c 000098 00   A  0   0  4
-  [ 4] .data             PROGBITS        080492c0 0002c0 000064 00  WA  0   0 32
-  [ 5] .comment          PROGBITS        00000000 000324 000034 01  MS  0   0  1
-  [ 6] .shstrtab         STRTAB          00000000 000358 000042 00      0   0  1
-  [ 7] .symtab           SYMTAB          00000000 000504 000140 10      8  12  4
-  [ 8] .strtab           STRTAB          00000000 000644 0000a0 00      0   0  1
+  [ 1] .strtab           STRTAB          00000000 0000bc 00005b 00      0   0  1
+  [ 2] .text             PROGBITS        00000000 000034 000000 00  AX  0   0  4
+  [ 3] .data             PROGBITS        00000000 000034 000024 00  WA  0   0  4
+  [ 4] .comment          PROGBITS        00000000 000058 000024 01  MS  0   0  1
+  [ 5] .note.GNU-stack   PROGBITS        00000000 00007c 000000 00      0   0  1
+  [ 6] .symtab           SYMTAB          00000000 00007c 000040 10      1   2  4
 Key to Flags:
   W (write), A (alloc), X (execute), M (merge), S (strings)
   I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
@@ -37,45 +35,17 @@ Key to Flags:
 
 There are no section groups in this file.
 
-Program Headers:
-  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
-  LOAD           0x000000 0x08048000 0x08048000 0x002a4 0x002a4 R E 0x1000
-  LOAD           0x0002c0 0x080492c0 0x080492c0 0x00064 0x00064 RW  0x1000
-  GNU_STACK      0x000000 0x00000000 0x00000000 0x00000 0x00000 RWE 0x10
-
- Section to Segment mapping:
-  Segment Sections...
-   00     .text .rodata .eh_frame 
-   01     .data 
-   02     
-
-There is no dynamic section in this file.
+There are no program headers in this file.
 
 There are no relocations in this file.
 
 The decoding of unwind sections for machine type Intel 80386 is not currently supported.
 
-Symbol table '.symtab' contains 20 entries:
+Symbol table '.symtab' contains 4 entries:
    Num:    Value  Size Type    Bind   Vis      Ndx Name
      0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND 
-     1: 080480a0     0 SECTION LOCAL  DEFAULT    1 
-     2: 080481f0     0 SECTION LOCAL  DEFAULT    2 
-     3: 0804820c     0 SECTION LOCAL  DEFAULT    3 
-     4: 080492c0     0 SECTION LOCAL  DEFAULT    4 
-     5: 00000000     0 SECTION LOCAL  DEFAULT    5 
-     6: 00000000     0 FILE    LOCAL  DEFAULT  ABS mod.cpp
-     7: 080480a0     7 FUNC    LOCAL  DEFAULT    1 _ZL4finiv
-     8: 080492c0     4 OBJECT  LOCAL  DEFAULT    4 _ZZL11symbol_findPKcE3sym
-     9: 080480b0    49 FUNC    LOCAL  DEFAULT    1 _ZL3iniv
-    10: 00000000     0 FILE    LOCAL  DEFAULT  ABS src\mod\mod2.cpp
-    11: 00000000     0 FILE    LOCAL  DEFAULT  ABS 
-    12: 08049300     1 OBJECT  GLOBAL DEFAULT    4 mydep
-    13: 080480f0   253 FUNC    WEAK   DEFAULT    1 _Z17symbol_call_args_PKci
-    14: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND _start
-    15: 080492e0    32 OBJECT  GLOBAL DEFAULT    4 modent_mod
-    16: 08049324     0 NOTYPE  GLOBAL DEFAULT    4 __bss_start
-    17: 08049324     0 NOTYPE  GLOBAL DEFAULT    4 _edata
-    18: 08049324     0 NOTYPE  GLOBAL DEFAULT    4 _end
-    19: 08049304    32 OBJECT  GLOBAL DEFAULT    4 modentext_mod
+     1: 00000000     0 FILE    LOCAL  DEFAULT  ABS src\mod\mod2.cpp
+     2: 00000004    32 OBJECT  GLOBAL DEFAULT    3 modentext_mod
+     3: 00000000     1 OBJECT  GLOBAL DEFAULT    3 mydep
 
 No version information found in this file.

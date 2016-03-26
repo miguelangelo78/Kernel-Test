@@ -140,20 +140,19 @@ modent_t * elf_find_mod(elf32_ehdr * header) {
 	return mod;
 }
 
-#define DO_386_32(S, A)	((S) + (A))
-#define DO_386_PC32(S, A, P) ((S) + (A) - (P))
-
-char elf_relocate_exec(elf32_ehdr * elf_header) {
+char elf_load_exec(elf32_ehdr * elf_header) {
+	if(!elf32_is_elf((uint8_t*)elf_header)) return 0;
 	if(elf_header->e_type == ET_REL) return elf_relocate(elf_header);
-	//kprintf("\n");
-
-
-	for(;;);
+	/* TODO: Implement this */
 	return 0;
 }
 
+#define DO_386_32(S, A)	((S) + (A))
+#define DO_386_PC32(S, A, P) ((S) + (A) - (P))
+
 char elf_relocate(elf32_ehdr * elf_header) {
-	if(elf_header->e_type == ET_EXEC) return elf_relocate_exec(elf_header);
+	if(!elf32_is_elf((uint8_t*)elf_header)) return 0;
+	if(elf_header->e_type == ET_EXEC) return elf_load_exec(elf_header);
 
 	for(int i = 0; i < elf_header->e_shnum; i++) {
 		elf32_shdr * rel_sect = elf_section(elf_header, i);

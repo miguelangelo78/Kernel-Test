@@ -10,6 +10,9 @@
 #define MODULE_DEF(name, ini, fini) modent_t modent_ ## name = { STR(MODULE_SIGNATURE0) #name, ini, fini }
 #define MODULE_EXT(name) modent_t modentext_ ## name = { STR(MODULE_SIGNATURE0) #name, 0, 0 }
 
+/* This macro is only used by the genmake script */
+#define MODULE_DEPS(...)
+
 typedef int (*mod_init_t)(void);
 typedef int (*mod_fini_t)(void);
 

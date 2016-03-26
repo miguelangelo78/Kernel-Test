@@ -34,7 +34,6 @@ include src\kernel_headers\subdir.mk
 include src\libc\subdir.mk
 include src\libc\data_struct\subdir.mk
 include src\memory\subdir.mk
-include src\mod\subdir.mk
 include src\mod\kbd\subdir.mk
 include src\task\subdir.mk
 

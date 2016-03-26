@@ -137,11 +137,11 @@ def parse_injections_sourcefile(source_content):
 	meta = Metadata_injector()
 
 	# Search for flag injection (Format: $PROPERTY(VALUE) , it matches everything + the value and puts on group 1):
-	# Property list: $FLAGS(...), $DEPS(...), $INJ(...), $LLVMENABLE(1/0)
+	# Property list: $FLAGS(...), MODULE_DEPS(...), $INJ(...), $LLVMENABLE(1/0)
 	match_flags = re.search(r'\$FLAGS\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_flags:
 		meta.flags = match_flags.group(1)
-	match_deps = re.search(r'\$DEPS\(((?:\w|\n|,|\\|\/|\.)+?)\)', source_content, re.M)
+	match_deps = re.search(r'MODULE_DEPS\(((?:\w|\n|,|\\|\/|\.)+?)\)', source_content, re.M)
 	if match_deps:
 		deps = match_deps.group(1).split(',')
 		for dep in deps:
@@ -200,7 +200,7 @@ def parseFileFormat(fileformat):
 def write_subdir_entry(subdirmk_file, toolchain, file_objname, file_path, customflags, deps, injection, ismod):
 	entry_output_path = "$@"
 	if ismod:
-		customflags += "-fno-zero-initialized-in-bss -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE"
+		customflags += "-r -fno-zero-initialized-in-bss -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE"
 		entry_output_path = "build/modules/"+file_objname+".mod"
 	
 	subdirmk_file.write('\n$(BOUT)\\'+('modules\\' if ismod else '') + file_objname + ('.o' if not ismod else'.mod')+': ' + file_path + ' ' + deps + '\n\
