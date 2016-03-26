@@ -52,6 +52,9 @@ static inline void * symbol_find(const char * name) {
 
 #define symbol_call_args(function_name, ...) symbol_call_args_(#function_name, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 
+#define SYA(function_name, ...) symbol_call_args(function_name, __VA_ARGS__)
+#define SYC(function_nama) symbol_call(function_name)
+
 inline void * symbol_call_args_(const char * function_name, int argc, ...) {
 	if(argc <= 0 || argc >= MAX_ARGUMENT) return 0;
 

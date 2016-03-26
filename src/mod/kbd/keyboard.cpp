@@ -7,14 +7,22 @@
 
 #include <kernel_headers/kheaders.h>
 #include <system.h>
+#include "kbd_scan.h"
+
+static void keyboard_wait(void) {
+	while(Kernel::inb(0x64) & 2);
+}
 
 static int keyboard_handler(Kernel::CPU::regs_t * regs) {
-	kprintf("%c\n", Kernel::inb(0x60));
+	keyboard_wait();
+	char scan = Kernel::inb(0x60);
+	if(!(scan & 0x80))
+		kprintf("%c", kbdus[scan]);
 	return 0;
 }
 
 static int keyboard_ini(void) {
-	symbol_call_args(irq_install_handler, 1, keyboard_handler);
+	SYA(irq_install_handler, 1, keyboard_handler);
 	return 0;
 }
 
