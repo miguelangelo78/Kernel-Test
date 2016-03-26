@@ -39,6 +39,7 @@ class Terminal {
 		Terminal();
 		void init(void);
 		void putc(const char chr, uint8_t color);
+		void putc(const char chr);
 		void puts(const char * str, uint8_t color);
 		void puts(const char * str);
 		void printf(uint8_t color, const char *fmt, ...);

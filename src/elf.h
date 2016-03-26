@@ -16,6 +16,8 @@
  *                                                                                                                       *
  *************************************************************************************************************************/
 
+/* ELF Tutorial: http://wiki.osdev.org/ELF_Tutorial */
+
 /* This header has been organized the following way: */
 /* [ELF START HEADER] { Includes the specifications of the ELF object itself } */
 /* [ELF PROGRAM HEADER] { Includes just the specifications for the headers/table of a Program }  */
@@ -256,7 +258,7 @@ namespace ELF_SYM_REL {
 		R_386_NONE,
 		R_386_32,
 		R_386_PC32,
-		R_386_GOT32, /* This relocation type computes the distance from the base of the global offset table to the symbol’s global offset table entry. */
+		R_386_GOT32, /* This relocation type computes the distance from the base of the global offset table to the symbol's global offset table entry. */
 		R_386_PLT32, /* This relocation type computes the address of the symbol’s procedure linkage table entry and additionally instructs the link editor to build a procedure linkage table. */
 		R_386_COPY, /* The link editor creates this relocation type for dynamic linking. */
 		R_386_GLOB_DAT, /* This relocation type is used to set a global offset table entry to the address of the specified symbol. */

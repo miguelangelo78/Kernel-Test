@@ -5,14 +5,12 @@
  *      Author: Miguel
  */
 
+#include <kernel_headers/kheaders.h>
 #include <module.h>
 
 static int mod_ini(void) {
-
-	//static Terminal * t = (Terminal*)symbol_find("term");
-	//t->puts("HELLO");
-
-	return 2;
+	symbol_call_args("bridge", (void*)"print me");
+	return (int)"returned";
 }
 
 static int mod_fini(void) {
@@ -20,3 +18,4 @@ static int mod_fini(void) {
 }
 
 MODULE_DEF(mod_test, mod_ini, mod_fini);
+

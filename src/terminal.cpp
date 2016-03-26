@@ -26,6 +26,10 @@ void Terminal::putc(const char chr, uint8_t color) {
 	cursor_x ++;
 }
 
+void Terminal::putc(const char chr) {
+	putc(chr, COLOR_DEFAULT);
+}
+
 void Terminal::puts(const char * str, uint8_t color) {
 	while (*str) putc(*str++, color);
 }

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <kernel_headers/libc.h>
-
 /********** MODULES **********/
 #define MODULE_SIGNATURE0 modent_
 #define MODULE_SIGNATURE1 '_'
@@ -35,8 +33,8 @@ typedef struct {
 	unsigned int addr;
 } __attribute__((packed)) sym_t;
 
-inline void * symbol_find(const char * name) {
-	sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
+static inline void * symbol_find(const char * name) {
+	static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
 	while((unsigned int)sym < (unsigned int)KERNEL_SYMBOLS_TABLE_END) {
 		if (strcmp(sym->name, name)) {
 			/* Fetch next symbol: */
@@ -45,10 +43,10 @@ inline void * symbol_find(const char * name) {
 		}
 		return (void*)sym->addr;
 	}
-	return 0;
+	return (void*)name;
 }
 
-inline void * symbol_call_param(const char * name, void * params) {
+inline void * symbol_call_args(const char * name, void * params) {
 	typedef void * (*cback)(void*);
 	cback fptr = (cback)symbol_find(name);
 	return fptr ? fptr(params) : 0;

@@ -19,7 +19,7 @@ static inline elf32_shdr * elf_section(elf32_ehdr * elf_header, char section_idx
 	return &(elf_section(elf_header)[section_idx]);
 }
 
-static inline elf32_shdr * elf_section(elf32_ehdr * elf_header, SH_TYPES section_type, char ignore) {
+static inline elf32_shdr * elf_section(elf32_ehdr * elf_header, SH_TYPES section_type) {
 	for(int i = 0;i < elf_header->e_shnum; i++) {
 		elf32_shdr * sect = elf_section(elf_header, i);
 		if(sect->sh_type == section_type) return sect;
@@ -53,7 +53,7 @@ static inline char * elf_lookup_string(elf32_ehdr *elf_header, elf32_sym * elf_s
 }
 
 static inline elf32_shdr * elf_symsection(elf32_ehdr * header) {
-	return elf_section(header, SHT_SYMTAB, 0);
+	return elf_section(header, SHT_SYMTAB);
 }
 
 static inline elf32_sym * elf_symtable(elf32_ehdr * header) {
@@ -65,20 +65,28 @@ static inline elf32_sym * elf_sym(elf32_ehdr * header, int symidx) {
 	return &elf_symtable(header)[symidx];
 }
 
-static inline int elf_symtab_entry_count(elf32_shdr * symsection) {
-	return symsection->sh_size / symsection->sh_entsize;
+static inline int elf_section_entry_count(elf32_shdr * section) {
+	return section->sh_size / section->sh_entsize;
+}
+
+static inline elf32_sym * elf_sym(elf32_ehdr * header, char * symname) {
+	elf32_sym * sym = 0;
+	for(int i = 0; i < elf_section_entry_count(elf_symsection(header)); i++)
+		if(!strcmp(symname, elf_lookup_string(header,  (sym = elf_sym(header, i)))))
+			return sym;
+	return sym;
 }
 
 static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, int index) {
-	int symtab_entries = elf_symtab_entry_count(symsection);
+	int symtab_entries = elf_section_entry_count(symsection);
 	if(index >= symtab_entries) return 0;
 
 	elf32_sym * symbol = elf_sym(header, index);
 	return (BASE_OFF(header) + symbol->st_value + elf_section(header, symbol->st_shndx)->sh_offset);
 }
 
-static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, char * symname, char charlimit) {
-	for(int i = 0; i < elf_symtab_entry_count(symsection);i++) {
+static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, char * symname, char charlimit, char calcoff) {
+	for(int i = 0; i < elf_section_entry_count(symsection);i++) {
 		elf32_sym * symbol = elf_sym(header, i);
 		char * symname_temp = elf_lookup_string(header, symbol);
 		if(charlimit) {
@@ -92,16 +100,30 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 
 				if(!strcmp(symbuff, symname)) {
 					free(symbuff);
-					return (BASE_OFF(header) + symbol->st_value + elf_section(header, symbol->st_shndx)->sh_offset);
+					if(calcoff)
+						return (BASE_OFF(header) + symbol->st_value + elf_section(header, symbol->st_shndx)->sh_offset);
+					else
+						return symbol->st_value;
 				}
 				free(symbuff);
 			}
 		} else {
 			if(!strcmp(symname, symname_temp))
-				return (BASE_OFF(header) + symbol->st_value + elf_section(header, symbol->st_shndx)->sh_offset);
+				if(calcoff)
+					return (BASE_OFF(header) + symbol->st_value + elf_section(header, symbol->st_shndx)->sh_offset);
+				else
+					return symbol->st_value;
 		}
 	}
 	return 0;
+}
+
+static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, char * symname, char charlimit) {
+	return elf_get_symval(header, symsection, symname, charlimit, 1);
+}
+
+static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, char calcoff, char * symname) {
+	return elf_get_symval(header, symsection, symname, 0, calcoff);
 }
 
 static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, char * symname) {
@@ -109,21 +131,51 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 }
 
 static inline modent_t * elf_find_mod(elf32_ehdr * header) {
-	modent_t * mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB, 0), STR(MODULE_SIGNATURE0), MODULE_SIGNATURE1);
-	if(!mod) return 0;
+	modent_t * mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATURE0), MODULE_SIGNATURE1);
+	return mod ? mod : 0;
+}
 
-	/* Translate relative addresses to absolutes: */
-	elf32_shdr * text_sect = elf_section(header, ".text");
-	mod->init = (mod_init_t)(BASE_OFF(header)+(uintptr_t)mod->init + text_sect->sh_offset);
-	mod->finit = (mod_init_t)(BASE_OFF(header)+(uintptr_t)mod->finit + text_sect->sh_offset);
-	return mod;
+#define DO_386_32(S, A)	((S) + (A))
+#define DO_386_PC32(S, A, P) ((S) + (A) - (P))
+
+void elf_relocate(elf32_ehdr * elf_header) {
+	for(int i = 0; i < elf_header->e_shnum; i++) {
+		elf32_shdr * rel_sect = elf_section(elf_header, i);
+		if(rel_sect->sh_type == SHT_REL) {
+			elf32_rel * reltab = (elf32_rel*)(BASE_OFF(elf_header) + rel_sect->sh_offset);
+			for(int j = 0; j < elf_section_entry_count(rel_sect); j++) {
+				elf32_shdr * target = elf_section(elf_header, rel_sect->sh_info);
+
+				uintptr_t * ref = (uintptr_t*)((BASE_OFF(elf_header) + target->sh_offset) + reltab[j].r_offset);
+
+				int symval = 0;
+				if(ELF32_R_SYM(reltab[j].r_info) != SHN_UNDEF) {
+					symval = elf_get_symval(elf_header, elf_section(elf_header, rel_sect->sh_link), ELF32_R_SYM(reltab[j].r_info));
+					if(!symval) continue;
+				}
+
+				switch(ELF32_R_TYPE(reltab[j].r_info)) {
+				case R_386_NONE: break;
+				case R_386_32:
+					/* Symbol + Offset: */
+					*ref = DO_386_32(symval, *ref);
+					break;
+				case R_386_PC32:
+					*ref = DO_386_PC32(symval, *ref, (int)ref);
+					break;
+				default: continue;
+				}
+			}
+		}
+	}
 }
 
 char * elf_parse(uint8_t * blob, int blobsize) {
 	elf32_ehdr * head = (elf32_ehdr*)blob;
+	elf_relocate(head);
 	modent_t * mod = elf_find_mod(head);
 
-	kprintf(" | Module name: %s\nRunning ... ret: 0x%x", strchr(mod->name, MODULE_SIGNATURE1)+1, mod->init());
+	kprintf(" | Module name: %s\nRunning ... ret: %s", strchr(mod->name, MODULE_SIGNATURE1)+1, mod->init());
 
 	kprintf("\nDone");
 
