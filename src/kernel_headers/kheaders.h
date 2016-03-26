@@ -11,7 +11,7 @@
 #include <kernel_headers/libc.h>
 #include <kernel_headers/numarg.h>
 
-#define kprintf(fmt, ...) symbol_call_args("mod_kprintf", PP_NARG(__VA_ARGS__) + 1, fmt, ##__VA_ARGS__)
+#define kprintf(fmt, ...) symbol_call_args_("mod_kprintf", PP_NARG(__VA_ARGS__) + 1, fmt, ##__VA_ARGS__)
 
 #include <module.h>
 

@@ -14,7 +14,7 @@ static int keyboard_handler(Kernel::CPU::regs_t * regs) {
 }
 
 static int keyboard_ini(void) {
-	symbol_call_args("irq_install_handler", 2, 1, keyboard_handler);
+	symbol_call_args(irq_install_handler, 1, keyboard_handler);
 	return 0;
 }
 
