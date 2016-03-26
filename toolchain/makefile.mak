@@ -13,6 +13,7 @@ CFLAGS = -T $(TOOLCH)\$(LINKER) -Itoolchain\Tools\Windows\Cross\i686-elf\lib\gcc
 LLVMCFLAGS = -ffreestanding -nostdlib -nodefaultlibs -target i686-pc-none-elf -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -fno-exceptions -IC:\llvm\lib\clang\3.8.0\include -Isrc
 ASFLAGS = 
 NASFLAGS = -g -f elf32
+CPPFLAGS_MODS = -Itoolchain\Tools\Windows\Cross\i686-elf\lib\gcc\i686-elf\4.8.2\include -Isrc -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions
 
 # Output constants (filenames and paths)
 DISKPATH = iso
@@ -33,6 +34,7 @@ include src\kernel_headers\subdir.mk
 include src\libc\subdir.mk
 include src\libc\data_struct\subdir.mk
 include src\memory\subdir.mk
+include src\mod\subdir.mk
 include src\mod\kbd\subdir.mk
 include src\task\subdir.mk
 

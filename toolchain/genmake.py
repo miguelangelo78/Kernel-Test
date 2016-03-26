@@ -141,16 +141,16 @@ def parse_injections_sourcefile(source_content):
 	match_flags = re.search(r'\$FLAGS\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_flags:
 		meta.flags = match_flags.group(1)
-	match_deps = re.search(r'\$DEPS\(((?:\w|\n|,)+?)\)', source_content, re.M)
+	match_deps = re.search(r'\$DEPS\(((?:\w|\n|,|\\|\/|\.)+?)\)', source_content, re.M)
 	if match_deps:
 		deps = match_deps.group(1).split(',')
 		for dep in deps:
-			meta.deps += build_path + "\\" + dep + ".o "
+			meta.deps += "build\\" + dep
 	match_misc = re.search(r'\$INJ\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_misc:
 		meta.misc = match_misc.group(1)
 
-	match_ismod = re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?MODULE_DEF\((.+)?\)', source_content, re.M)
+	match_ismod = re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?MODULE_(?:DEF|EXT)\((.+)?\)', source_content, re.M)
 	if match_ismod:
 		meta.mods = 1
 	else:
@@ -206,7 +206,7 @@ def write_subdir_entry(subdirmk_file, toolchain, file_objname, file_path, custom
 	subdirmk_file.write('\n$(BOUT)\\'+('modules\\' if ismod else '') + file_objname + ('.o' if not ismod else'.mod')+': ' + file_path + ' ' + deps + '\n\
 	@echo \'>> Building file $<\'\n\
 	@echo \'>> Invoking ' + toolchain.toolname + '\'\n\
-	$(' + toolchain.compiler_in_use  + ') $(' + toolchain.flags_in_use + ') ' + customflags + ' -o '+entry_output_path+' '+ ('-c' if not toolchain.is_asm else '') +' $< '+ deps + ' '+ injection +'\n\
+	$(' + ( toolchain.compiler_in_use if not deps else gt.compiler_cpp.make_sym) + ') $(' + (toolchain.flags_in_use if not deps else "CPPFLAGS_MODS") + ') ' + customflags + ' -o '+entry_output_path+' '+ ('-c' if not toolchain.is_asm and not deps else '') +' $< '+ deps + ' '+ injection +'\n\
 	@echo \'>> Finished building: $<\'\n\
 	@echo \' \'\n')
 	
@@ -229,7 +229,7 @@ def gen_make(tree):
 			files.append(ffile[ffile.rfind('\\')+1:ffile.rfind('.')])
 			
 			# Prevent this mod from being linked to the core kernel:
-			if re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?MODULE_DEF\((.+)?\)', open(ffile).read(), re.M):
+			if re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?MODULE_(?:DEF|EXT)\((.+)?\)', open(ffile).read(), re.M):
 				modcount.append(ffile)
 				continue
 			
@@ -284,6 +284,7 @@ LINKER = " + ct.linker_script 		+ "\n\
 " + lt.compiler_c.make_flagsym 		+ " = " + lt.compiler_c.flags 			+ "\n\
 " + ct.assembler_gas.make_flagsym 	+ " = " + ct.assembler_gas.flags 		+ "\n\
 " + ct.assembler_nasm.make_flagsym 	+ " = " + ct.assembler_nasm.flags 		+ "\n\
+CPPFLAGS_MODS = " + gt.compiler_c.include_path + " -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions\n\
 \n\
 # Output constants (filenames and paths)\n\
 DISKPATH = " + ct.runnable_path + "\n\

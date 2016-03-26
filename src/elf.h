@@ -291,7 +291,8 @@ inline char elf32_is_elf(uint8_t * file_blob) {
 }
 
 extern char * elf_parse(uint8_t * blob, int blobsize);
-extern void elf_relocate(elf32_ehdr * elf_header);
+extern char elf_relocate(elf32_ehdr * elf_header);
+extern char elf_relocate_exec(elf32_ehdr * elf_header);
 extern modent_t * elf_find_mod(elf32_ehdr * header);
 
 #endif /* SRC_ELF_H_ */

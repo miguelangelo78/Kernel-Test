@@ -131,13 +131,30 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 
 modent_t * elf_find_mod(elf32_ehdr * header) {
 	modent_t * mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATURE0), MODULE_SIGNATURE1);
-	return mod ? mod : 0;
+	/* Check if it is a dependency: */
+	if(!mod) {
+		mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATUREXT0), MODULE_SIGNATURE1);
+		return  (modent_t *)(mod ? MOD_DEP : MOD_UNKNOWN); /* If it's a dependency we don't want it.... */
+	}
+	/* The module was found: */
+	return mod;
 }
 
 #define DO_386_32(S, A)	((S) + (A))
 #define DO_386_PC32(S, A, P) ((S) + (A) - (P))
 
-void elf_relocate(elf32_ehdr * elf_header) {
+char elf_relocate_exec(elf32_ehdr * elf_header) {
+	if(elf_header->e_type == ET_REL) return elf_relocate(elf_header);
+	//kprintf("\n");
+
+
+	for(;;);
+	return 0;
+}
+
+char elf_relocate(elf32_ehdr * elf_header) {
+	if(elf_header->e_type == ET_EXEC) return elf_relocate_exec(elf_header);
+
 	for(int i = 0; i < elf_header->e_shnum; i++) {
 		elf32_shdr * rel_sect = elf_section(elf_header, i);
 		if(rel_sect->sh_type == SHT_REL) {
@@ -167,6 +184,7 @@ void elf_relocate(elf32_ehdr * elf_header) {
 			}
 		}
 	}
+	return 1;
 }
 
 char * elf_parse(uint8_t * blob, int blobsize) {

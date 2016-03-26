@@ -5,8 +5,10 @@
 /********** MODULES **********/
 #define MODULE_SIGNATURE0 modent_
 #define MODULE_SIGNATURE1 '_'
+#define MODULE_SIGNATUREXT0 modentext_
 
-#define MODULE_DEF(name, ini, fini) modent_t modent_ ## name = { STR(MODULE_SIGNATURE0) #name, &ini, &fini }
+#define MODULE_DEF(name, ini, fini) modent_t modent_ ## name = { STR(MODULE_SIGNATURE0) #name, ini, fini }
+#define MODULE_EXT(name) modent_t modentext_ ## name = { STR(MODULE_SIGNATURE0) #name, 0, 0 }
 
 typedef int (*mod_init_t)(void);
 typedef int (*mod_fini_t)(void);
@@ -16,6 +18,10 @@ typedef struct {
 	mod_init_t init;
 	mod_fini_t finit;
 } modent_t;
+
+enum MOD_TYPE {
+	MOD_UNKNOWN, MOD_CORE, MOD_DEP
+};
 
 /********** SYMBOLS **********/
 #define KERNEL_SYMBOLS_TABLE_START 0x100000 /* Very important macro!! */
