@@ -103,6 +103,7 @@ namespace IRQ {
 		}
 		SYNC_STI();
 	}
+	EXPORT_SYMBOL(irq_install_handler);
 
 	void irq_uninstall_handler(size_t irq_num) {
 		/* Disable interrupts when changing handlers */

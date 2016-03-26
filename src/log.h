@@ -1,6 +1,7 @@
 #pragma once
 
 namespace Log {
+#ifndef MODULE
 	#define kputs(msg) \
 		if(Log::logging == 1) \
 			Kernel::term.puts((char*)msg, COLOR_DEFAULT); \
@@ -19,6 +20,7 @@ namespace Log {
 	#define DEBUGVALID() kputsc(" VALID \n", COLOR_GOOD);
 	#define DEBUGBAD() kputsc(" BAD \n", COLOR_BAD);
 	#define DEBUGNO() kputsc(" NO \n", COLOR_BAD);
+#endif
 
 	#define LOG_DISABLED 0
 	#define LOG_VGA 1

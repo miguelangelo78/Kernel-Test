@@ -41,5 +41,5 @@ namespace Kernel {
 		inline void insm(uint16_t port, unsigned char * data, unsigned long size) {
 			asm volatile ("rep insw" : "+D" (data), "+c" (size) : "d" (port) : "memory");
 		}
-	}
+	} using namespace IO;
 }
