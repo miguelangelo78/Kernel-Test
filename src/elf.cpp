@@ -7,7 +7,6 @@
 
 #include <elf.h>
 #include <system.h>
-#include <module.h>
 
 #define BASE_OFF(header) ((uintptr_t)header)
 
@@ -130,7 +129,7 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 	return elf_get_symval(header, symsection, symname, 0);
 }
 
-static inline modent_t * elf_find_mod(elf32_ehdr * header) {
+modent_t * elf_find_mod(elf32_ehdr * header) {
 	modent_t * mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATURE0), MODULE_SIGNATURE1);
 	return mod ? mod : 0;
 }
@@ -171,13 +170,6 @@ void elf_relocate(elf32_ehdr * elf_header) {
 }
 
 char * elf_parse(uint8_t * blob, int blobsize) {
-	elf32_ehdr * head = (elf32_ehdr*)blob;
-	elf_relocate(head);
-	modent_t * mod = elf_find_mod(head);
-
-	kprintf(" | Module name: %s\nRunning ... ret: %s", strchr(mod->name, MODULE_SIGNATURE1)+1, mod->init());
-
-	kprintf("\nDone");
 
 	return 0;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <va_list.h>
+
 /********** MODULES **********/
 #define MODULE_SIGNATURE0 modent_
 #define MODULE_SIGNATURE1 '_'
@@ -46,10 +48,36 @@ static inline void * symbol_find(const char * name) {
 	return (void*)name;
 }
 
-inline void * symbol_call_args(const char * name, void * params) {
+#define MAX_ARGUMENT 10
+
+inline void * symbol_call_args(const char * function_name, int argc, ...) {
+	if(argc <= 0 || argc >= MAX_ARGUMENT) return 0;
+
+	void * ret = 0;
+	int i;
 	typedef void * (*cback)(void*);
-	cback fptr = (cback)symbol_find(name);
-	return fptr ? fptr(params) : 0;
+	cback symbol = (cback)symbol_find(function_name);
+
+	va_list args;
+	va_start(args, function_name);
+
+	/* Store arguments backwards: */
+	unsigned int arglist[MAX_ARGUMENT];
+	for(i = argc - 1;i >= 0; i--)
+		arglist[i] = va_arg(args, unsigned int);
+
+	/* With assembly: */
+	for(i = 0; i < argc; i++) /* Push argument */
+		asm volatile("mov %0,%%eax; push %%eax" : : "r"(arglist[i]) : "%eax");
+
+	/* Call function */
+	asm volatile("call *%0" : : "r"(symbol));
+
+	/* Pop stack: */
+	for(i = 0; i < argc; i++) asm volatile("pop %ebp");
+
+	va_end(args);
+	return 0;
 }
 
 inline void * symbol_call(const char * name) {

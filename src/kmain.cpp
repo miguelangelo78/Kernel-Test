@@ -34,8 +34,9 @@ namespace Kernel {
 	/* Serial port (COM1) which will be used for logging: */
 	Serial serial;
 	
-	void bridge(char * test) {
-		term.printf(test);
+	void bridge(char * test, char * test2, char d) {
+		term.printf("bridge: %s %s %d", test, test2, d);
+		return;
 	}
 
 	EXPORT_SYMBOL(bridge);

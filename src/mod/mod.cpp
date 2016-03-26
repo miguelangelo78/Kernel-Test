@@ -9,8 +9,8 @@
 #include <module.h>
 
 static int mod_ini(void) {
-	symbol_call_args("bridge", (void*)"print me");
-	return (int)"returned";
+	symbol_call_args("bridge", 3, "print me", "again!", 1);
+	return 0;
 }
 
 static int mod_fini(void) {

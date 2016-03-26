@@ -7,6 +7,7 @@
 
 #include <system.h>
 #include <elf.h>
+#include <module.h>
 
 namespace Module {
 
@@ -23,8 +24,11 @@ void modules_load(void) {
 
 		if(!is_elf) continue;
 
+		/* Prepare elf file first: */
+		elf_relocate((elf32_ehdr*)modblob);
 		/* Load up module and run its init function! */
-		elf_parse(modblob, mod->size);
+		modent_t * modentry = (modent_t *)elf_find_mod((elf32_ehdr*)modblob);
+		kprintf(" | Module name: %s | Running... (ret: %d)", strchr(modentry->name, MODULE_SIGNATURE1)+1, modentry->init());
 	}
 
 	if(modcount) kprintf("\n\n >> ");
