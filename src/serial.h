@@ -32,6 +32,7 @@ public:
 	void puts(char * str);
 	void send(char * buffer, int buffer_size);
 	void printf(char * fmt, ...);
+	void printf(char * fmt, va_list args, char ign);
 
 	char read_async(void);
 	char read(void);

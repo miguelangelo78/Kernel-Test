@@ -70,6 +70,11 @@ void Serial::printf(char * fmt, ...) {
 	puts(serial_printf_buff);
 }
 
+void Serial::printf(char * fmt, va_list args, char ign) {
+	vasprintf(serial_printf_buff, fmt, args);
+	puts(serial_printf_buff);
+}
+
 char Serial::read_async(void) {
 	if(serial_cback_ctr) return pop(); /* Read from buffer instead */
 

@@ -28,7 +28,8 @@ void modules_load(void) {
 		elf_relocate((elf32_ehdr*)modblob);
 		/* Load up module and run its init function! */
 		modent_t * modentry = (modent_t *)elf_find_mod((elf32_ehdr*)modblob);
-		kprintf(" | Module name: %s | Running... (ret: %d)", strchr(modentry->name, MODULE_SIGNATURE1)+1, modentry->init());
+		kprintf(" | Module name: %s | Initializing...", strchr(modentry->name, MODULE_SIGNATURE1)+1);
+		modentry->init();
 	}
 
 	if(modcount) kprintf("\n\n >> ");

@@ -87,6 +87,7 @@ inline void * symbol_call(const char * name) {
 }
 
 #ifdef __cplusplus
+#ifndef MODULE
 
 #include <system.h>
 #include <stdint.h>
@@ -117,4 +118,5 @@ namespace Module {
 
 using namespace Module;
 
+#endif
 #endif

@@ -9,7 +9,7 @@
 #include <module.h>
 
 static int mod_ini(void) {
-	symbol_call_args("bridge", 3, "print me", "again!", 1);
+	kprintf("\n\ntest: %s %d %d\n", "test2", 2, 1);
 	return 0;
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <va_list.h>
+
 #define VID_WIDTH 80
 #define VID_HEIGHT 25
 
@@ -43,7 +45,9 @@ class Terminal {
 		void puts(const char * str, uint8_t color);
 		void puts(const char * str);
 		void printf(uint8_t color, const char *fmt, ...);
+		void printf(uint8_t color, const char *fmt, va_list args);
 		void printf(const char *fmt, ...);
+		void printf(const char *fmt, va_list args, char ign);
 		void clear(void);
 		void fill(uint8_t color);
 		void reset_cursor(void);

@@ -76,3 +76,13 @@ void Terminal::printf(uint8_t color, const char *fmt, ...) {
 void Terminal::printf(const char *fmt, ...) {
 	term_printf(fmt, COLOR_DEFAULT);
 }
+
+void Terminal::printf(uint8_t color, const char *fmt, va_list args) {
+	vasprintf(printf_buff, fmt, args);
+	puts(printf_buff, color);
+}
+
+void Terminal::printf(const char *fmt, va_list args, char ign) {
+	vasprintf(printf_buff, fmt, args);
+	puts(printf_buff, COLOR_DEFAULT);
+}

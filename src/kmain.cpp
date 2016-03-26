@@ -33,13 +33,6 @@ namespace Kernel {
 	Terminal term;
 	/* Serial port (COM1) which will be used for logging: */
 	Serial serial;
-	
-	void bridge(char * test, char * test2, char d) {
-		term.printf("bridge: %s %s %d", test, test2, d);
-		return;
-	}
-
-	EXPORT_SYMBOL(bridge);
 
 	void relocate_heap(void) {
 		if ((IS_BIT_SET(mboot_ptr->flags, 3)) && mboot_ptr->mods_count > 0) {
