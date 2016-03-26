@@ -29,8 +29,8 @@ void Serial::init(uint16_t port) {
 	memset(serial_cback_buffer, 0, SERIAL_CBACK_BUFFER_SIZE);
 
 	switch(port) {
-	case COM1: irq_num = 4; break;
-	case COM2: irq_num = 3; break;
+	case COM1: irq_num = Kernel::CPU::IRQ::IRQ_COM1; break;
+	case COM2: irq_num = Kernel::CPU::IRQ::IRQ_COM2; break;
 	case COM3: case COM4: break; /* COM3 and COM4 do not trigger interrupts */
 	default: return;
 	}

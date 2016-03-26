@@ -22,7 +22,7 @@ static int keyboard_handler(Kernel::CPU::regs_t * regs) {
 }
 
 static int keyboard_ini(void) {
-	SYA(irq_install_handler, 1, keyboard_handler);
+	SYA(irq_install_handler, Kernel::CPU::IRQ::IRQ_KBD, keyboard_handler);
 	return 0;
 }
 

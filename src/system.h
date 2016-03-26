@@ -140,6 +140,12 @@ namespace Kernel {
 		}
 
 		namespace IRQ {
+			enum IRQ_NUMS {
+				IRQ_PIT, IRQ_KBD, IRQ_CASCADE, IRQ_COM2, IRQ_COM1,
+				IRQ_LPT2, IRQ_FLOPPY, IRQ_LPT1, IRQ_CMOS, IRQ_FREE1,
+				IRQ_FREE2, IRQ_FREE3, IRQ_MOUSE, IRQ_FPU, IRQ_PRIM_ATA, IRQ_SEC_ATA
+			};
+
 			typedef int(*irq_handler_t) (CPU::regs_t *); /* Callback type */
 
 			void irq_install(void);
