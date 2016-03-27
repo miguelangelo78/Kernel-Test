@@ -136,7 +136,12 @@ modent_t * elf_find_mod(elf32_ehdr * header) {
 		mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATUREXT0), MODULE_SIGNATURE1);
 		return  (modent_t *)(mod ? MOD_DEP : MOD_UNKNOWN); /* If it's a dependency we don't want it.... */
 	}
-	/* The module was found: */
+	/* The module was found */
+
+	/* Add desired symbols to the symbol table: */
+	sym_t * sym = (sym_t*)elf_get_symval(header, elf_symsection(header), "sym_", '_', 1);
+	if(sym)
+		symbol_add(sym->name, sym->addr);
 	return mod;
 }
 

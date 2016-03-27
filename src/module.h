@@ -34,7 +34,7 @@ enum MOD_TYPE {
 #define KERNEL_SYMBOLS_TABLE_END (KERNEL_SYMBOLS_TABLE_START + KERNEL_SYMBOLS_TABLE_SIZE) /* Very important macro!! */
 
 #define EXPORT_SYMBOL(sym) \
-	sym_t _sym_## sym __attribute__((section(".symbols"))) = {(char*)#sym, (uintptr_t)&sym}
+	sym_t sym_## sym __attribute__((section(".symbols"))) = {(char*)#sym, (uintptr_t)&sym}
 
 /* Calculate the next/previous symbol's address: */
 #define SYM(i) ((sym_t*)((unsigned int)KERNEL_SYMBOLS_TABLE_START + (sizeof(unsigned int) * 2) * i))
@@ -113,16 +113,14 @@ static inline void * symbol_call(char * name) {
 static inline uint32_t symbol_count(void) {
 	uint32_t symcount = 0;
 	static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
-	while((unsigned int)sym < (unsigned int)KERNEL_SYMBOLS_TABLE_END) {
-		if(sym->name) symcount++;
-		sym = SYM_NEXT(sym);
-	}
+	for(int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
+		if(sym[i].name) symcount++;
 	return symcount;
 }
 
 /* Finds the next available symbol slot: */
 static inline sym_t * symbol_next(void) {
-static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
+	static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
 	int sym_ctr = 0;
 	for(int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
 		if(!sym[i].name)
@@ -172,20 +170,34 @@ namespace Module {
 	extern "C" { void kernel_symbols_start(void); }
 	extern "C" { void kernel_symbols_end(void); }
 
-	inline void * symbols_dump(void) {
+	static inline void symbols_dump(int start, int end) {
 		/* Only the kernel can call this function */
-		sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
-		kprintf("Symbol Section Start: 0x%x - End: 0x%x Size: 0x%x\n",
+		int symcount = symbol_count();
+		int begin = (start >= 0 && start < KERNEL_SYMBOLS_TABLE_END && (start <= end || end==-1)) ? start : 0;
+		int finish = (end <= KERNEL_SYMBOLS_TABLE_END && end > 0 && end >= start) ? end : symcount;
+
+		kprintf(">>>>> Dumping Symbol Table\n>> Section Start: 0x%x - End: 0x%x Size: 0x%x\n>> Symbol count: %d",
 			KERNEL_SYMBOLS_TABLE_START,
 			KERNEL_SYMBOLS_TABLE_END,
-			(uintptr_t)KERNEL_SYMBOLS_TABLE_END - (uintptr_t)KERNEL_SYMBOLS_TABLE_START);
+			(uintptr_t)KERNEL_SYMBOLS_TABLE_END - (uintptr_t)KERNEL_SYMBOLS_TABLE_START, symcount);
+		kprintf(" - Showing: Start = %d | End = %d\n___________\n", begin, finish);
 		
-		for(int i = 1; (uintptr_t)sym < (uintptr_t)KERNEL_SYMBOLS_TABLE_END; i++) {
-			kprintf("%d - %s: 0x%x\n", i, sym->name, sym->addr);
-			sym = SYM_NEXT(sym);
-		}
-		kputs("Dump done\n");
-		return 0;
+		sym_t * sym = SYM(0);
+		for(int i = begin; i < finish; i++)
+			kprintf("%d - %s: 0x%x\n", i+1, sym[i].name, sym[i].addr);
+		kputs("___________\n>> Dump done\n");
+	}
+
+	static inline void symbols_dump_start(int start) {
+		symbols_dump(start, -1);
+	}
+
+	static inline void symbols_dump(int end) {
+		symbols_dump(-1, end);
+	}
+
+	static inline void symbols_dump(void) {
+		symbols_dump(-1, -1);
 	}
 }
 
