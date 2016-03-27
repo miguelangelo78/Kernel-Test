@@ -54,6 +54,33 @@ namespace Kernel {
 		}
 	}
 
+	/* The linker seems to not put 0's on the symbol table. This confuses the kernel when looking up symbols.
+	 * We might want to force the linker to fill the area with 0's... */
+	void symboltable_cleanup(void) {
+		#define MATCH_OCCURRENCE 0x90669066
+		int occurrences = 0;
+		uintptr_t * first_occurrence = 0;
+
+		for(uintptr_t * table_addr = (uintptr_t *)KERNEL_SYMBOLS_TABLE_START; table_addr < (uintptr_t *)KERNEL_SYMBOLS_TABLE_END; table_addr++) {
+			if(*table_addr == MATCH_OCCURRENCE) {
+				if(!occurrences) first_occurrence = table_addr;
+				occurrences++;
+			} else {
+				if(occurrences) { /* Oops, that was actual data. Just a coincidence */
+					first_occurrence = 0;
+					occurrences = 0;
+				}
+			}
+			if(occurrences >= 3) { /* Matches were exhausted. We'll consider this section to be dirty. */
+				for(uintptr_t * table_addr = first_occurrence; table_addr < (uintptr_t *)KERNEL_SYMBOLS_TABLE_END; table_addr++) {
+					if(*table_addr != MATCH_OCCURRENCE) break; /* We've reached the end or some data */
+					*table_addr = 0x00000000; /* Clean it up */
+				}
+				break;
+			}
+		}
+	}
+
 	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_esp)
 	{
 		/******* Initialize everything: *******/
@@ -61,6 +88,7 @@ namespace Kernel {
 		KInit::init_esp = initial_esp;
 		mboot_ptr = mboot;
 		setup_linker_pointers();
+		symboltable_cleanup();
 
 		/* Install the core components very early (because of Serial and command line): */
 		CPU::GDT::gdt_init();
@@ -85,7 +113,7 @@ namespace Kernel {
 			MEMSIZE());
 		kprintfc(COLOR_WARNING, "* %d MB *", MEMSIZE()/1024);
 		kprintf(" (start: 0x%x end: 0x%x = 0x%x)\n", KInit::ld_segs.ld_kstart, KInit::ld_segs.ld_kend, KERNELSIZE());
-		kprintf("> ESP: 0x%x\n\n", init_esp);
+		kprintf("> ESP: 0x%x | Symbols found: %d\n\n", init_esp, symbol_count());
 		
 		/* Validate Multiboot: */
 		kputsc(">> Initializing Kernel <<\n", COLOR_INFO);

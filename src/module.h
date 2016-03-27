@@ -1,6 +1,7 @@
 #pragma once
 
 #include <va_list.h>
+#include <stdint.h>
 
 /********** MODULES **********/
 #define MODULE_SIGNATURE0 modent_
@@ -35,8 +36,12 @@ enum MOD_TYPE {
 #define EXPORT_SYMBOL(sym) \
 	sym_t _sym_## sym __attribute__((section(".symbols"))) = {(char*)#sym, (uintptr_t)&sym}
 
-/* Calculate the next symbol's address: */
-#define SYM_NEXT(sym_ptr) (sym_t*)((unsigned int)sym_ptr + sizeof(sym_ptr->name) + sizeof(sym_ptr->addr))
+/* Calculate the next/previous symbol's address: */
+#define SYM(i) ((sym_t*)((unsigned int)KERNEL_SYMBOLS_TABLE_START + (sizeof(unsigned int) * 2) * i))
+#define SYM_NEXT(sym_ptr) ((sym_t*)((unsigned int)sym_ptr + (sizeof(sym_ptr->name) + sizeof(sym_ptr->addr))))
+#define SYM_NEXT_I(sym_ptr, i) ((sym_t*)((unsigned int)sym_ptr + (sizeof(sym_ptr->name) + sizeof(sym_ptr->addr)) * i))
+#define SYM_PREV(sym_ptr) (((sym_t*)((unsigned int)sym_ptr - (sizeof(sym_ptr->name) + sizeof(sym_ptr->addr)))))
+#define SYM_PREV_I(sym_ptr, i) ((sym_t*)((unsigned int)sym_ptr - (sizeof(sym_ptr->name) + sizeof(sym_ptr->addr)) * i))
 
 /* Used to iterate the symbol section and to declare symbols: */
 typedef struct {
@@ -44,17 +49,22 @@ typedef struct {
 	unsigned int addr;
 } __attribute__((packed)) sym_t;
 
-static inline void * symbol_find(const char * name) {
+static inline void * symbol_find(char * name, char get_addr) {
 	static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
-	while((unsigned int)sym < (unsigned int)KERNEL_SYMBOLS_TABLE_END) {
-		if (strcmp(sym->name, name)) {
-			/* Fetch next symbol: */
-			sym = SYM_NEXT(sym);
-			continue;
-		}
-		return (void*)sym->addr;
-	}
-	return (void*)name;
+	int sym_ctr = 0;
+	for(int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
+		if(!strcmp(sym[i].name, name))
+			return get_addr ? (void*)sym[i].addr : &sym[i];
+	/* Symbol not found: */
+	return 0;
+}
+
+static inline void * symbol_find(char * name) {
+	return symbol_find(name, 1);
+}
+
+static inline sym_t * symbol_t_find(char * name) {
+	return (sym_t*)symbol_find(name, 0);
 }
 
 #define MAX_ARGUMENT 10
@@ -64,7 +74,7 @@ static inline void * symbol_find(const char * name) {
 #define SYA(function_name, ...) symbol_call_args(function_name, __VA_ARGS__)
 #define SYC(function_nama) symbol_call(function_name)
 
-inline void * symbol_call_args_(const char * function_name, int argc, ...) {
+static inline void * symbol_call_args_(char * function_name, int argc, ...) {
 	if(argc <= 0 || argc >= MAX_ARGUMENT) return 0;
 
 	void * ret = 0;
@@ -94,10 +104,59 @@ inline void * symbol_call_args_(const char * function_name, int argc, ...) {
 	return 0;
 }
 
-inline void * symbol_call(const char * name) {
+static inline void * symbol_call(char * name) {
 	typedef void * (*cback)(void);
 	cback fptr = (cback)symbol_find(name);
 	return fptr ? fptr() : 0;
+}
+
+static inline uint32_t symbol_count(void) {
+	uint32_t symcount = 0;
+	static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
+	while((unsigned int)sym < (unsigned int)KERNEL_SYMBOLS_TABLE_END) {
+		if(sym->name) symcount++;
+		sym = SYM_NEXT(sym);
+	}
+	return symcount;
+}
+
+/* Finds the next available symbol slot: */
+static inline sym_t * symbol_next(void) {
+static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
+	int sym_ctr = 0;
+	for(int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
+		if(!sym[i].name)
+			return &sym[i];
+	/* Symbol not found: */
+	return (sym_t*)0;
+}
+
+static inline char symbol_exists(char * name) {
+	sym_t * sym = symbol_t_find(name);
+	return sym ? (sym->name ? 1 : 0) : 0;
+}
+
+static inline char symbol_add(char * name, uintptr_t address) {
+	if(symbol_exists(name)) return 0;
+	sym_t * new_sym = symbol_next();
+	if(!new_sym) return 0;
+	new_sym->name = (char*)name;
+	new_sym->addr = address;
+	return 1;
+}
+
+static inline char symbol_remove(char * name) {
+	if(!symbol_exists(name)) return 0;
+	sym_t * sym_to_remove = symbol_t_find(name);
+	if(!sym_to_remove) return 0;
+	sym_to_remove->name = 0;
+	sym_to_remove->addr = 0;
+	return 1;
+}
+
+static inline sym_t * symbol_first() {
+	sym_t * s = SYM(0);
+	return s ? s : 0;
 }
 
 #ifdef __cplusplus
