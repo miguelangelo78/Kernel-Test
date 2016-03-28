@@ -11,10 +11,14 @@
 void mod_kprintf(char * fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	if(Log::logging == LOG_VGA)
+	if(Log::logging == Log::LOG_VGA)
 		Kernel::term.printf(fmt, args, 0);
-	else if(Log::logging == LOG_SERIAL)
+	else if(Log::logging == Log::LOG_SERIAL)
 		Kernel::serial.printf(fmt, args, 0);
+	else if(Log::logging == Log::LOG_VGA_SERIAL) {
+		Kernel::term.printf(fmt, args, 0);
+		Kernel::serial.printf(fmt, args, 0);
+	}
 	va_end(args);
 }
 

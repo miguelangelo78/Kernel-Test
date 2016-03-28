@@ -103,7 +103,7 @@ namespace Kernel {
 
 		term.init();
 		serial.init(COM1);
-		Log::redirect_log(LOG_SERIAL); /* TODO: Redirect the IO based on the cmdline */
+		Log::redirect_log(Log::LOG_SERIAL); /* TODO: Redirect the IO based on the cmdline */
 
 		/* Output initial data from multiboot: */
 		kprintf("> Bootloader: %s| Bootloader Mod Count: %d at 0x%x\n> Memory: 0x%x ",
@@ -155,16 +155,14 @@ namespace Kernel {
 		"\n  1.2 - Tasking\n  1.3 - Syscalls\n  1.4 - Shared memory");
 
 		/* All done! */
+		Log::redirect_log(Log::LOG_VGA_SERIAL);
 		kputsc("\nReady", COLOR_GOOD);
-		Log::redirect_log(LOG_VGA);
-		kputsc("Ready", COLOR_GOOD);
 
 		for(;;)
 			if(serial.is_ready()) {
 				char c = serial.read_async();
 				/* Echo back: */
 				kprintf("%c", c);
-				serial.write(c);
 			}
 		return 0;
 	}

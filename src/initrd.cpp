@@ -85,7 +85,7 @@ FILE * initrd_init(uint32_t location) {
 		root_files[i].open = 0;
 		root_files[i].close = 0;
 
-		if(Log::logging == LOG_SERIAL) {
+		if(Log::logging == Log::LOG_SERIAL) {
 			kprintf("\n   * File %d (@0x%x > @0x%x): %s", i+1,
 					(uintptr_t)(&initrd_header->header_size) + ((unsigned int*)(&initrd_header->offset))[i],
 					root_files[i].size, filename_ptr);
@@ -93,7 +93,7 @@ FILE * initrd_init(uint32_t location) {
 		filename_ptr += INITRD_FILENAME_SIZE;
 	}
 
-	if(Log::logging == LOG_SERIAL) { kprintf("\n >> "); }
+	if(Log::logging == Log::LOG_SERIAL) { kprintf("\n >> "); }
 	return initrd_root;
 }
 
