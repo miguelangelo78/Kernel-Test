@@ -16,6 +16,28 @@ list_t * modlist;
 int modcount = 0;
 
 #define GET_LMOD(n) ((modent_t*)(n->value))
+#define MOD_IDX_INVALID(idx) ((idx) < 0 || (idx) > list_size(modlist))
+
+uintptr_t module_ioctl(char * modname, void * data) {
+	modent_t * mod = module_get(modname);
+	return mod && mod->ioctl ? mod->ioctl(data) : (uintptr_t)-1;
+}
+
+uintptr_t module_ioctl_s(char * modname, void * data) {
+	return module_ioctl(modname, data);
+}
+EXPORT_SYMBOL(module_ioctl_s);
+
+uintptr_t module_ioctl(int mod_idx, void * data) {
+	if(MOD_IDX_INVALID(mod_idx)) return 0;
+	modent_t * mod = module_get(mod_idx);
+	return mod && mod->ioctl ? mod->ioctl(data) : (uintptr_t)-1;
+}
+
+uintptr_t module_ioctl_i(int mod_idx, void * data) {
+	return module_ioctl(mod_idx, data);
+}
+EXPORT_SYMBOL(module_ioctl_i);
 
 modent_t * module_get(char * modname) {
 	foreach(n, modlist)
@@ -23,26 +45,43 @@ modent_t * module_get(char * modname) {
 	return 0;
 }
 
+modent_t * module_gets(char * modname) {
+	return module_get(modname);
+}
+EXPORT_SYMBOL(module_gets);
+
 modent_t * module_get(int mod_idx) {
-	if(mod_idx < 0 || mod_idx > list_size(modlist)) return 0;
+	if(MOD_IDX_INVALID(mod_idx)) return 0;
 	return (modent_t*)list_get(modlist, mod_idx)->value;
 }
+
+modent_t * module_geti(int mod_idx){
+	return module_get(mod_idx);
+}
+EXPORT_SYMBOL(module_geti);
 
 int module_count(void) {
 	return modcount;
 }
+EXPORT_SYMBOL(module_count);
 
 char module_type_exists(char mod_type) {
 	foreach(n, modlist)
 		if(GET_LMOD(n)->type == mod_type) return 1;
 	return 0;
 }
+EXPORT_SYMBOL(module_type_exists);
 
 char module_exists(char * modname) {
 	foreach(n, modlist)
 		if(!strcmp(GET_LMOD(n)->name, modname)) return 1;
 	return 0;
 }
+
+char module_exists_s(char * modname) {
+	return module_exists(modname);
+}
+EXPORT_SYMBOL(module_exists_s);
 
 char module_exists(modent_t * mod) {
 	return list_find(modlist, mod) ? 1 : 0;
@@ -69,7 +108,7 @@ char module_remove(char * modname) {
 }
 
 char module_remove(int mod_idx) {
-	if(mod_idx < 0 || mod_idx > list_size(modlist)) return 0;
+	if(MOD_IDX_INVALID(mod_idx)) return 0;
 	list_remove(modlist, mod_idx);
 	modcount--;
 	return 1;

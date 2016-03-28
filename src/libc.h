@@ -3,6 +3,21 @@
 #include "stdint.h"
 #include "limits.h"
 
+#define STRSTR(str) #str
+#define STR(str) STRSTR(str)
+
+#define FCAST(rettype, ...) (rettype (*)(__VA_ARGS__))
+#define FCASTF(func, rettype, ...) ((rettype (*)(__VA_ARGS__))func)
+#define FDECL(_typename, rettype, ...) typedef rettype (*_typename)(__VA_ARGS__)
+#define FDECLV(ptrname, _typename, rettype, ...) typedef rettype (*_typename)(__VA_ARGS__); _typename ptrname;
+
+static inline int strcmp(const char * l, const char * r) {
+	for (; *l == *r && *l; l++, r++);
+	return *(unsigned char *)l - *(unsigned char *)r;
+}
+
+#ifndef MODULES
+
 #define MIN(A, B) ((A) < (B) ? (A) : (B))
 #define MAX(A, B) ((A) > (B) ? (A) : (B))
 
@@ -10,9 +25,6 @@
 #define ONES ((size_t)-1/UCHAR_MAX)
 #define HIGHS (ONES * (UCHAR_MAX/2+1))
 #define HASZERO(X) (((X)-ONES) & ~(X) & HIGHS)
-
-#define STRSTR(str) #str
-#define STR(str) STRSTR(str)
 
 #define BITOP(A, B, OP) \
  ((A)[(size_t)(B)/(8*sizeof *(A))] OP (size_t)1<<((size_t)(B)%(8*sizeof *(A))))
@@ -38,7 +50,6 @@ size_t strspn(const char * s, const char * c);
 char * strchrnul(const char * s, int c);
 char * strchr(const char * s, int c);
 char * strrchr(const char * s, int c);
-int strcmp(const char * l, const char * r);
 size_t strcspn(const char * s, const char * c);
 char * strpbrk(const char * s, const char * b);
 static char *strstr_2b(const unsigned char * h, const unsigned char * n);
@@ -55,3 +66,5 @@ uint8_t startswith(const char * str, const char * accept);
 char * strtok_r(char * str, const char * delim, char ** saveptr);
 uint32_t __attribute__((pure)) krand(void);
 int tokenize(char * str, char * sep, char **buf);
+
+#endif

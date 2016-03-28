@@ -172,11 +172,6 @@ char * strrchr(const char * s, int c) {
 	return (char*)memrchr(s, c, strlen(s) + 1);
 }
 
-int strcmp(const char * l, const char * r) {
-	for (; *l == *r && *l; l++, r++);
-	return *(uint8_t *)l - *(uint8_t *)r;
-}
-
 size_t strcspn(const char * s, const char * c) {
 	const char *a = s;
 	if (c[0] && c[1]) {

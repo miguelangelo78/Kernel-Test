@@ -7,7 +7,7 @@
 
 #include <kernel_headers/kheaders.h>
 #include <system.h>
-#include "kbd_scan.h"
+#include "../../modules/kbd/kbd_scan.h"
 
 static void keyboard_wait(void) {
 	while(Kernel::inb(0x64) & 2);

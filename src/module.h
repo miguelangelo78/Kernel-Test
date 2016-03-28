@@ -1,35 +1,44 @@
 #pragma once
 
 #include <va_list.h>
-#include <kernel_headers/numarg.h>
+#include <numarg.h>
 #include <stdint.h>
 
 /********** MODULES **********/
 enum MODULE_CATEGORIES {
-	MOD_UNKOWN_TYPE, MODT_PS2, MODT_ATA, MODT_IO, MODT_SOUND, MODT_VIDEO, MODT_FS, MODT_NET, MODT_DEBUG, MODT_SYS
+	MOD_UNKOWN_TYPE, MODT_CLOCK, MODT_PS2, MODT_STORAGE, MODT_PNP, MODT_ACPI, MODT_IO, MODT_AUDIO, MODT_VIDEO, MODT_MULTIMEDIA, MODT_FS, MODT_NET, MODT_DEBUG, MODT_SYS, MODT_OTHER
 };
 
 #define MODULE_SIGNATURE0 modent_
 #define MODULE_SIGNATURE1 '_'
 #define MODULE_SIGNATUREXT0 modentext_
 
-#define MODULE_DEF(...) GET_MACRO(__VA_ARGS__, MODDEF_5, MODDEF_4, MODDEF_3)(__VA_ARGS__)
+#define MODULE_DEF(...) GET_MACRO(__VA_ARGS__, MODDEF_6, MODDEF_5, MODDEF_4, MODDEF_3)(__VA_ARGS__)
 
-#define MODDEF_3(name, ini, fini) modent_t modent_ ## name = { STR(MODULE_SIGNATURE0) #name, ini, fini , 0, ""}
-#define MODDEF_4(name, ini, fini, modtype) modent_t modent_ ## name = { STR(MODULE_SIGNATURE0) #name, ini, fini , modtype, ""}
-#define MODDEF_5(name, ini, fini, modtype, author) modent_t modent_ ## name = { STR(MODULE_SIGNATURE0) #name, ini, fini , modtype, author}
-#define MODULE_EXT(name) modent_t modentext_ ## name = { STR(MODULE_SIGNATURE0) #name, 0, 0 }
+#define MODDEF_3(name, ini, fini) modent_t modent_ ## name = { #name, ini, fini , 0, 0, ""}
+#define MODDEF_4(name, ini, fini, modtype) modent_t modent_ ## name = { #name, ini, fini , 0, modtype, ""}
+#define MODDEF_5(name, ini, fini, modtype, author) modent_t modent_ ## name = { #name, ini, fini , 0, modtype, author}
+#define MODDEF_6(name, ini, fini, modtype, author, ioctl) modent_t modent_ ## name = { #name, ini, fini , ioctl, modtype, author}
+#define MODULE_EXT(name) modent_t modentext_ ## name = { #name, 0, 0 }
+
+#ifdef MODULE
+#define module_get(modname) FCASTF(SYF("module_gets"), modent_t*, char*)(modname)
+#define module_geti(modidx) FCASTF(SYF("module_geti"), modent_t*, int)(modidx)
+#define module_count() FCASTF(SYF("module_count"), modent_t*, void)()
+#define module_type_exists(modtype) FCASTF(SYF("module_type_exists"), modent_t*, char)(modtype)
+#define module_exists(modname) FCASTF(SYF("module_exists"), modent_t*, char*)(modname)
+#define module_ioctl(modname, data) FCASTF(SYF("module_ioctl_s"), modent_t*, char*, void*)(modname, data)
+#define module_ioctli(modidx, data) FCASTF(SYF("module_ioctl_i"), modent_t*, int, void*)(modidx, data)
+#endif
 
 /* This macro is only used by the genmake script */
 #define MODULE_DEPS(...)
 
-typedef int (*mod_init_t)(void);
-typedef int (*mod_fini_t)(void);
-
 typedef struct {
 	char name[23];
-	mod_init_t init;
-	mod_fini_t finit;
+	int (*init)(void);
+	int (*finit)(void);
+	uintptr_t (*ioctl)(void *);
 	char type;
 	char author[16];
 } modent_t;
@@ -82,6 +91,7 @@ static inline sym_t * symbol_t_find(char * name) {
 
 #define symbol_call_args(function_name, ...) symbol_call_args_(#function_name, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 
+#define SYF(symbol_name) symbol_find(symbol_name)
 #define SYA(function_name, ...) symbol_call_args(function_name, __VA_ARGS__)
 #define SYC(function_nama) symbol_call(function_name)
 
@@ -178,6 +188,8 @@ namespace Module {
 	extern void modules_load(void);
 	extern modent_t * module_get(char * modname);
 	extern modent_t * module_get(int mod_idx);
+	extern uintptr_t module_ioctl(char * modname, void * data);
+	extern uintptr_t module_ioctl(int mod_idx, void * data);
 	extern int module_count(void);
 	extern char module_type_exists(char mod_type);
 	extern char module_exists(char * modname);

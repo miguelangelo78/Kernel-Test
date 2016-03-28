@@ -5,8 +5,8 @@
  *      Author: Miguel
  */
 
-#ifndef SRC_MOD_KBD_KBD_SCAN_H_
-#define SRC_MOD_KBD_KBD_SCAN_H_
+#ifndef SRC_MODULE_KBD_KBD_SCAN_H_
+#define SRC_MODULE_KBD_KBD_SCAN_H_
 
 unsigned char kbdus[128] =
 {
@@ -48,4 +48,4 @@ unsigned char kbdus[128] =
     0,	/* All other keys are undefined */
 };
 
-#endif /* SRC_MOD_KBD_KBD_SCAN_H_ */
+#endif /* SRC_MODULE_KBD_KBD_SCAN_H_ */
