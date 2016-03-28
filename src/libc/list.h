@@ -1,4 +1,5 @@
 #pragma once
+
 #include <stdint.h>
 #include <attr.h>
 
@@ -7,13 +8,13 @@ typedef struct node {
 	struct node * prev;
 	void * value;
 	void * owner;
-} __packed node_t;
+} __attribute__((packed)) node_t;
 
 typedef struct {
 	node_t * head;
 	node_t * tail;
 	size_t length;
-} __packed list_t;
+} __attribute__((packed)) list_t;
 
 void list_destroy(list_t * list);
 void list_free(list_t * list);
@@ -35,5 +36,15 @@ node_t * list_insert_after(list_t * list, node_t * before, void * item);
 void list_append_before(list_t * list, node_t * after, node_t * node);
 node_t * list_insert_before(list_t * list, node_t * after, void * item);
 
-#define foreach(i, list) for (node_t * i = (list)->head; i != 0; i = i->next)
-#define foreachr(i, list) for (node_t * i = (list)->tail; i != 0; i = i->prev)
+int list_size(list_t * list);
+node_t * list_get(list_t* list, int index);
+node_t * list_get_last(list_t * list);
+node_t * list_get_first(list_t * list);
+int list_index_of_node(list_t * list, node_t * node);
+
+node_t * list_get_next_nth(node_t* node, int increments);
+void list_clear(list_t * list);
+
+#define foreach(i, list) for (node_t * i = (list)->head; i != NULL; i = i->next)
+#define foreachr(i, list) for (node_t * i = (list)->tail; i != NULL; i = i->prev)
+#define forl(j,cond,inc,list) j; for(node_t * node = list_get(list,i); node != NULL && cond; node=list_get_next_nth(node,inc), i++)

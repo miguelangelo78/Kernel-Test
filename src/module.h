@@ -1,14 +1,23 @@
 #pragma once
 
 #include <va_list.h>
+#include <kernel_headers/numarg.h>
 #include <stdint.h>
 
 /********** MODULES **********/
+enum MODULE_CATEGORIES {
+	MOD_UNKOWN_TYPE, MODT_PS2, MODT_ATA, MODT_IO, MODT_SOUND, MODT_VIDEO, MODT_FS, MODT_NET, MODT_DEBUG, MODT_SYS
+};
+
 #define MODULE_SIGNATURE0 modent_
 #define MODULE_SIGNATURE1 '_'
 #define MODULE_SIGNATUREXT0 modentext_
 
-#define MODULE_DEF(name, ini, fini) modent_t modent_ ## name = { STR(MODULE_SIGNATURE0) #name, ini, fini }
+#define MODULE_DEF(...) GET_MACRO(__VA_ARGS__, MODDEF_5, MODDEF_4, MODDEF_3)(__VA_ARGS__)
+
+#define MODDEF_3(name, ini, fini) modent_t modent_ ## name = { STR(MODULE_SIGNATURE0) #name, ini, fini , 0, ""}
+#define MODDEF_4(name, ini, fini, modtype) modent_t modent_ ## name = { STR(MODULE_SIGNATURE0) #name, ini, fini , modtype, ""}
+#define MODDEF_5(name, ini, fini, modtype, author) modent_t modent_ ## name = { STR(MODULE_SIGNATURE0) #name, ini, fini , modtype, author}
 #define MODULE_EXT(name) modent_t modentext_ ## name = { STR(MODULE_SIGNATURE0) #name, 0, 0 }
 
 /* This macro is only used by the genmake script */
@@ -21,6 +30,8 @@ typedef struct {
 	char name[23];
 	mod_init_t init;
 	mod_fini_t finit;
+	char type;
+	char author[16];
 } modent_t;
 
 enum MOD_TYPE {
@@ -52,7 +63,7 @@ typedef struct {
 static inline void * symbol_find(char * name, char get_addr) {
 	static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
 	int sym_ctr = 0;
-	for(int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
+	for(unsigned int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
 		if(!strcmp(sym[i].name, name))
 			return get_addr ? (void*)sym[i].addr : &sym[i];
 	/* Symbol not found: */
@@ -153,8 +164,7 @@ static inline char symbol_remove(char * name) {
 }
 
 static inline sym_t * symbol_first() {
-	sym_t * s = SYM(0);
-	return s ? s : 0;
+	return SYM(0);
 }
 
 #ifdef __cplusplus
@@ -166,6 +176,16 @@ static inline sym_t * symbol_first() {
 namespace Module {
 	/********** MODULES **********/
 	extern void modules_load(void);
+	extern modent_t * module_get(char * modname);
+	extern modent_t * module_get(int mod_idx);
+	extern int module_count(void);
+	extern char module_type_exists(char mod_type);
+	extern char module_exists(char * modname);
+	extern char module_exists(modent_t * mod);
+	extern char module_add(modent_t * mod);
+	extern char module_remove(char * modname);
+	extern char module_remove(int mod_idx);
+	extern char module_remove(modent_t * mod);
 
 	extern "C" { void kernel_symbols_start(void); }
 	extern "C" { void kernel_symbols_end(void); }

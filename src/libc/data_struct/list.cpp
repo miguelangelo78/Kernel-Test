@@ -43,8 +43,8 @@ node_t * list_insert(list_t * list, void * item) {
 	/* Insert an item into a list */
 	node_t * node = (node_t*)malloc(sizeof(node_t));
 	node->value = item;
-	node->next = 0;
-	node->prev = 0;
+	node->next  = 0;
+	node->prev  = 0;
 	node->owner = 0;
 	list_append(list, node);
 
@@ -52,13 +52,13 @@ node_t * list_insert(list_t * list, void * item) {
 }
 
 void list_append_after(list_t * list, node_t * before, node_t * node) {
-	ASSERT(!(node->next || node->prev), "Node is already in a list.");
+	//assert(!(node->next || node->prev) && "Node is already in a list.");
 	node->owner = list;
 	if (!list->length) {
 		list_append(list, node);
 		return;
 	}
-	if (before == 0) {
+	if (before == NULL) {
 		node->next = list->head;
 		node->prev = 0;
 		list->head->prev = node;
@@ -68,8 +68,7 @@ void list_append_after(list_t * list, node_t * before, node_t * node) {
 	}
 	if (before == list->tail) {
 		list->tail = node;
-	}
-	else {
+	} else {
 		before->next->prev = node;
 		node->next = before->next;
 	}
@@ -81,8 +80,8 @@ void list_append_after(list_t * list, node_t * before, node_t * node) {
 node_t * list_insert_after(list_t * list, node_t * before, void * item) {
 	node_t * node = (node_t*)malloc(sizeof(node_t));
 	node->value = item;
-	node->next = 0;
-	node->prev = 0;
+	node->next  = 0;
+	node->prev  = 0;
 	node->owner = 0;
 	list_append_after(list, before, node);
 	return node;
@@ -95,7 +94,7 @@ void list_append_before(list_t * list, node_t * after, node_t * node) {
 		list_append(list, node);
 		return;
 	}
-	if (after == 0) {
+	if (after == NULL) {
 		node->next = 0;
 		node->prev = list->tail;
 		list->tail->next = node;
@@ -105,8 +104,7 @@ void list_append_before(list_t * list, node_t * after, node_t * node) {
 	}
 	if (after == list->head) {
 		list->head = node;
-	}
-	else {
+	} else {
 		after->prev->next = node;
 		node->prev = after->prev;
 	}
@@ -118,8 +116,8 @@ void list_append_before(list_t * list, node_t * after, node_t * node) {
 node_t * list_insert_before(list_t * list, node_t * after, void * item) {
 	node_t * node = (node_t*)malloc(sizeof(node_t));
 	node->value = item;
-	node->next = 0;
-	node->prev = 0;
+	node->next  = 0;
+	node->prev  = 0;
 	node->owner = 0;
 	list_append_before(list, after, node);
 	return node;
@@ -135,23 +133,20 @@ list_t * list_create(void) {
 }
 
 node_t * list_find(list_t * list, void * value) {
-	foreach(item, list) {
-		if (item->value == value) {
+	foreach(item, list)
+		if (item->value == value)
 			return item;
-		}
-	}
 	return 0;
 }
 
 int list_index_of(list_t * list, void * value) {
 	int i = 0;
 	foreach(item, list) {
-		if (item->value == value) {
+		if (item->value == value)
 			return i;
-		}
 		i++;
 	}
-	return -1; /* not find */
+	return -1; /* not found */
 }
 
 void list_remove(list_t * list, size_t index) {
@@ -168,7 +163,7 @@ void list_remove(list_t * list, size_t index) {
 
 void list_delete(list_t * list, node_t * node) {
 	/* remove node from the list */
-	ASSERT(node->owner == list, "Tried to remove a list node from a list it does not belong to.");
+	ASSERT(node->owner == list , "Tried to remove a list node from a list it does not belong to.");
 	if (node == list->head) {
 		list->head = node->next;
 	}
@@ -183,15 +178,15 @@ void list_delete(list_t * list, node_t * node) {
 	}
 	node->prev = 0;
 	node->next = 0;
-	node->owner = 0;
+	node->owner = NULL;
 	list->length--;
 }
 
 node_t * list_pop(list_t * list) {
 	/* Remove and return the last value in the list
-	* If you don't need it, you still probably want to free it!
-	* Try free(list_pop(list)); !
-	* */
+	 * If you don't need it, you still probably want to free it!
+	 * Try free(list_pop(list)); !
+	 * */
 	if (!list->tail) return 0;
 	node_t * out = list->tail;
 	list_delete(list, out);
@@ -220,17 +215,69 @@ void list_merge(list_t * target, list_t * source) {
 	foreach(node, source) {
 		node->owner = target;
 	}
-	if (source->head)
+	if (source->head) {
 		source->head->prev = target->tail;
-	
-	if (target->tail)
+	}
+	if (target->tail) {
 		target->tail->next = source->head;
-	else
+	} else {
 		target->head = source->head;
-	
-	if (source->tail)
+	}
+	if (source->tail) {
 		target->tail = source->tail;
-	
+	}
 	target->length += source->length;
 	free(source);
+}
+
+int list_size(list_t * list) {
+	int size = 0;
+	foreach(item, list) size++;
+	return size;
+}
+
+node_t * list_get(list_t* list, int index) {
+	foreach(node, list)
+		if(!index--) return node;
+	return 0;
+}
+
+node_t * list_get_last(list_t * list) {
+	node_t * i = 0;
+	foreach(item, list)
+		i = item;
+	return i;
+}
+
+node_t * list_get_first(list_t * list) {
+	foreach(item, list)
+		return item;
+	return 0;
+}
+
+int list_index_of_node(list_t * list, node_t * node) {
+	int i = 0;
+	foreach(n, list) {
+		if(n==node)
+			return i;
+		i++;
+	}
+	return -1;
+}
+
+node_t * list_get_next_nth(node_t* node, int increments) {
+	if(increments < 0)
+		while(node && increments++ < 0)
+			node=node->prev;
+	else
+		while(node && increments--)
+			node=node->next;
+	return node;
+}
+
+void list_clear(list_t * list) {
+	for(int i=0;;i++) {
+		if(!list_get(list,0)) break;
+		list_remove(list, 0);
+	}
 }

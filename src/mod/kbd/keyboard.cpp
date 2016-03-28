@@ -30,5 +30,5 @@ static int keyboard_fini(void) {
 	return 0;
 }
 
-MODULE_DEF(keyboard_driver, keyboard_ini, keyboard_fini);
+MODULE_DEF(keyboard_driver, keyboard_ini, keyboard_fini, MODT_PS2, "Miguel S.");
 
