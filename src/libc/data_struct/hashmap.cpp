@@ -234,3 +234,15 @@ void hashmap_free(hashmap_t * map) {
 	}
 	free(map->entries);
 }
+
+int hashmap_size(hashmap_t * map) {
+	int size = 0;
+	for (unsigned int i = 0; i < map->size; ++i) {
+		hashmap_entry_t * x = map->entries[i];
+		while (x) {
+			size++;
+			x = x->next;
+		}
+	}
+	return size;
+}

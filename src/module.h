@@ -11,6 +11,10 @@ enum MODULE_CATEGORIES {
 	MODT_UNKOWN_TYPE, MODT_CLOCK, MODT_PS2, MODT_STORAGE, MODT_PNP, MODT_ACPI, MODT_IO, MODT_AUDIO, MODT_VIDEO, MODT_MULTIMEDIA, MODT_FS, MODT_NET, MODT_DEBUG, MODT_SYS, MODT_OTHER
 };
 
+enum MODULE_SCHEDULE_MODE {
+	MODULE_SCHED_QUICK, MODULE_SCHED_LATE
+};
+
 #define MODULE_SIGNATURE0 modent_
 #define MODULE_SIGNATURE1 '_'
 #define MODULE_SIGNATUREXT0 modentext_
@@ -31,6 +35,8 @@ enum MODULE_CATEGORIES {
 #define module_exists(modname) FCASTF(SYF("module_exists"), modent_t*, char*)(modname)
 #define module_ioctl(modname, data) FCASTF(SYF("module_ioctl_s"), modent_t*, char*, void*)(modname, data)
 #define module_ioctli(modidx, data) FCASTF(SYF("module_ioctl_i"), modent_t*, int, void*)(modidx, data)
+#define module_schedule_quick(wait_for_module, run_address) FCASTF(SYF("module_schedule"), char, char, char*, uintptr_t)(MODULE_SCHED_QUICK, wait_for_module, (uintptr_t)&run_address)
+#define module_schedule(run_address) FCASTF(SYF("module_schedule"), char, char, char*, uintptr_t)(MODULE_SCHED_LATE, "", (uintptr_t)&run_address)
 #endif
 
 /* This macro is only used by the genmake script */

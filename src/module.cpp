@@ -12,9 +12,12 @@
 
 namespace Module {
 
+static int are_modules_loading = 0;
 list_t * modlist;
 hashmap_t * mod_quitlist;
 hashmap_t * mod_initlist;
+hashmap_t * mod_sched_quick; /* This hashmap will store scheduling initializations that will be run RIGHT AFTER the desired driver finishes */
+hashmap_t * mod_sched_last; /* Same as last hashmap, except only initializes after all drivers are finished initializing */
 int modcount = 0;
 
 #define GET_LMOD(n) ((modent_t*)(n->value))
@@ -155,11 +158,35 @@ char module_remove(modent_t * mod) {
 	}
 }
 
+/* Reschedules module initializations: */
+int modules_scheduled = 0;
+char module_schedule(char schedule_mode, char * func_name, uintptr_t address) {
+	if(!are_modules_loading) return 0;
+
+	switch(schedule_mode) {
+	case MODULE_SCHED_QUICK:
+		if(hashmap_has(mod_sched_quick, func_name)) return 0;
+		hashmap_set(mod_sched_quick, func_name, (void*)address);
+		break;
+	case MODULE_SCHED_LATE:
+		char sched_key [5];
+		sprintf(sched_key, "%d", modules_scheduled++);
+		hashmap_set(mod_sched_last, sched_key, (void*)address);
+		break;
+	default: return 0;
+	}
+	return 1;
+}
+EXPORT_SYMBOL(module_schedule);
+
 void modules_load(void) {
+	are_modules_loading = 1;
 	int modcount = initrd_modcount();
 	modlist = list_create();
 	mod_initlist = hashmap_create(modcount);
 	mod_quitlist = hashmap_create(modcount);
+	mod_sched_quick = hashmap_create(1);
+	mod_sched_last = hashmap_create(1);
 
 	kprintf("\n - Total modules: %d", modcount);
 
@@ -183,6 +210,11 @@ void modules_load(void) {
 
 			if(modentry && modentry != (modent_t *)MOD_DEP && modentry->init) {
 				kprintf(" > ret: %d", module_add(modentry));
+				/* Run scheduled initializations: */
+				if(hashmap_has(mod_sched_quick, modentry->name)) {
+					FCASTF(hashmap_get(mod_sched_quick, modentry->name), int, void)();
+					hashmap_remove(mod_sched_quick, modentry->name);
+				}
 			} else {
 				/* We don't run modules that don't have an entry point */
 				continue;
@@ -192,7 +224,17 @@ void modules_load(void) {
 		}
 	}
 
+	for(int i = 0; i < hashmap_size(mod_sched_last); i++)
+		FCASTF(hashmap_get_i(mod_sched_last, i), int, void)();
+
+	hashmap_free(mod_sched_quick);
+	hashmap_free(mod_sched_last);
+	free(mod_sched_quick);
+	free(mod_sched_last);
+
 	if(modcount) { kprintf("\n\n >> "); }
+	symbol_remove("module_schedule");
+	are_modules_loading = 0;
 }
 
 }

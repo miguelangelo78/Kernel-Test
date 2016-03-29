@@ -34,6 +34,7 @@ int hashmap_has(hashmap_t * map, void * key);
 list_t * hashmap_keys(hashmap_t * map);
 list_t * hashmap_values(hashmap_t * map);
 void hashmap_free(hashmap_t * map);
+int hashmap_size(hashmap_t * map);
 
 unsigned int hashmap_string_hash(void * key);
 int hashmap_string_comp(void * a, void * b);
