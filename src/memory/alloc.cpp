@@ -103,6 +103,7 @@
 /* Includes {{{ */
 #include <stdint.h>
 #include <system.h>
+#include <module.h>
 /* }}} */
 /* Definitions {{{ */
 namespace Kernel {
@@ -143,6 +144,7 @@ void * __malloc malloc(uintptr_t size) {
 	spin_unlock(mem_lock);
 	return ret;
 }
+EXPORT_SYMBOL(malloc);
 
 void * __malloc realloc(void * ptr, uintptr_t size) {
 	spin_lock(mem_lock);
@@ -150,6 +152,7 @@ void * __malloc realloc(void * ptr, uintptr_t size) {
 	spin_unlock(mem_lock);
 	return ret;
 }
+EXPORT_SYMBOL(realloc);
 
 void * __malloc calloc(uintptr_t nmemb, uintptr_t size) {
 	spin_lock(mem_lock);
@@ -157,6 +160,7 @@ void * __malloc calloc(uintptr_t nmemb, uintptr_t size) {
 	spin_unlock(mem_lock);
 	return ret;
 }
+EXPORT_SYMBOL(calloc);
 
 void * __malloc valloc(uintptr_t size) {
 	spin_lock(mem_lock);
@@ -164,6 +168,7 @@ void * __malloc valloc(uintptr_t size) {
 	spin_unlock(mem_lock);
 	return ret;
 }
+EXPORT_SYMBOL(valloc);
 
 void free(void * ptr) {
 	spin_lock(mem_lock);
@@ -172,7 +177,7 @@ void free(void * ptr) {
 	}
 	spin_unlock(mem_lock);
 }
-
+EXPORT_SYMBOL(free);
 
 /* Bin management {{{ */
 

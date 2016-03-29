@@ -5,8 +5,8 @@
  *      Author: Miguel
  */
 
-#include <kernel_headers/kheaders.h>
 #include <system.h>
+#include <kernel_headers/kheaders.h>
 #include "../../modules/kbd/kbd_scan.h"
 
 static void keyboard_wait(void) {

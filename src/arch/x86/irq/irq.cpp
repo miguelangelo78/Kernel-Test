@@ -134,6 +134,7 @@ namespace IRQ {
 			irq_ack(r->int_no - IRQ_OFFSET);
 		}
 	done:
+		irq_ack(r->int_no - IRQ_OFFSET);
 		int_resume();
 	}
 

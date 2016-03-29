@@ -4,9 +4,11 @@
 #include <numarg.h>
 #include <stdint.h>
 
+#define IOCTL_NULL ((uintptr_t)-1)
+
 /********** MODULES **********/
 enum MODULE_CATEGORIES {
-	MOD_UNKOWN_TYPE, MODT_CLOCK, MODT_PS2, MODT_STORAGE, MODT_PNP, MODT_ACPI, MODT_IO, MODT_AUDIO, MODT_VIDEO, MODT_MULTIMEDIA, MODT_FS, MODT_NET, MODT_DEBUG, MODT_SYS, MODT_OTHER
+	MODT_UNKOWN_TYPE, MODT_CLOCK, MODT_PS2, MODT_STORAGE, MODT_PNP, MODT_ACPI, MODT_IO, MODT_AUDIO, MODT_VIDEO, MODT_MULTIMEDIA, MODT_FS, MODT_NET, MODT_DEBUG, MODT_SYS, MODT_OTHER
 };
 
 #define MODULE_SIGNATURE0 modent_
@@ -69,14 +71,18 @@ typedef struct {
 	unsigned int addr;
 } __attribute__((packed)) sym_t;
 
+/* All invalid symbols will point here: */
+static inline int symbol_invalid(void) {
+	return -1;
+}
+
 static inline void * symbol_find(char * name, char get_addr) {
 	static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
-	int sym_ctr = 0;
 	for(unsigned int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
 		if(!strcmp(sym[i].name, name))
 			return get_addr ? (void*)sym[i].addr : &sym[i];
 	/* Symbol not found: */
-	return 0;
+	return (void*)&symbol_invalid;
 }
 
 static inline void * symbol_find(char * name) {
@@ -89,7 +95,7 @@ static inline sym_t * symbol_t_find(char * name) {
 
 #define MAX_ARGUMENT 10
 
-#define symbol_call_args(function_name, ...) symbol_call_args_(#function_name, PP_NARG(__VA_ARGS__), __VA_ARGS__)
+#define symbol_call_args(function_name, ...) symbol_call_args_((char*)#function_name, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 
 #define SYF(symbol_name) symbol_find(symbol_name)
 #define SYA(function_name, ...) symbol_call_args(function_name, __VA_ARGS__)
@@ -134,7 +140,7 @@ static inline void * symbol_call(char * name) {
 static inline uint32_t symbol_count(void) {
 	uint32_t symcount = 0;
 	static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
-	for(int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
+	for(unsigned int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
 		if(sym[i].name) symcount++;
 	return symcount;
 }
@@ -142,8 +148,7 @@ static inline uint32_t symbol_count(void) {
 /* Finds the next available symbol slot: */
 static inline sym_t * symbol_next(void) {
 	static sym_t * sym = (sym_t *)KERNEL_SYMBOLS_TABLE_START;
-	int sym_ctr = 0;
-	for(int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
+	for(unsigned int i = 0; i < KERNEL_SYMBOLS_TABLE_SIZE / sizeof(sym_t); i++)
 		if(!sym[i].name)
 			return &sym[i];
 	/* Symbol not found: */

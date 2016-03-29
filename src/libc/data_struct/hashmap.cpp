@@ -1,5 +1,6 @@
 #include <libc/hashmap.h>
 #include <system.h>
+#include <module.h>
 
 unsigned int hashmap_string_hash(void * _key) {
 	unsigned int hash = 0;
@@ -52,6 +53,7 @@ hashmap_t * hashmap_create(int size) {
 
 	return map;
 }
+EXPORT_SYMBOL(hashmap_create);
 
 hashmap_t * hashmap_create_int(int size) {
 	hashmap_t * map = (hashmap_t*)malloc(sizeof(hashmap_t));
@@ -103,6 +105,7 @@ void * hashmap_set(hashmap_t * map, void * key, void * value) {
 		return 0;
 	}
 }
+EXPORT_SYMBOL(hashmap_set);
 
 void * hashmap_get(hashmap_t * map, void * key) {
 	unsigned int hash = map->hash_func(key) % map->size;
@@ -121,6 +124,22 @@ void * hashmap_get(hashmap_t * map, void * key) {
 		return 0;
 	}
 }
+
+void * hashmap_get_i(hashmap_t * map, int idx) {
+	hashmap_entry_t * x = map->entries[idx];
+	int i = 0;
+	if (!x) {
+		return 0;
+	} else {
+		do {
+			if (i++ == idx)
+				return x->value;
+			x = x->next;
+		} while (x);
+		return 0;
+	}
+}
+EXPORT_SYMBOL(hashmap_get_i);
 
 void * hashmap_remove(hashmap_t * map, void * key) {
 	unsigned int hash = map->hash_func(key) % map->size;
@@ -155,6 +174,7 @@ void * hashmap_remove(hashmap_t * map, void * key) {
 		return 0;
 	}
 }
+EXPORT_SYMBOL(hashmap_remove);
 
 int hashmap_has(hashmap_t * map, void * key) {
 	unsigned int hash = map->hash_func(key) % map->size;
@@ -165,15 +185,14 @@ int hashmap_has(hashmap_t * map, void * key) {
 	}
 	else {
 		do {
-			if (map->hash_comp(x->key, key)) {
+			if (map->hash_comp(x->key, key))
 				return 1;
-			}
 			x = x->next;
 		} while (x);
 		return 0;
 	}
-
 }
+EXPORT_SYMBOL(hashmap_has);
 
 list_t * hashmap_keys(hashmap_t * map) {
 	list_t * l = list_create();

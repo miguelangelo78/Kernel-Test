@@ -33,7 +33,7 @@ int module_remover_manager(void) {
 
 uintptr_t module_ioctl(char * modname, void * data) {
 	modent_t * mod = module_get(modname);
-	return mod && mod->ioctl ? mod->ioctl(data) : (uintptr_t)-1;
+	return mod && mod->ioctl ? mod->ioctl(data) : IOCTL_NULL;
 }
 
 uintptr_t module_ioctl_s(char * modname, void * data) {
@@ -44,7 +44,7 @@ EXPORT_SYMBOL(module_ioctl_s);
 uintptr_t module_ioctl(int mod_idx, void * data) {
 	if(MOD_IDX_INVALID(mod_idx)) return 0;
 	modent_t * mod = module_get(mod_idx);
-	return mod && mod->ioctl ? mod->ioctl(data) : (uintptr_t)-1;
+	return mod && mod->ioctl ? mod->ioctl(data) : IOCTL_NULL;
 }
 
 uintptr_t module_ioctl_i(int mod_idx, void * data) {

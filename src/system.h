@@ -163,6 +163,7 @@ namespace Kernel {
 		}
 	}
 
+#ifndef MODULE
 	namespace Memory {
 		/* Kernel memory manager. Contains paging/physical memory functions and a Kernel memory 
 		allocator (kmalloc, a dumb version of Alloc's malloc to be used before paging is enabled) */
@@ -193,6 +194,7 @@ namespace Kernel {
 			void free(void *ptr);
 		}
 	}
+#endif
 
 	/* Error related functions: */
 	namespace Error {
@@ -204,7 +206,9 @@ namespace Kernel {
 	}
 }
 
+#ifndef MODULE
 using namespace Kernel::Memory::Man;
-using namespace Kernel::Memory::Alloc; 
+using namespace Kernel::Memory::Alloc;
+#endif
 using namespace Kernel::Error;
 using namespace Kernel::KInit;
