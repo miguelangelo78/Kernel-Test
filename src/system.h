@@ -196,6 +196,11 @@ namespace Kernel {
 	}
 #endif
 
+	namespace Task {
+		void tasking_install(void);
+		void switch_task(uint8_t reschedule);
+	}
+
 	/* Error related functions: */
 	namespace Error {
 		void panic(const char * msg, const int line, const char * file, int intno);
@@ -209,6 +214,7 @@ namespace Kernel {
 #ifndef MODULE
 using namespace Kernel::Memory::Man;
 using namespace Kernel::Memory::Alloc;
+using namespace Kernel::Task;
 #endif
 using namespace Kernel::Error;
 using namespace Kernel::KInit;

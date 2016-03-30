@@ -35,6 +35,7 @@ include src\libc\subdir.mk
 include src\libc\data_struct\subdir.mk
 include src\memory\subdir.mk
 include src\modules\subdir.mk
+include src\modules\clock\subdir.mk
 include src\modules\kbd\subdir.mk
 include src\task\subdir.mk
 

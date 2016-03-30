@@ -21,7 +21,7 @@ void spin_wait(volatile int * addr, volatile int * waiters) {
 	if (waiters)
 		arch_atomic_inc(waiters);
 	while (*addr)
-		switch_task(1);
+		Kernel::Task::switch_task(1);
 	if (waiters)
 		arch_atomic_dec(waiters);
 }
@@ -40,6 +40,6 @@ void spin_unlock(spin_lock_t lock) {
 	if (lock[0]) {
 		arch_atomic_store(lock, 0);
 		if (lock[1])
-			switch_task(1);
+			Kernel::Task::switch_task(1);
 	}
 }

@@ -146,13 +146,15 @@ namespace Kernel {
 		}
 		DEBUGOK();
 
+		/* Initialize multitasking: */
+		kputs("> Initializing multitasking - "); tasking_install(); DEBUGOK();
+
 		/* Load CORE modules ONLY: */
 		kputs("> Loading up modules - "); Module::modules_load(); DEBUGOK();
 
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1 - Set up: \n  1.1 - Timer/FPU/CMOS"
-		"\n  1.2 - Tasking\n  1.3 - Syscalls\n  1.4 - Shared memory");
+		kputs("1 - Set up: \n  1.1 - FPU \n  1.2 - Syscalls\n  1.3 - Shared memory");
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
