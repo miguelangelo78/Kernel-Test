@@ -81,18 +81,6 @@ namespace Kernel {
 		}
 	}
 
-	#include <time.h>
-	int i = 0;
-	void cback(void) {
-		term.go_to(0,0);
-		uintptr_t ioctl_ret, now;
-		MOD_IOCTLD("cmos_driver", ioctl_ret, 3);
-		MOD_IOCTLD("cmos_driver", now, 5);
-
-		time_t * t = (time_t*)ioctl_ret;
-		term.printf("counter %d| time: %d:%d:%d | now: %d  ", i++, t->hour, t->min, t->sec, now);
-	}
-
 	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_esp)
 	{
 		/******* Initialize everything: *******/
@@ -169,8 +157,6 @@ namespace Kernel {
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
 		kputsc("\nReady", COLOR_GOOD);
-
-		MOD_IOCTL("cmos_driver", 1, (uintptr_t)"cback", (uintptr_t)&cback);
 
 		for(;;)
 			if(serial.is_ready()) {

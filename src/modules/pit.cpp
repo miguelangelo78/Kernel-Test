@@ -23,7 +23,6 @@ int pit_cback_count = 0;
 uint32_t current_hz = 0;
 uint32_t ticks = 0;
 uint32_t subticks = 0;
-static int behind = 0;
 FDECLV(hashmap_get_i, hashmap_get_i_t, void*, hashmap_t*, int);
 
 enum PIT_CHANNEL {
@@ -102,7 +101,7 @@ static void pit_sethz(int hz) {
 }
 
 static void pit_handler(void) {
-	if(++subticks == current_hz || (behind && ++subticks == current_hz)) {
+	if(++subticks == current_hz) {
 		ticks++;
 		subticks = 0;
 	}

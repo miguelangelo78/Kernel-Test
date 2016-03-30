@@ -73,22 +73,17 @@ static time_t * rtc_get_time(void) {
 	return &rtc_time;
 }
 
+#define now() rtc_get_time_secs()
+
 static uint32_t rtc_get_time_secs(void) {
 	uint8_t * cmos_data = cmos_cmd(0, 9, 0, 0);
-	uint32_t time = time_secs_of_years(bcd_to_bin(cmos_data[9]) - 1) +
-		time_secs_of_month(bcd_to_bin(cmos_data[8]) - 1, bcd_to_bin(cmos_data[9])) +
-		(bcd_to_bin(cmos_data[7]) - 1) * 86400 +
-		(bcd_to_bin(cmos_data[4])) * 3600 +
-		(bcd_to_bin(cmos_data[2])) * 60 +
-		bcd_to_bin(cmos_data[0]) +
-		0;
-	return time;
-}
-
-static uint32_t now(void) {
-	uintptr_t timer_ticks;
-	MOD_IOCTLD("pit_driver", timer_ticks, 3);
-	return boot_time + timer_ticks;
+	return time_secs_of_years(bcd_to_bin(cmos_data[9]) - 1) +
+			time_secs_of_month(bcd_to_bin(cmos_data[8]) - 1, bcd_to_bin(cmos_data[9])) +
+			(bcd_to_bin(cmos_data[7]) - 1) * 86400 +
+			(bcd_to_bin(cmos_data[4])) * 3600 +
+			(bcd_to_bin(cmos_data[2])) * 60 +
+			bcd_to_bin(cmos_data[0]) +
+			0;
 }
 
 /********************************* RTC IRQ FUNCTIONS *********************************/
@@ -159,10 +154,8 @@ static uintptr_t cmos_ioctl(void * data) {
 	case 3:
 		return (uintptr_t)rtc_get_time();
 	case 4:
-		return rtc_get_time_secs();
-	case 5:
 		return now();
-	case 7:
+	case 5:
 		return boot_time;
 	}
 	return 0;
