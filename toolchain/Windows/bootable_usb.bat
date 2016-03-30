@@ -13,6 +13,11 @@ copy isolinux.bin %drive%:\
 copy libcom32.c32 %drive%:\
 copy mboot.c32 %drive%:\
 copy syslinux.cfg %drive%:\
+copy syslinux.c32 %drive%:\
+copy ldlinux.c32 %drive%:\
+copy libutil.c32 %drive%:\
+copy vesamenu.c32 %drive%:\
+copy background.png %drive%:\
 
 @cd ..\..
 
