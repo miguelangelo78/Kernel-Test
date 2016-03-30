@@ -19,6 +19,9 @@ enum MODULE_SCHEDULE_MODE {
 #define MODULE_SIGNATURE1 '_'
 #define MODULE_SIGNATUREXT0 modentext_
 
+#define MOD_IOCTL(modname, ...) do{ uintptr_t ioctl_packet[] = {__VA_ARGS__}; module_ioctl(modname, ioctl_packet); } while(0)
+#define MOD_IOCTLD(modname, retvar, ...) do{ uintptr_t ioctl_packet[] = {__VA_ARGS__}; retvar = module_ioctl(modname, ioctl_packet); } while(0)
+
 #define MODULE_DEF(...) GET_MACRO(__VA_ARGS__, MODDEF_6, MODDEF_5, MODDEF_4, MODDEF_3)(__VA_ARGS__)
 
 #define MODDEF_3(name, ini, fini) modent_t modent_ ## name = { #name, ini, fini , 0, 0, ""}
@@ -33,8 +36,8 @@ enum MODULE_SCHEDULE_MODE {
 #define module_count() FCASTF(SYF("module_count"), modent_t*, void)()
 #define module_type_exists(modtype) FCASTF(SYF("module_type_exists"), modent_t*, char)(modtype)
 #define module_exists(modname) FCASTF(SYF("module_exists"), modent_t*, char*)(modname)
-#define module_ioctl(modname, data) FCASTF(SYF("module_ioctl_s"), modent_t*, char*, void*)(modname, data)
-#define module_ioctli(modidx, data) FCASTF(SYF("module_ioctl_i"), modent_t*, int, void*)(modidx, data)
+#define module_ioctl(modname, data) FCASTF(SYF("module_ioctl_s"), uintptr_t, char*, void*)(modname, data)
+#define module_ioctli(modidx, data) FCASTF(SYF("module_ioctl_i"), uintptr_t, int, void*)(modidx, data)
 #define module_schedule_quick(wait_for_module, run_address) FCASTF(SYF("module_schedule"), char, char, char*, uintptr_t)(MODULE_SCHED_QUICK, wait_for_module, (uintptr_t)&run_address)
 #define module_schedule(run_address) FCASTF(SYF("module_schedule"), char, char, char*, uintptr_t)(MODULE_SCHED_LATE, "", (uintptr_t)&run_address)
 #endif

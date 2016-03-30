@@ -8,6 +8,7 @@
 #include <system.h>
 #include <kernel_headers/kheaders.h>
 #include <libc/hashmap.h>
+#include <time.h>
 
 /* Information: http://wiki.osdev.org/Programmable_Interval_Timer */
 
@@ -22,7 +23,6 @@ int pit_cback_count = 0;
 uint32_t current_hz = 0;
 uint32_t ticks = 0;
 uint32_t subticks = 0;
-uint32_t timer_drift = 0,_timer_drift = 0;
 static int behind = 0;
 FDECLV(hashmap_get_i, hashmap_get_i_t, void*, hashmap_t*, int);
 
@@ -105,9 +105,6 @@ static void pit_handler(void) {
 	if(++subticks == current_hz || (behind && ++subticks == current_hz)) {
 		ticks++;
 		subticks = 0;
-		if(ticks % RESYNC_TIME == 0) {
-			// TODO
-		}
 	}
 	for(int i = 0; i < pit_cback_count; i++)
 		FCASTF(hashmap_get_i(pit_cbacks, i), void, void)();
@@ -142,7 +139,7 @@ static void relative_time(uint32_t seconds, uint32_t subseconds, uint32_t * out_
 static int pit_init(void) {
 	hashmap_get_i = (hashmap_get_i_t)SYF((char*)"hashmap_get_i");
 	pit_cbacks = hashmap_create(1);
-	pit_sethz(PIT_CLOCK);
+	pit_sethz(PIT_DEFAULT_HZ);
 	SYA(irq_install_handler, Kernel::CPU::IRQ::IRQ_PIT, pit_handler);
 	return 0;
 }
@@ -160,6 +157,10 @@ static uintptr_t pit_ioctl(void * data) {
 	case 2:
 		pit_uninstall_cback((char*)d[1]);
 		break;
+	case 3:
+		return pit_get_ticks();
+	case 4:
+		return pit_get_subticks();
 	}
 	return 0;
 }
