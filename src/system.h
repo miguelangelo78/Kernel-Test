@@ -194,12 +194,13 @@ namespace Kernel {
 			void free(void *ptr);
 		}
 	}
-#endif
 
 	namespace Task {
 		void tasking_install(void);
 		void switch_task(uint8_t reschedule);
 	}
+
+#endif
 
 	/* Error related functions: */
 	namespace Error {
@@ -208,6 +209,18 @@ namespace Kernel {
 		void panic(const char * msg);
 		void panic(void);
 		void infinite_idle(const char * msg);
+	}
+
+	/* Virtual Mode 8086: */
+	namespace VM8086 {
+		char v86_detect(void);
+		unsigned v86_peekb(unsigned seg, unsigned off);
+		unsigned v86_peekw(unsigned seg, unsigned off);
+		void v86_pokeb(unsigned seg, unsigned off, unsigned val);
+		void v86_pokew(unsigned seg, unsigned off, unsigned val);
+		void v86_push16(CPU::regs_t *regs, unsigned value);
+		void v86_int(CPU::regs_t *regs, unsigned int_num);
+		void v86_test(void);
 	}
 }
 
@@ -218,3 +231,4 @@ using namespace Kernel::Task;
 #endif
 using namespace Kernel::Error;
 using namespace Kernel::KInit;
+using namespace Kernel::VM8086;

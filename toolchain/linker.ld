@@ -3,9 +3,7 @@ ENTRY(start)
 
 SECTIONS
 {
-	/* Begin putting sections at 1 MiB, a conventional place for kernels to be
-	   loaded at by the bootloader. */
-	. = 1M;
+	. = 0x100000;
 	kstart = .;
 	phys = .;
 
