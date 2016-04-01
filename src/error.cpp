@@ -14,6 +14,7 @@ namespace Kernel {
 			sprintf(buff, "%s\n\n - %s (At line %d @ %s - int: %d)", kernel_panic_msg, msg, line, file, intno);
 
 			term.fill(VIDRed);
+			serial.puts(buff);
 			term.puts(buff, COLOR_BAD);
 
 			KERNEL_FULL_PAUSE(); /* IRQs still work */
@@ -24,6 +25,7 @@ namespace Kernel {
 			sprintf(buff, "%s\n\n - %s (int: %d)", kernel_panic_msg, msg, intno);
 
 			term.fill(VIDRed);
+			serial.puts(buff);
 			term.puts(buff, COLOR_BAD);
 
 			KERNEL_FULL_PAUSE(); /* IRQs still work */
@@ -34,20 +36,21 @@ namespace Kernel {
 			term.puts(kernel_panic_msg, COLOR_BAD);
 			term.puts("\n\n - ", COLOR_BAD);
 			term.puts(msg, COLOR_BAD);
-
+			serial.printf("%s\n\n - %s", kernel_panic_msg, msg);
 			KERNEL_FULL_PAUSE(); /* IRQs still work */
 		}
 
 		void panic(void) {
 			term.fill(VIDRed);
 			term.puts(kernel_panic_msg, COLOR_BAD);
+			serial.puts(kernel_panic_msg);
 			KERNEL_FULL_PAUSE(); /* IRQs still work */
 		}
 
 		void infinite_idle(const char * msg) {
 			term.fill(VIDBlue);
 			term.puts(msg, COLOR_INFO);
-			
+			serial.puts((char*)msg);
 			KERNEL_FULL_STOP(); /* IRQs don't work anymore */
 		}
 	}

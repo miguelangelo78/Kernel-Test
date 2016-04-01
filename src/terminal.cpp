@@ -1,4 +1,5 @@
 #include <system.h>
+#include <video.h>
 
 using namespace Kernel::IO;
 

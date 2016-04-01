@@ -162,12 +162,6 @@ namespace Kernel {
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
 
-		int w = video_width(),h = video_height();
-		for(uint16_t x = 0; x <w;x++) {
-			for(uint16_t y = 0; y < h / 2; y++)
-				GFX(x, y) = rgb(x<w/2 ? x : 0,x>w/2 ? y : 0,0);
-		}
-
 		kputsc("\nReady", COLOR_GOOD);
 
 		for(;;)

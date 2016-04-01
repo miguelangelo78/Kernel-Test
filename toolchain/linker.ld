@@ -3,7 +3,7 @@ ENTRY(start)
 
 SECTIONS
 {
-	. = 0x100000;
+	. = 1M;
 	kstart = .;
 	phys = .;
 

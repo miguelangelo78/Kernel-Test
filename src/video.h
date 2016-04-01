@@ -27,12 +27,18 @@ enum VID_MODES {
 	VID_281 = 5, VID_282 = 5, VID_283 = 5
 };
 
+#ifndef MODULE
 extern gfx_t * gfx;
 extern void video_init(int mode);
 extern char * video_mode_get(int mode);
 extern uint16_t video_width();
 extern uint16_t video_height();
 extern uint16_t video_palette(void);
+#else
+#define video_width() (gfx->width)
+#define video_height() (gfx->height)
+#define video_palette() (gfx->depth)
+#endif
 
 /****** GRAPHICS: *******/
 #define VID (gfx->vidmem)
@@ -48,18 +54,6 @@ static inline uint32_t rgb(uint8_t r, uint8_t g, uint8_t b) {
 
 static inline uint32_t rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 	return (a * 0x1000000) + (r * 0x10000) + (g * 0x100) + b;
-}
-
-static inline void gfx_px(uint16_t x, uint16_t y, uint32_t color) {
-	GFX(x, y) = color;
-}
-
-static inline void gfx_px(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b) {
-	GFX(x, y) = rgb(r, g, b);
-}
-
-static inline void gfx_px(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	GFX(x, y) = rgba(r, g, b, a);
 }
 
 #endif /* SRC_VIDEO_H_ */

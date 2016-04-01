@@ -108,7 +108,7 @@ static inline sym_t * symbol_t_find(char * name) {
 
 #define SYF(symbol_name) symbol_find(symbol_name)
 #define SYA(function_name, ...) symbol_call_args(function_name, __VA_ARGS__)
-#define SYC(function_nama) symbol_call(function_name)
+#define SYC(function_name) symbol_call(function_name)
 
 static inline void * symbol_call_args_(char * function_name, int argc, ...) {
 	if(argc <= 0 || argc >= MAX_ARGUMENT) return 0;
@@ -166,7 +166,7 @@ static inline sym_t * symbol_next(void) {
 
 static inline char symbol_exists(char * name) {
 	sym_t * sym = symbol_t_find(name);
-	return sym ? (sym->name ? 1 : 0) : 0;
+	return sym && sym != (sym_t*)&symbol_invalid ? (sym->name ? 1 : 0) : 0;
 }
 
 static inline char symbol_add(char * name, uintptr_t address) {
@@ -227,11 +227,11 @@ namespace Module {
 			KERNEL_SYMBOLS_TABLE_END,
 			(uintptr_t)KERNEL_SYMBOLS_TABLE_END - (uintptr_t)KERNEL_SYMBOLS_TABLE_START, symcount);
 		kprintf(" - Showing: Start = %d | End = %d\n___________\n", begin, finish);
-		
+
 		sym_t * sym = SYM(0);
 		for(int i = begin; i < finish; i++)
 			kprintf("%d - %s: 0x%x\n", i+1, sym[i].name, sym[i].addr);
-		kputs("___________\n>> Dump done\n");
+		kprintf("___________\n>> Dump done\n");
 	}
 
 	static inline void symbols_dump_start(int start) {

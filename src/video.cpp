@@ -6,6 +6,7 @@
  */
 
 #include <system.h>
+#include <module.h>
 
 gfx_t * gfx = 0;
 char is_video_init = 0;
@@ -21,15 +22,24 @@ void video_init(int mode) {
 	gfx->height = video_height();
 	gfx->width = video_width();
 	gfx->depth = video_palette();
-
 	gfx->vidmem = (char*) (mode ? 0xE0000000 : 0xB8000);
+
 	if(mode) {
 		/* Prepare video memory: */
 		alloc_pages(0, 1, (uintptr_t)gfx->vidmem, (uintptr_t)gfx->vidmem + 0xFF0000);
 
 	}
+
+	symbol_add("gfx", (uintptr_t)gfx);
 	is_video_init = 1;
 }
+
+void video_finalize(void) {
+	 /* The only way now to access the graphic's context is through the graphics driver/module */
+	symbol_remove("video_finalize");
+	symbol_remove("gfx");
+}
+EXPORT_SYMBOL(video_finalize);
 
 char vid_str[16];
 char * video_mode_get(int mode) {
