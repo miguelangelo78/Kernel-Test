@@ -42,10 +42,24 @@ extern uint16_t video_palette(void);
 
 #define GFX(x, y) *((uint32_t*)&(VID[(CTX_W()*y + x) * CTX_B()]))
 
-extern uint32_t rgb(uint8_t r, uint8_t g, uint8_t b);
-extern uint32_t rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-extern void gfx_px(uint16_t x, uint16_t y, uint32_t color);
-extern void gfx_px(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b);
-extern void gfx_px(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+static inline uint32_t rgb(uint8_t r, uint8_t g, uint8_t b) {
+	return 0xFF000000 + (r * 0x10000) + (g * 0x100) + b;
+}
+
+static inline uint32_t rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	return (a * 0x1000000) + (r * 0x10000) + (g * 0x100) + b;
+}
+
+static inline void gfx_px(uint16_t x, uint16_t y, uint32_t color) {
+	GFX(x, y) = color;
+}
+
+static inline void gfx_px(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b) {
+	GFX(x, y) = rgb(r, g, b);
+}
+
+static inline void gfx_px(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	GFX(x, y) = rgba(r, g, b, a);
+}
 
 #endif /* SRC_VIDEO_H_ */

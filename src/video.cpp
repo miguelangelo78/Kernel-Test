@@ -98,22 +98,4 @@ uint16_t video_height(void) {
 }
 
 /****** GRAPHICS: *******/
-uint32_t rgb(uint8_t r, uint8_t g, uint8_t b) {
-	return 0xFF000000 + (r * 0x10000) + (g * 0x100) + (b * 0x1);
-}
 
-uint32_t rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	return (a * 0x1000000) + (r * 0x10000) + (g * 0x100) + (b * 0x1);
-}
-
-void gfx_px(uint16_t x, uint16_t y, uint32_t color) {
-	GFX(x, y) = color;
-}
-
-void gfx_px(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b) {
-	GFX(x, y) = rgb(r, g, b);
-}
-
-void gfx_px(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	GFX(x, y) = rgba(r, g, b, a);
-}
