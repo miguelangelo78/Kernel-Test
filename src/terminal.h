@@ -39,6 +39,7 @@ enum VIDColor {
 class Terminal {
 	public:
 		Terminal();
+		void init(int gfx_mode);
 		void init(void);
 		void putc(const char chr, uint8_t color);
 		void putc(const char chr);
@@ -53,7 +54,9 @@ class Terminal {
 		void reset_cursor(void);
 		Point go_to(uint8_t x, uint8_t y);
 	private:
+		void putc_textmode(const char chr, uint8_t color);
+		void putc_gfx(const char chr, uint8_t color);
 		void hide_textmode_cursor(void);
 		int cursor_x, cursor_y;
-		char * vidmem;
+		int gfx_mode;
 };

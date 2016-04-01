@@ -13,6 +13,7 @@
 #include <arch/x86/cpu.h>
 #include <fs.h>
 #include <initrd.h>
+#include <video.h>
 
 /* Memory segment selectors: */
 enum SEGSEL {
@@ -178,6 +179,14 @@ namespace Kernel {
 
 			void paging_install(uint32_t memsize);
 			void heap_install(void);
+
+			/* Page allocators/deallocators: */
+			void alloc_page(char is_kernel, char is_writeable, uintptr_t physical_address, uintptr_t map_to_virtual);
+			void alloc_page(char is_kernel, char is_writeable, uintptr_t physical_address);
+			void alloc_page(char is_kernel, char is_writeable);
+			void alloc_pages(char is_kernel, char is_writeable, uintptr_t physical_address_start, uintptr_t physical_address_end);
+			char alloc_pages(char is_kernel, char is_writeable, uintptr_t physical_address_start, uintptr_t physical_address_end, uintptr_t virtual_addr_start,  uintptr_t virtual_addr_end);
+			void dealloc_page(uintptr_t physical_address);
 
 			extern paging_directory_t * kernel_directory;
 			extern paging_directory_t * curr_dir;

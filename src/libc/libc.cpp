@@ -86,6 +86,15 @@ void * memmove(void * dest, const void * src, size_t n) {
 	return dest;
 }
 
+char * strcat(char * dst, const char * src) {
+	size_t i,j;
+	for(i = 0; dst[i] != '\0'; i++);
+	for(j = 0; src[j] != '\0'; j++)
+		dst[i + j] = src[j];
+	dst[i + j] = '\0';
+	return dst;
+}
+
 size_t strlen(const char * s) {
 	const char * a = s;
 	const size_t * w;

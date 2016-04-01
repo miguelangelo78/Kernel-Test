@@ -9,7 +9,8 @@ $(BOUT)\module.o \
 $(BOUT)\serial.o \
 $(BOUT)\spin.o \
 $(BOUT)\terminal.o \
-$(BOUT)\vfs.o
+$(BOUT)\vfs.o \
+$(BOUT)\video.o
 
 $(BOUT)\args.o: src\args.cpp 
 	@echo '>> Building file $<'
@@ -82,6 +83,13 @@ $(BOUT)\terminal.o: src\terminal.cpp
 	@echo ' '
 
 $(BOUT)\vfs.o: src\vfs.cpp 
+	@echo '>> Building file $<'
+	@echo '>> Invoking LLVM C++ Clang++'
+	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  
+	@echo '>> Finished building: $<'
+	@echo ' '
+
+$(BOUT)\video.o: src\video.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking LLVM C++ Clang++'
 	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  

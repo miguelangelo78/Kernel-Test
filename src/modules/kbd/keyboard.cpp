@@ -16,8 +16,15 @@ static void keyboard_wait(void) {
 static int keyboard_handler(Kernel::CPU::regs_t * regs) {
 	keyboard_wait();
 	char scan = Kernel::inb(0x60);
-	if(!(scan & 0x80))
+	if(!(scan & 0x80)) {
 		kprintf("%c", kbdus[scan]);
+		if(kbdus[scan]=='r') {
+		    uint8_t good = 0x02;
+		    while (good & 0x02)
+		        good = inb(0x64);
+		    outb(0x64, 0xFE);
+		}
+	}
 	return 0;
 }
 

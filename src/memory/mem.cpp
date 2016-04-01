@@ -199,6 +199,19 @@ void alloc_page(char is_kernel, char is_writeable) {
 	last_known_newpage += PAGE_SIZE;
 }
 
+void alloc_pages(char is_kernel, char is_writeable, uintptr_t physical_address_start, uintptr_t physical_address_end) { /* Identity */
+	for(uintptr_t page_ctr = physical_address_start; page_ctr <= physical_address_end; page_ctr += PAGE_SIZE)
+		alloc_page(is_kernel, is_writeable, page_ctr);
+}
+
+char alloc_pages(char is_kernel, char is_writeable, uintptr_t physical_address_start, uintptr_t physical_address_end, uintptr_t virtual_addr_start,  uintptr_t virtual_addr_end) {
+	if((physical_address_end - physical_address_start) != (virtual_addr_end - virtual_addr_start)) return 0; /* The ranges need to match */
+
+	for(uintptr_t page_ctr = physical_address_start, virt_page_ctr = virtual_addr_start; page_ctr <= physical_address_end; page_ctr += PAGE_SIZE, virt_page_ctr += PAGE_SIZE)
+		alloc_page(is_kernel, is_writeable, page_ctr, virt_page_ctr);
+	return 1;
+}
+
 void dealloc_page(uintptr_t physical_address) {
 	PAGE(physical_address)->present = 0;
 	last_known_newpage = ALIGNP(physical_address);

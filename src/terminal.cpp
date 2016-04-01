@@ -4,11 +4,15 @@ using namespace Kernel::IO;
 
 Terminal::Terminal() { }
 
-void Terminal::init() {
+void Terminal::init(int gfx_mode) {
+	this->gfx_mode = gfx_mode;
 	cursor_x = cursor_y = 0;
-	vidmem = (char*)0xB8000;
 	hide_textmode_cursor();
 	clear();
+}
+
+void Terminal::init(void) {
+	init(0);
 }
 
 void Terminal::hide_textmode_cursor() {
@@ -18,12 +22,22 @@ void Terminal::hide_textmode_cursor() {
 	outb(0x3D5, 0xFF);
 }
 
-void Terminal::putc(const char chr, uint8_t color) {
+void Terminal::putc_textmode(const char chr, uint8_t color) {
 	if(chr=='\n') { cursor_y++; cursor_x = 0; return; }
 	int loc = VID_CALC_POS(cursor_x, cursor_y);
-	vidmem[loc * 2] = chr;
-	vidmem[loc * 2 + 1] = color;
-	cursor_x ++;
+	VID[loc * 2] = chr;
+	VID[loc * 2 + 1] = color;
+	cursor_x++;
+}
+
+void Terminal::putc_gfx(const char chr, uint8_t color) {
+	/* Draw character with default font: */
+
+}
+
+void Terminal::putc(const char chr, uint8_t color) {
+	if(gfx_mode) putc_gfx(chr, color);
+	else putc_textmode(chr, color);
 }
 
 void Terminal::putc(const char chr) {

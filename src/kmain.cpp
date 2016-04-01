@@ -101,9 +101,12 @@ namespace Kernel {
 		/* Initialize cmdline very early, because the cmdline might contain commands which indicate how to initialize the system */
 		if (mboot_ptr->cmdline)	args_parse((char*)mboot_ptr->cmdline);
 
-		term.init();
+		int video_mode = args_present("vga") ? atoi(args_value("vga")) : 0;
+		video_init(video_mode);
+		term.init(video_mode);
 		serial.init(COM1);
-		Log::redirect_log(Log::LOG_SERIAL); /* TODO: Redirect the IO based on the cmdline */
+
+		Log::redirect_log(args_present("serial") ? Log::LOG_SERIAL : args_present("vga_serial") ? Log::LOG_VGA_SERIAL : Log::LOG_VGA);
 
 		/* Output initial data from multiboot: */
 		kprintf("> Bootloader: %s| Bootloader Mod Count: %d at 0x%x\n> Memory: 0x%x ",
@@ -113,7 +116,7 @@ namespace Kernel {
 			MEMSIZE());
 		kprintfc(COLOR_WARNING, "* %d MB *", MEMSIZE()/1024);
 		kprintf(" (start: 0x%x end: 0x%x = 0x%x)\n", KInit::ld_segs.ld_kstart, KInit::ld_segs.ld_kend, KERNELSIZE());
-		kprintf("> ESP: 0x%x | Symbols found: %d\n\n", init_esp, symbol_count());
+		kprintf("> Video: %s (%d) | ESP: 0x%x | Symbols found: %d\n\n", video_mode_get(video_mode), video_mode, init_esp, symbol_count());
 		
 		/* Validate Multiboot: */
 		kputsc(">> Initializing Kernel <<\n", COLOR_INFO);
@@ -158,6 +161,12 @@ namespace Kernel {
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
+
+		for(uint16_t x = 0; x < video_width();x++) {
+			for(uint16_t y = 0; y < video_height() / 2; y++)
+				GFX(x, y) = rgb(255,0,0);
+		}
+
 		kputsc("\nReady", COLOR_GOOD);
 
 		for(;;)

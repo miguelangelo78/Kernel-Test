@@ -42,6 +42,7 @@ void * memchr(const void * src, int c, size_t n);
 void * memrchr(const void * m, int c, size_t n);
 void * memmove(void * dest, const void * src, size_t n);
 
+char * strcat(char * dst, const char * src);
 size_t strlen(const char * s);
 char * strdup(const char * s);
 char * stpcpy(char * __restrict__ d, const char * __restrict__ s);
