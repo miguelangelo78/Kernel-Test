@@ -3,7 +3,9 @@
 #include <va_list.h>
 
 #define VID_WIDTH 80
+#define VID_WIDTH_TOTAL (VID_WIDTH * 2)
 #define VID_HEIGHT 25
+#define VID_MEM_TOTAL VID_WIDTH_TOTAL * VID_HEIGHT
 
 #define VID_CENTER_W VID_WIDTH/2
 #define VID_CENTER_H (VID_HEIGHT-1)/2
@@ -49,14 +51,26 @@ class Terminal {
 		void printf(uint8_t color, const char *fmt, va_list args);
 		void printf(const char *fmt, ...);
 		void printf(const char *fmt, va_list args, char ign);
+		char scroll(char direction, int scrollcount);
+		void scroll_copy_line(char * buff, int line_dst, int line_src);
+		char * scroll_copy_line(char * buff, char * buff2, int line_dst, int line_src);
+		void scroll_copy_line(int line_dst, int line_src);
+		char * scroll_copy_line(char* buff, int line);
+		char * scroll_copy_line(int line);
+		void scroll_bottom(void);
+		void scroll_top(void);
 		void clear(void);
 		void fill(uint8_t color);
 		void reset_cursor(void);
 		Point go_to(uint8_t x, uint8_t y);
 	private:
+		void spill_buff(char spill_direction);
+		void fill_buff(char fill_direction);
 		void putc_textmode(const char chr, uint8_t color);
 		void putc_gfx(const char chr, uint8_t color);
 		void hide_textmode_cursor(void);
 		int cursor_x, cursor_y;
+		int scroll_y, scroll_y_orig;
 		int gfx_mode;
+		char * term_buffer;
 };

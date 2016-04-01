@@ -102,7 +102,7 @@ uint16_t video_height(void) {
 		case 258: case 277: case 276: case 275: case 259: case 106: return 600;
 		case 260: case 280: case 279: case 278: case 261: return 768;
 		case 262: case 283: case 282: case 281: case 263: return 1024;
-		case 0: return 60;
+		case 0: return 25;
 		default: return -1;
 	}
 }

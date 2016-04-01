@@ -21,6 +21,26 @@ void mod_kprintf(char * fmt, ...) {
 	}
 	va_end(args);
 }
-
 EXPORT_SYMBOL(mod_kprintf);
+
+void mod_term_scrolldown(void) {
+	Kernel::term.scroll(1,1);
+}
+EXPORT_SYMBOL(mod_term_scrolldown);
+
+void mod_term_scrollup(void) {
+	Kernel::term.scroll(0,1);
+}
+EXPORT_SYMBOL(mod_term_scrollup);
+
+void mod_term_scrollbot(void) {
+	Kernel::term.scroll_bottom();
+}
+EXPORT_SYMBOL(mod_term_scrollbot);
+
+void mod_term_scrolltop(void) {
+	Kernel::term.scroll_top();
+}
+EXPORT_SYMBOL(mod_term_scrolltop);
+
 

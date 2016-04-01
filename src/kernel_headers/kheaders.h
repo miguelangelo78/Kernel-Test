@@ -15,6 +15,10 @@
 #ifdef MODULE
 
 #define kprintf(fmt, ...) symbol_call_args_("mod_kprintf", PP_NARG(__VA_ARGS__) + 1, fmt, ##__VA_ARGS__)
+#define scwn() SYC("mod_term_scrolldown")
+#define scup() SYC("mod_term_scrollup")
+#define scbot() SYC("mod_term_scrollbot")
+#define sctop() SYC("mod_term_scrolltop")
 
 #define malloc(bytecount) FCASTF(SYF((char*)"malloc"), void *, uintptr_t)(bytecount)
 #define realloc(ptr, bytecount) FCASTF(SYF((char*)"malloc"), void *, void*, uintptr_t)(ptr, bytecount)

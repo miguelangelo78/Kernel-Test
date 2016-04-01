@@ -98,6 +98,8 @@ namespace Kernel {
 		relocate_heap();
 		paging_install(MEMSIZE());
 
+		CPU::cpuid_t cpuid = CPU::cpuid(CPU::CPUID_GETVENDORSTRING);
+
 		/* Initialize cmdline very early, because the cmdline might contain commands which indicate how to initialize the system */
 		if (mboot_ptr->cmdline)	args_parse((char*)mboot_ptr->cmdline);
 
@@ -114,9 +116,11 @@ namespace Kernel {
 			mboot_ptr->mods_count,
 			*(uint32_t*)mboot_ptr->mods_addr,
 			MEMSIZE());
-		kprintfc(COLOR_WARNING, "* %d MB *", MEMSIZE()/1024);
+		kprintfc(COLOR_WARNING, "* %d MB *", MEMSIZE() / 1024);
 		kprintf(" (start: 0x%x end: 0x%x = 0x%x)\n", KInit::ld_segs.ld_kstart, KInit::ld_segs.ld_kend, KERNELSIZE());
-		kprintf("> Video: %s (%d) | ESP: 0x%x | Symbols found: %d\n\n", video_mode_get(video_mode), video_mode, init_esp, symbol_count());
+		kprintf("> CPU: %s (%s)\n> Video: %s (%d) | ESP: 0x%x | Symbols found: %d\n\n",
+			CPU::cpu_vendor(), cpu_is_amd(cpuid) ? "AMD" : cpu_is_intel(cpuid) ? "Intel" : "Unknown",
+			video_mode_get(video_mode), video_mode, init_esp, symbol_count());
 		
 		/* Validate Multiboot: */
 		kputsc(">> Initializing Kernel <<\n", COLOR_INFO);

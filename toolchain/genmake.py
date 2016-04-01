@@ -146,7 +146,7 @@ def parse_injections_sourcefile(source_content):
 		deps = match_deps.group(1).split(',')
 		for dep in deps:
 			meta.deps += "build/" + (dep.strip()) + " "
-	match_misc = re.search(r'\$INJ\(((?:\w|\n)+?)\)', source_content, re.M)
+	match_misc = re.search(r'\$INJ\(((?:\w|\n|.)+?)\)', source_content, re.M)
 	if match_misc:
 		meta.misc = match_misc.group(1)
 
