@@ -116,7 +116,7 @@ namespace Kernel {
 			mboot_ptr->mods_count,
 			*(uint32_t*)mboot_ptr->mods_addr,
 			MEMSIZE());
-		kprintfc(COLOR_WARNING, "* %d MB *", MEMSIZE() / 1024);
+		kprintfc(COLOR_WARNING, "*%d MB*", MEMSIZE() / 1024);
 		kprintf(" (start: 0x%x end: 0x%x = 0x%x)\n", KInit::ld_segs.ld_kstart, KInit::ld_segs.ld_kend, KERNELSIZE());
 		kprintf("> CPU: %s (%s)\n> Video: %s (%d) | ESP: 0x%x | Symbols found: %d\n\n",
 			CPU::cpu_vendor(), cpu_is_amd(cpuid) ? "AMD" : cpu_is_intel(cpuid) ? "Intel" : "Unknown",
@@ -161,7 +161,7 @@ namespace Kernel {
 
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1 - Set up: \n  1.1 - FPU \n  1.2 - Syscalls\n  1.3 - Shared memory");
+		kputs("1 - Set up:\n  1.1 - FPU\n  1.2 - Syscalls\n  1.3 - Shared memory");
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <kinit.h>
-#include <terminal.h>
+#include <terminal/terminal.h>
 #include <Serial.h>
 #include <libc.h>
 #include <io.h>

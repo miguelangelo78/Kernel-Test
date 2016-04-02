@@ -38,6 +38,7 @@ include src\modules\subdir.mk
 include src\modules\clock\subdir.mk
 include src\modules\kbd\subdir.mk
 include src\task\subdir.mk
+include src\terminal\subdir.mk
 
 ############### Main targets ###############
 

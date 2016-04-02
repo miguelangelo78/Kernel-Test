@@ -1,6 +1,7 @@
 #pragma once
 
 #include <va_list.h>
+#include "terminal_font.h"
 
 #define VID_WIDTH 80
 #define VID_WIDTH_TOTAL (VID_WIDTH * 2)
@@ -11,6 +12,8 @@
 #define VID_CENTER_H (VID_HEIGHT-1)/2
 
 #define VID_CALC_POS(x, y) (x + y * VID_WIDTH)
+
+#define TERMINAL_CURSOR ' '
 
 enum VIDColor {
 	VIDBlack,
@@ -32,23 +35,23 @@ enum VIDColor {
 };
 
 #define COLOR(bg, fg) ((bg<<4) | fg)
-#define COLOR_DEFAULT COLOR(VIDBlack, VIDLightGray)
-#define COLOR_GOOD COLOR(VIDGreen, VIDWhite)
+#define COLOR_DEFAULT gfx->vid_mode ? rgb(186, 186, 186) : COLOR(VIDBlack, VIDLightGray)
+#define COLOR_GOOD gfx->vid_mode ? rgb(28, 186, 31) : COLOR(VIDGreen, VIDWhite)
 #define COLOR_BAD COLOR(VIDRed, VIDWhite)
 #define COLOR_WARNING COLOR(VIDYellow, VIDBlack)
-#define COLOR_INFO COLOR(VIDBlue, VIDWhite)
+#define COLOR_INFO gfx->vid_mode ? rgb(96,113,219) : COLOR(VIDBlue, VIDWhite)
 
 class Terminal {
 	public:
 		Terminal();
 		void init(int gfx_mode);
 		void init(void);
-		void putc(const char chr, uint8_t color);
+		void putc(const char chr, uint32_t color);
 		void putc(const char chr);
-		void puts(const char * str, uint8_t color);
+		void puts(const char * str, uint32_t color);
 		void puts(const char * str);
-		void printf(uint8_t color, const char *fmt, ...);
-		void printf(uint8_t color, const char *fmt, va_list args);
+		void printf(uint32_t color, const char *fmt, ...);
+		void printf(uint32_t color, const char *fmt, va_list args);
 		void printf(const char *fmt, ...);
 		void printf(const char *fmt, va_list args, char ign);
 		char scroll(char direction, int scrollcount);
@@ -60,17 +63,22 @@ class Terminal {
 		void scroll_bottom(void);
 		void scroll_top(void);
 		void clear(void);
-		void fill(uint8_t color);
+		void fill(uint32_t color);
 		void reset_cursor(void);
-		Point go_to(uint8_t x, uint8_t y);
+		Point go_to(uint32_t x, uint32_t y);
 	private:
+		void draw_cursor(char redraw);
 		void spill_buff(char spill_direction);
 		void fill_buff(char fill_direction);
-		void putc_textmode(const char chr, uint8_t color);
-		void putc_gfx(const char chr, uint8_t color);
+		void putc_textmode(const char chr, uint32_t color);
+		void putc_gfx(const char chr, uint32_t color);
 		void hide_textmode_cursor(void);
+		void last_line_store(int line, int last_pos);
+		void last_lines_shiftup(void);
+		int last_line_get_lastpos(int line);
 		int cursor_x, cursor_y;
 		int scroll_y, scroll_y_orig;
 		int gfx_mode;
 		char * term_buffer;
+		int * gfx_line_lastchar;
 };

@@ -46,10 +46,10 @@ extern uint16_t video_palette(void);
 #define CTX_H() (gfx->height)
 #define CTX_B() ((gfx->depth / 8))
 
-#define GFX(x, y) *((uint32_t*)&(VID[(CTX_W()*y + x) * CTX_B()]))
+#define GFX(x, y) *((uint32_t*)&(VID[(CTX_W()*(y) + (x)) * CTX_B()]))
 
 static inline uint32_t rgb(uint8_t r, uint8_t g, uint8_t b) {
-	return 0xFF000000 + (r * 0x10000) + (g * 0x100) + b;
+	return (r * 0x10000) + (g * 0x100) + (b * 0x1);
 }
 
 static inline uint32_t rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
