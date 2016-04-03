@@ -3,21 +3,45 @@
 
 using namespace Kernel::IO;
 
+/* Draw character in graphics mode: */
+void gfx_char(char c, int x, int y, uint32_t color, uint32_t bg_color, char transparent) {
+	for(int h = 0; h < FONT_HEIGHT; h++) {
+		for(int w = 0, _w = FONT_WIDTH; w < FONT_WIDTH; w++, _w--)
+			if((FONT_CHAR(c)[h] & (1 << _w)))
+				GFX(w + x, h + y) = color;
+			else if(!transparent)
+				GFX(w + x, h + y) = bg_color;
+	}
+}
+
+
+void textmode_char(char c, int x, int y, uint8_t color) {
+	int loc = VID_CALC_POS(x, y) * 2;
+	VID[loc] = c;
+	VID[loc + 1] = color;
+}
+
 Terminal::Terminal() {
 	gfx_mode = 0;
 	cursor_y = cursor_x = scroll_y = scroll_y_orig = 0;
 	term_buffer = 0;
-	gfx_line_lastchar = 0;
+	line_lastchar = 0;
+	line_lastchar_size = 0;
 }
 
 void Terminal::init(int gfx_mode) {
 	this->gfx_mode = gfx_mode;
 	if(!gfx_mode) {
-		#define term_buffer_size VID_MEM_TOTAL * 10
+		#define term_pages_alloc 10 /* Not MMU pages, actual pages of the terminal */
+		#define term_buffer_size VID_MEM_TOTAL * term_pages_alloc
+		#define term_line_maxcount VID_HEIGHT * term_pages_alloc
 		term_buffer = (char*)malloc(term_buffer_size); /* Video memory will spill to this buffer */
 		memset(term_buffer, 0, term_buffer_size);
+		line_lastchar_size = term_line_maxcount;
+		line_lastchar = (int*)malloc(sizeof(int) * line_lastchar_size);
 	} else {
-		gfx_line_lastchar = (int*)malloc(sizeof(int) * (FONT_CHARS_PERCOLUMN));
+		line_lastchar_size = FONT_CHARS_PERCOLUMN;
+		line_lastchar = (int*)malloc(sizeof(int) * line_lastchar_size);
 	}
 	cursor_x = cursor_y = 0;
 	hide_textmode_cursor();
@@ -35,73 +59,85 @@ void Terminal::hide_textmode_cursor() {
 	outb(0x3D5, 0xFF);
 }
 
-void Terminal::putc_textmode(const char chr, uint32_t color) {
-	if(scroll_y != scroll_y_orig) scroll_bottom();
-
-	/* New line: */
-	if(chr == '\n' || chr == '\r') {
-		cursor_y++;
-		if(chr=='\n') cursor_x = 0;
-		if(cursor_y >= gfx->height) {
-			cursor_y--;
-			scroll_y_orig++;
-			scroll(1, 1);
-		}
-		return;
-	}
-
-	/* Normal character: */
-	int loc = VID_CALC_POS(cursor_x, cursor_y) * 2;
-	VID[loc] = chr;
-	VID[loc + 1] = color;
-
-	if(++cursor_x >= gfx->width) {
-		cursor_x = 0;
-		if(++cursor_y >= gfx->height) {
-			cursor_y--;
-			scroll_y_orig++;
-			scroll(1,1);
-		}
-	}
-}
-
-void gfx_char(char c, int x, int y, uint32_t color, uint32_t bg_color, char transparent) {
-	for(int h = 0; h < FONT_HEIGHT; h++) {
-		for(int w = 0, _w = FONT_WIDTH; w < FONT_WIDTH; w++, _w--)
-			if((FONT_CHAR(c)[h] & (1 << _w)))
-				GFX(w + x, h + y) = color;
-			else if(!transparent)
-				GFX(w + x, h + y) = bg_color;
-	}
-}
-
 void Terminal::draw_cursor(char redraw, uint32_t bgcolor) {
 	if(gfx_mode) { /* Graphics mode */
-		if(redraw == 1) { /* Remove cursor from newlines */
+		if(redraw) { /* Remove cursor from newlines */
 			gfx_char(' ', cursor_x*FONT_W_PADDING, (cursor_y-1)*FONT_H_PADDING, bgcolor, bgcolor, 0);
 			gfx_char(TERMINAL_CURSOR, 0, cursor_y*FONT_H_PADDING, FONT_DEFAULT_COLOR, bgcolor, 0);
 		} else { /* Draw cursor normally */
 			gfx_char(TERMINAL_CURSOR, cursor_x*FONT_W_PADDING, cursor_y*FONT_H_PADDING, FONT_DEFAULT_COLOR, bgcolor, 0);
 		}
 	} else { /* Text mode */
-
+		if(redraw) { /* Remove cursor from newlines */
+			textmode_char(' ', cursor_x, cursor_y-1, bgcolor);
+			textmode_char(TERMINAL_TEXTMODE_CURSOR, 0, cursor_y, bgcolor);
+		} else { /* Draw cursor normally */
+			textmode_char(TERMINAL_TEXTMODE_CURSOR, cursor_x, cursor_y, bgcolor);
+		}
 	}
 }
 
+void Terminal::putc_textmode(const char chr, uint32_t color) {
+	if(scroll_y != scroll_y_orig) scroll_bottom();
+
+	/* New line: */
+	if(chr == '\n' || chr == '\r') {
+		last_line_store(cursor_y++, cursor_x);
+		if(cursor_y >= gfx->height) {
+			cursor_y--;
+			scroll_y_orig++;
+			scroll(1, 1);
+		}
+		draw_cursor(1, COLOR_DEFAULT);
+		if(chr=='\n') cursor_x = 0;
+		return;
+	}
+
+	/* Backspace: */
+	if(chr == 8) {
+		if(!cursor_x || cursor_x-1 < 0) {
+			textmode_char(' ', cursor_x, cursor_y, color);
+			cursor_x = last_line_get_lastpos(--cursor_y);
+			if(cursor_y <= 0) {
+				cursor_y++;
+				scroll_y_orig--;
+				scroll(0, 1);
+			}
+		} else {
+			cursor_x--;
+			textmode_char(' ', cursor_x+1, cursor_y, color);
+		}
+		textmode_char(TERMINAL_TEXTMODE_CURSOR, cursor_x, cursor_y, color); /* Draw white block */
+		return;
+	}
+
+	/* Normal character: */
+	textmode_char(chr, cursor_x, cursor_y, color);
+	if(++cursor_x >= gfx->width) {
+		last_line_store(cursor_y++, cursor_x - 1);
+		if(cursor_y >= gfx->height) {
+			cursor_y--;
+			scroll_y_orig++;
+			scroll(1,1);
+		}
+		cursor_x = 0;
+
+	}
+	draw_cursor(0, COLOR_DEFAULT);
+}
+
 void Terminal::last_line_store(int line, int last_pos) {
-	if(!gfx_mode) return;
-	gfx_line_lastchar[line] = last_pos;
+	line_lastchar[line] = last_pos;
 }
 
 void Terminal::last_lines_shiftup(void) {
-	if(!gfx_mode) return;
-	for(int i=0;i<FONT_CHARS_PERCOLUMN-1;i++)
-		gfx_line_lastchar[i] = gfx_line_lastchar[i+1];
-	gfx_line_lastchar[FONT_CHARS_PERCOLUMN] = 0;
+	for(int i = 0; i < line_lastchar_size - 1; i++)
+		line_lastchar[i] = line_lastchar[i + 1];
+	line_lastchar[line_lastchar_size] = 0;
 }
 
 int Terminal::last_line_get_lastpos(int line) {
-	return gfx_line_lastchar[line];
+	return line_lastchar[line];
 }
 
 void Terminal::putc_gfx(const char chr, uint32_t color, uint32_t bgcolor) {

@@ -5,8 +5,8 @@ cd ..\..
 printf "\nLaunching Kernel... (x86_64)\n"
 start toolchain/Tools/Windows/putty.exe -load KernelSerial
 @rem start gdb -x toolchain/gdb.gdbinit
-@rem "C:\Program Files (x86)\qemu\qemu-system-x86_64" -cdrom iso\KernelSharp.iso -serial COM1 -gdb tcp:127.0.0.1:1234 -m 512
-VirtualBox --startvm KernelSharp --dbg
+"C:\Program Files (x86)\qemu\qemu-system-x86_64" -cdrom iso\KernelSharp.iso -serial COM1 -gdb tcp:127.0.0.1:1234 -m 128
+@rem VirtualBox --startvm KernelSharp --dbg
 if ERRORLEVEL 1 ( call:errorhandle "Launching Kernel" )
 
 @echo on

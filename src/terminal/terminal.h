@@ -14,6 +14,7 @@
 #define VID_CALC_POS(x, y) (x + y * VID_WIDTH)
 
 #define TERMINAL_CURSOR ' '
+#define TERMINAL_TEXTMODE_CURSOR 219
 
 enum VIDColor {
 	VIDBlack,
@@ -82,5 +83,6 @@ class Terminal {
 		int scroll_y, scroll_y_orig;
 		int gfx_mode;
 		char * term_buffer;
-		int * gfx_line_lastchar;
+		int * line_lastchar;
+		int line_lastchar_size;
 };
