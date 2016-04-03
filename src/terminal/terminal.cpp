@@ -14,7 +14,6 @@ void gfx_char(char c, int x, int y, uint32_t color, uint32_t bg_color, char tran
 	}
 }
 
-
 void textmode_char(char c, int x, int y, uint8_t color) {
 	int loc = VID_CALC_POS(x, y) * 2;
 	VID[loc] = c;
@@ -82,7 +81,7 @@ void Terminal::putc_textmode(const char chr, uint32_t color) {
 
 	/* New line: */
 	if(chr == '\n' || chr == '\r') {
-		last_line_store(cursor_y++, cursor_x);
+		last_line_store(scroll_y + cursor_y++, cursor_x);
 		if(cursor_y >= gfx->height) {
 			cursor_y--;
 			scroll_y_orig++;
@@ -96,12 +95,17 @@ void Terminal::putc_textmode(const char chr, uint32_t color) {
 	/* Backspace: */
 	if(chr == 8) {
 		if(!cursor_x || cursor_x-1 < 0) {
-			textmode_char(' ', cursor_x, cursor_y, color);
-			cursor_x = last_line_get_lastpos(--cursor_y);
-			if(cursor_y <= 0) {
-				cursor_y++;
-				scroll_y_orig--;
-				scroll(0, 1);
+			if((scroll_y + cursor_y - 1) > 0) {
+				textmode_char(' ', cursor_x, cursor_y, color);
+				cursor_x = last_line_get_lastpos(scroll_y + (--cursor_y));
+				if(cursor_y <= 0) {
+					cursor_y = 0;
+					if(scroll_y_orig > 1) {
+						cursor_y++;
+						scroll_y_orig--;
+						scroll(0, 1);
+					}
+				}
 			}
 		} else {
 			cursor_x--;
@@ -114,7 +118,7 @@ void Terminal::putc_textmode(const char chr, uint32_t color) {
 	/* Normal character: */
 	textmode_char(chr, cursor_x, cursor_y, color);
 	if(++cursor_x >= gfx->width) {
-		last_line_store(cursor_y++, cursor_x - 1);
+		last_line_store(scroll_y + cursor_y++, cursor_x - 1);
 		if(cursor_y >= gfx->height) {
 			cursor_y--;
 			scroll_y_orig++;
@@ -131,6 +135,7 @@ void Terminal::last_line_store(int line, int last_pos) {
 }
 
 void Terminal::last_lines_shiftup(void) {
+	if(!gfx->vid_mode) return;
 	for(int i = 0; i < line_lastchar_size - 1; i++)
 		line_lastchar[i] = line_lastchar[i + 1];
 	line_lastchar[line_lastchar_size] = 0;
@@ -157,8 +162,10 @@ void Terminal::putc_gfx(const char chr, uint32_t color, uint32_t bgcolor) {
 	/* Backspace: */
 	if(chr == 8) {
 		if(!cursor_x || cursor_x-1 < 0) {
-			gfx_char(' ', (cursor_x)*FONT_W_PADDING, cursor_y * FONT_H_PADDING, 0, bgcolor, 0);
-			cursor_x = last_line_get_lastpos(--cursor_y);
+			if(cursor_y) {
+				gfx_char(' ', (cursor_x)*FONT_W_PADDING, cursor_y * FONT_H_PADDING, 0, bgcolor, 0);
+				cursor_x = last_line_get_lastpos(--cursor_y);
+			}
 		} else {
 			cursor_x--;
 			gfx_char(' ', (cursor_x+1)*FONT_W_PADDING, cursor_y*FONT_H_PADDING, 0, bgcolor, 0);
