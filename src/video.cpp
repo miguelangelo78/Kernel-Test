@@ -54,7 +54,7 @@ char * video_mode_get(int mode) {
 	case 256: palette_str = _256_color; break;
 	case 15: palette_str = _15_bit; break;
 	case 16: palette_str = _16_bit; break;
-	case 24: palette_str = _16_bit; break;
+	case 24: palette_str = _24_bit; break;
 	}
 
 	uint16_t video_w = video_width();

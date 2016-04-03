@@ -64,8 +64,13 @@ enum MOD_TYPE {
 #define KERNEL_SYMBOLS_TABLE_SIZE (0x1000 * 2) /* Each entry on the table is 8 bytes. This means the number of symbols that we can export is: TABLE_SIZE (in KiB) / 8 bytes  */
 #define KERNEL_SYMBOLS_TABLE_END (KERNEL_SYMBOLS_TABLE_START + KERNEL_SYMBOLS_TABLE_SIZE) /* Very important macro!! */
 
+#ifndef MODULE
 #define EXPORT_SYMBOL(sym) \
 	sym_t sym_## sym __attribute__((section(".symbols"))) = {(char*)#sym, (uintptr_t)&sym}
+#else
+#define EXPORT_SYMBOL(sym) \
+	sym_t sym_## sym = {"modsym_" #sym, (uintptr_t)&sym}
+#endif
 
 /* Calculate the next/previous symbol's address: */
 #define SYM(i) ((sym_t*)((unsigned int)KERNEL_SYMBOLS_TABLE_START + (sizeof(unsigned int) * 2) * i))

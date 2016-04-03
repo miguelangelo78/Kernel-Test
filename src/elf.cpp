@@ -84,7 +84,7 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 	return (BASE_OFF(header) + symbol->st_value + elf_section(header, symbol->st_shndx)->sh_offset);
 }
 
-static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, char * symname, char charlimit, char calcoff) {
+static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, char * symname, char charlimit, char calcoff, int greedy_ptr) {
 	for(int i = 0; i < elf_section_entry_count(symsection);i++) {
 		elf32_sym * symbol = elf_sym(header, i);
 		char * symname_temp = elf_lookup_string(header, symbol);
@@ -93,11 +93,13 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 			if(delim) {
 				int delimindex = (int)((uint32_t)delim - (uint32_t)symname_temp);
 				if(!delimindex++) continue;
-				char * symbuff = (char*)malloc(delimindex);
+
+				char * symbuff = (char*)malloc(delimindex+1);
 				memcpy(symbuff, symname_temp, delimindex);
 				symbuff[delimindex] = '\0';
 
 				if(!strcmp(symbuff, symname)) {
+					if(greedy_ptr--) continue; /* Ignore this match */
 					free(symbuff);
 					if(calcoff)
 						return (BASE_OFF(header) + symbol->st_value + elf_section(header, symbol->st_shndx)->sh_offset);
@@ -107,22 +109,24 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 				free(symbuff);
 			}
 		} else {
-			if(!strcmp(symname, symname_temp))
+			if(!strcmp(symname, symname_temp)) {
+				if(greedy_ptr--) continue; /* Ignore this match */
 				if(calcoff)
 					return (BASE_OFF(header) + symbol->st_value + elf_section(header, symbol->st_shndx)->sh_offset);
 				else
 					return symbol->st_value;
+			}
 		}
 	}
 	return 0;
 }
 
 static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, char * symname, char charlimit) {
-	return elf_get_symval(header, symsection, symname, charlimit, 1);
+	return elf_get_symval(header, symsection, symname, charlimit, 1, 0);
 }
 
 static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, char calcoff, char * symname) {
-	return elf_get_symval(header, symsection, symname, 0, calcoff);
+	return elf_get_symval(header, symsection, symname, 0, calcoff, 0);
 }
 
 static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsection, char * symname) {
@@ -131,17 +135,22 @@ static inline uintptr_t elf_get_symval(elf32_ehdr * header, elf32_shdr * symsect
 
 modent_t * elf_find_mod(elf32_ehdr * header) {
 	modent_t * mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATURE0), MODULE_SIGNATURE1);
+
 	/* Check if it is a dependency: */
 	if(!mod) {
 		mod = (modent_t*)elf_get_symval(header, elf_section(header, SHT_SYMTAB), STR(MODULE_SIGNATUREXT0), MODULE_SIGNATURE1);
-		return  (modent_t *)(mod ? MOD_DEP : MOD_UNKNOWN); /* If it's a dependency we don't want it.... */
+		return  (modent_t *)(mod ? MOD_DEP : MOD_UNKNOWN); /* If it's a dependency we don't want it... */
 	}
+
 	/* The module was found */
 
 	/* Add desired symbols to the symbol table: */
-	sym_t * sym = (sym_t*)elf_get_symval(header, elf_symsection(header), "sym_", '_', 1);
-	if(sym)
+	int sym_ctr = 0;
+	sym_t * sym = (sym_t*)elf_get_symval(header, elf_symsection(header), "sym_", '_', 1, sym_ctr);
+	while(sym) {
 		symbol_add(sym->name, sym->addr);
+		sym = (sym_t*)elf_get_symval(header, elf_symsection(header), "sym_", '_', 1, ++sym_ctr); /* Fetch the next symbol */
+	}
 	return mod;
 }
 

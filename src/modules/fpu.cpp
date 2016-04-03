@@ -7,6 +7,7 @@
 
 #include <system.h>
 #include <kernel_headers/kheaders.h>
+#include <module.h>
 
 static int fpu_init(void) {
 

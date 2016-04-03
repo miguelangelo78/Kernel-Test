@@ -47,8 +47,10 @@ class Terminal {
 		void init(int gfx_mode);
 		void init(void);
 		void putc(const char chr, uint32_t color);
+		void putc(const char chr, uint32_t color, uint32_t bgcolor);
 		void putc(const char chr);
 		void puts(const char * str, uint32_t color);
+		void puts(const char * str, uint32_t color, uint32_t bgcolor);
 		void puts(const char * str);
 		void printf(uint32_t color, const char *fmt, ...);
 		void printf(uint32_t color, const char *fmt, va_list args);
@@ -67,11 +69,11 @@ class Terminal {
 		void reset_cursor(void);
 		Point go_to(uint32_t x, uint32_t y);
 	private:
-		void draw_cursor(char redraw);
+		void draw_cursor(char redraw, uint32_t bgcolor);
 		void spill_buff(char spill_direction);
 		void fill_buff(char fill_direction);
 		void putc_textmode(const char chr, uint32_t color);
-		void putc_gfx(const char chr, uint32_t color);
+		void putc_gfx(const char chr, uint32_t color, uint32_t bgcolor);
 		void hide_textmode_cursor(void);
 		void last_line_store(int line, int last_pos);
 		void last_lines_shiftup(void);

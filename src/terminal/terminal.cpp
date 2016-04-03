@@ -66,21 +66,22 @@ void Terminal::putc_textmode(const char chr, uint32_t color) {
 }
 
 void gfx_char(char c, int x, int y, uint32_t color, uint32_t bg_color, char transparent) {
-	for(int h = 0; h < FONT_HEIGHT; h++)
+	for(int h = 0; h < FONT_HEIGHT; h++) {
 		for(int w = 0, _w = FONT_WIDTH; w < FONT_WIDTH; w++, _w--)
 			if((FONT_CHAR(c)[h] & (1 << _w)))
 				GFX(w + x, h + y) = color;
 			else if(!transparent)
 				GFX(w + x, h + y) = bg_color;
+	}
 }
 
-void Terminal::draw_cursor(char redraw) {
+void Terminal::draw_cursor(char redraw, uint32_t bgcolor) {
 	if(gfx_mode) { /* Graphics mode */
 		if(redraw == 1) { /* Remove cursor from newlines */
-			gfx_char(' ', cursor_x*FONT_W_PADDING, (cursor_y-1)*FONT_H_PADDING, 0, 0, 0);
-			gfx_char(TERMINAL_CURSOR, 0, cursor_y*FONT_H_PADDING, FONT_DEFAULT_COLOR, 0, 0);
+			gfx_char(' ', cursor_x*FONT_W_PADDING, (cursor_y-1)*FONT_H_PADDING, bgcolor, bgcolor, 0);
+			gfx_char(TERMINAL_CURSOR, 0, cursor_y*FONT_H_PADDING, FONT_DEFAULT_COLOR, bgcolor, 0);
 		} else { /* Draw cursor normally */
-			gfx_char(TERMINAL_CURSOR, cursor_x*FONT_W_PADDING, cursor_y*FONT_H_PADDING, FONT_DEFAULT_COLOR, 0, 0);
+			gfx_char(TERMINAL_CURSOR, cursor_x*FONT_W_PADDING, cursor_y*FONT_H_PADDING, FONT_DEFAULT_COLOR, bgcolor, 0);
 		}
 	} else { /* Text mode */
 
@@ -103,11 +104,11 @@ int Terminal::last_line_get_lastpos(int line) {
 	return gfx_line_lastchar[line];
 }
 
-void Terminal::putc_gfx(const char chr, uint32_t color) {
+void Terminal::putc_gfx(const char chr, uint32_t color, uint32_t bgcolor) {
 	/* New line: */
 	if(chr == '\n' || chr == '\r') {
 		last_line_store(cursor_y++, cursor_x);
-		draw_cursor(1);
+		draw_cursor(1, bgcolor);
 		if(chr=='\n') cursor_x = 0;
 		if(cursor_y >= FONT_CHARS_PERCOLUMN) {
 			cursor_y--;
@@ -120,18 +121,18 @@ void Terminal::putc_gfx(const char chr, uint32_t color) {
 	/* Backspace: */
 	if(chr == 8) {
 		if(!cursor_x || cursor_x-1 < 0) {
-			gfx_char(' ', (cursor_x)*FONT_W_PADDING, cursor_y*FONT_H_PADDING, 0, 0, 0);
+			gfx_char(' ', (cursor_x)*FONT_W_PADDING, cursor_y * FONT_H_PADDING, 0, bgcolor, 0);
 			cursor_x = last_line_get_lastpos(--cursor_y);
 		} else {
 			cursor_x--;
-			gfx_char(' ', (cursor_x+1)*FONT_W_PADDING, cursor_y*FONT_H_PADDING, 0, 0, 0);
+			gfx_char(' ', (cursor_x+1)*FONT_W_PADDING, cursor_y*FONT_H_PADDING, 0, bgcolor, 0);
 		}
 		gfx_char(TERMINAL_CURSOR, (cursor_x)*FONT_W_PADDING, cursor_y*FONT_H_PADDING, FONT_DEFAULT_COLOR, 0, 0);
 		return;
 	}
 
 	/* Draw character with default font: */
-	gfx_char(chr, cursor_x * FONT_W_PADDING, cursor_y * FONT_H_PADDING, chr == ' ' ? 0 : color, 0, 0);
+	gfx_char(chr, cursor_x * FONT_W_PADDING, cursor_y * FONT_H_PADDING, chr == ' ' ? bgcolor : color, bgcolor, 0);
 
 	if(++cursor_x >= FONT_CHARS_PERLINE) {
 		last_line_store(cursor_y++, cursor_x-1);
@@ -142,12 +143,16 @@ void Terminal::putc_gfx(const char chr, uint32_t color) {
 			scroll(1,1);
 		}
 	}
-	draw_cursor(0);
+	draw_cursor(0, bgcolor);
+}
+
+void Terminal::putc(const char chr, uint32_t color, uint32_t bgcolor) {
+	if(gfx_mode) putc_gfx(chr, color, bgcolor);
+	else putc_textmode(chr, color);
 }
 
 void Terminal::putc(const char chr, uint32_t color) {
-	if(gfx_mode) putc_gfx(chr, color);
-	else putc_textmode(chr, color);
+	putc(chr, color, 0);
 }
 
 void Terminal::putc(const char chr) {
@@ -156,6 +161,10 @@ void Terminal::putc(const char chr) {
 
 void Terminal::puts(const char * str, uint32_t color) {
 	while (*str) putc(*str++, color);
+}
+
+void Terminal::puts(const char * str, uint32_t color, uint32_t bgcolor) {
+	while (*str) putc(*str++, color, bgcolor);
 }
 
 void Terminal::puts(const char * str) {
@@ -252,9 +261,15 @@ void Terminal::clear() {
 
 void Terminal::fill(uint32_t bgcolor) {
 	reset_cursor();
-	for (int i = 0; i < VID_WIDTH * VID_HEIGHT; i++)
-		putc(' ', COLOR(bgcolor, VIDBlack));
-	reset_cursor();
+	if(gfx->vid_mode) {
+		for(int x = 0; x < gfx->width; x++)
+			for(int y = 0; y < gfx->height; y++)
+				GFX(x,y) = bgcolor;
+	} else {
+		for (int i = 0; i < VID_WIDTH * VID_HEIGHT; i++)
+			putc(' ', COLOR(bgcolor, VIDBlack));
+		reset_cursor();
+	}
 }
 
 void Terminal::reset_cursor() {

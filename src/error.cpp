@@ -1,56 +1,53 @@
 #include "system.h"
 
+#define BSOD_COLOR 0xDE1B1B
+
 namespace Kernel {
 	extern Terminal term; /* Used only for debugging to the screen */
 	
 	namespace Error {
 
 		char kernel_panic_msg[] = "!! KERNEL PANIC !!";
-		
+		char bsod_buff[256];
+
+		void bsod_print(char * buff) {
+			serial.puts(buff);
+			if(gfx->vid_mode) {
+				term.fill(BSOD_COLOR);
+				term.puts(buff, 0xFFFFFF , BSOD_COLOR);
+			} else {
+				term.fill(VIDRed);
+				term.puts(buff);
+			}
+		}
+
 		/* Many ways to panic: */
 
 		void panic(const char * msg, const int line, const char * file, int intno) {
-			char buff[256];
-			sprintf(buff, "%s\n\n - %s (At line %d @ %s - int: %d)", kernel_panic_msg, msg, line, file, intno);
-
-			term.fill(VIDRed);
-			serial.puts(buff);
-			term.puts(buff, COLOR_BAD);
-
-			KERNEL_FULL_PAUSE(); /* IRQs still work */
+			sprintf(bsod_buff, "%s\n\n - %s (At line %d @ %s - int: %d)", kernel_panic_msg, msg, line, file, intno);
+			bsod_print(bsod_buff);
+			KERNEL_FULL_STOP();
 		}
 
 		void panic(const char * msg, int intno) {
-			char buff[256];
-			sprintf(buff, "%s\n\n - %s (int: %d)", kernel_panic_msg, msg, intno);
-
-			term.fill(VIDRed);
-			serial.puts(buff);
-			term.puts(buff, COLOR_BAD);
-
-			KERNEL_FULL_PAUSE(); /* IRQs still work */
+			sprintf(bsod_buff, "%s\n\n - %s (int: %d)", kernel_panic_msg, msg, intno);
+			bsod_print(bsod_buff);
+			KERNEL_FULL_STOP();
 		}
 
 		void panic(const char * msg) {
-			term.fill(VIDRed);
-			term.puts(kernel_panic_msg, COLOR_BAD);
-			term.puts("\n\n - ", COLOR_BAD);
-			term.puts(msg, COLOR_BAD);
-			serial.printf("%s\n\n - %s", kernel_panic_msg, msg);
-			KERNEL_FULL_PAUSE(); /* IRQs still work */
+			sprintf(bsod_buff, "%s\n\n - %s", kernel_panic_msg, msg);
+			bsod_print(bsod_buff);
+			KERNEL_FULL_STOP();
 		}
 
 		void panic(void) {
-			term.fill(VIDRed);
-			term.puts(kernel_panic_msg, COLOR_BAD);
-			serial.puts(kernel_panic_msg);
-			KERNEL_FULL_PAUSE(); /* IRQs still work */
+			bsod_print(kernel_panic_msg);
+			KERNEL_FULL_STOP();
 		}
 
 		void infinite_idle(const char * msg) {
-			term.fill(VIDBlue);
-			term.puts(msg, COLOR_INFO);
-			serial.puts((char*)msg);
+			bsod_print((char*)msg);
 			KERNEL_FULL_STOP(); /* IRQs don't work anymore */
 		}
 	}
