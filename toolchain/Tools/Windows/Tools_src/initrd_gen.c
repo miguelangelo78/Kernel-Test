@@ -42,7 +42,6 @@ void create_initrd(char ** argv) {
 
 	/* Now append the files: */
 	for(i = 0; i < initrd_header.file_count; i++) {
-		printf("size: %d\n", initrd_header.length[i]);
 		char * file_buff = fileread(initrd_header.length[i], argv[i+1]);
 		fwrite(file_buff, sizeof(char), initrd_header.length[i], initrd_file);
 		free(file_buff);

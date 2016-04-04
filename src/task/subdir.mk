@@ -1,6 +1,6 @@
 OBJS += \
 $(BOUT)\process.o \
-$(BOUT)\task.o \
+$(BOUT)\spin.o \
 $(BOUT)\tss_flush.o
 
 $(BOUT)\process.o: src\task\process.cpp 
@@ -10,7 +10,7 @@ $(BOUT)\process.o: src\task\process.cpp
 	@echo '>> Finished building: $<'
 	@echo ' '
 
-$(BOUT)\task.o: src\task\task.cpp 
+$(BOUT)\spin.o: src\task\spin.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking LLVM C++ Clang++'
 	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  

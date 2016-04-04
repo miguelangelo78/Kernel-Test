@@ -89,7 +89,7 @@ namespace TSS {
 		tss->iomap_base = sizeof *tss;
 	}
 
-	void set_kernel_stack(uintptr_t stack) {
+	void tss_set_kernel_stack(uintptr_t stack) {
 		/* Set the kernel stack */
 		CPU::GDT::gdt.tss.esp0 = stack;
 	}

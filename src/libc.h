@@ -9,7 +9,7 @@
 #define FCAST(rettype, ...) (rettype (*)(__VA_ARGS__))
 #define FCASTF(func, rettype, ...) ((rettype (*)(__VA_ARGS__))func)
 #define FDECL(_typename, rettype, ...) typedef rettype (*_typename)(__VA_ARGS__)
-#define FDECLV(ptrname, _typename, rettype, ...) FDECL(_typename, rettype, __VA_ARGS__); _typename ptrname;
+#define FDECLV(ptrname, _typename, rettype, ...) FDECL(_typename, rettype, __VA_ARGS__); static _typename ptrname;
 
 static inline int strcmp(const char * l, const char * r) {
 	for (; *l == *r && *l; l++, r++);

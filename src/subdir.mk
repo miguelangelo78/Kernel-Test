@@ -7,7 +7,6 @@ $(BOUT)\kmain.o \
 $(BOUT)\log.o \
 $(BOUT)\module.o \
 $(BOUT)\serial.o \
-$(BOUT)\spin.o \
 $(BOUT)\vfs.o \
 $(BOUT)\video.o
 
@@ -61,13 +60,6 @@ $(BOUT)\module.o: src\module.cpp
 	@echo ' '
 
 $(BOUT)\serial.o: src\serial.cpp 
-	@echo '>> Building file $<'
-	@echo '>> Invoking LLVM C++ Clang++'
-	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  
-	@echo '>> Finished building: $<'
-	@echo ' '
-
-$(BOUT)\spin.o: src\spin.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking LLVM C++ Clang++'
 	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  

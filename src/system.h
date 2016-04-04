@@ -7,7 +7,6 @@
 #include <io.h>
 #include <attr.h>
 #include <bit.h>
-#include <process.h>
 #include <memory.h>
 #include <log.h>
 #include <arch/x86/cpu.h>
@@ -87,7 +86,7 @@ namespace Kernel {
 				uint16_t	trap;
 				uint16_t	iomap_base;
 			} __packed tss_entry_t;
-			void set_kernel_stack(uintptr_t stack);
+			void tss_set_kernel_stack(uintptr_t stack);
 		}
 
 		namespace GDT {
@@ -205,8 +204,9 @@ namespace Kernel {
 	}
 
 	namespace Task {
+		extern volatile int * current_process;
 		void tasking_install(void);
-		void switch_task(uint8_t reschedule);
+		void switch_task(void);
 	}
 
 #endif

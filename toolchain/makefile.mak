@@ -39,6 +39,7 @@ include src\modules\clock\subdir.mk
 include src\modules\kbd\subdir.mk
 include src\task\subdir.mk
 include src\terminal\subdir.mk
+include src\version\subdir.mk
 
 ############### Main targets ###############
 

@@ -41,6 +41,7 @@ enum VIDColor {
 #define COLOR_BAD COLOR(VIDRed, VIDWhite)
 #define COLOR_WARNING COLOR(VIDYellow, VIDBlack)
 #define COLOR_INFO gfx->vid_mode ? rgb(96,113,219) : COLOR(VIDBlue, VIDWhite)
+#define COLOR_INIT_HEADER gfx->vid_mode ? rgb(96,113,219) : COLOR(VIDBlack, VIDYellow)
 
 class Terminal {
 	public:

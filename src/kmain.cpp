@@ -5,6 +5,7 @@
 #include <log.h>
 #include <args.h>
 #include <fs.h>
+#include <version/version.h>
 
 namespace Kernel {
 	namespace KInit {
@@ -110,24 +111,37 @@ namespace Kernel {
 
 		Log::redirect_log(args_present("serial") ? Log::LOG_SERIAL : args_present("vga_serial") ? Log::LOG_VGA_SERIAL : Log::LOG_VGA);
 
+		char kernel_version_buff[24];
+		sprintf(kernel_version_buff, ver_kernel_version_fmt, ver_kernel_major, ver_kernel_minor, ver_kernel_lower);
 		/* Output initial data from multiboot: */
+		kprintfc(COLOR_INIT_HEADER, ">>>>>>>> Kernel: %s %s (%s) <<<<<<<<\n> Build: %s %s %s (by %s) | Author: %s\n",
+			ver_kernel_name,
+			ver_kernel_codename,
+			ver_kernel_arch,
+			kernel_version_buff,
+			ver_kernel_build_date,
+			ver_kernel_build_time,
+			ver_kernel_builtby,
+			ver_kernel_author);
 		kprintf("> Bootloader: %s| Bootloader Mod Count: %d at 0x%x\n> Memory: 0x%x ",
 			mboot_ptr->boot_loader_name,
 			mboot_ptr->mods_count,
 			*(uint32_t*)mboot_ptr->mods_addr,
 			MEMSIZE());
+
 		kprintfc(COLOR_WARNING, "*%d MB*", MEMSIZE() / 1024);
+
 		kprintf(" (start: 0x%x end: 0x%x = 0x%x)\n", KInit::ld_segs.ld_kstart, KInit::ld_segs.ld_kend, KERNELSIZE());
 		kprintf("> CPU: %s (%s)\n> Video: %s (%d) | ESP: 0x%x | Symbols found: %d\n\n",
 			CPU::cpu_vendor(), cpu_is_amd(cpuid) ? "AMD" : cpu_is_intel(cpuid) ? "Intel" : "Unknown",
 			video_mode_get(video_mode), video_mode, init_esp, symbol_count());
-		
+
 		/* Validate Multiboot: */
 		kputsc(">> Initializing Kernel <<\n", COLOR_INFO);
 		kputs("> Checking Multiboot...");
 		ASSERT(magic == MULTIBOOT_HEADER_MAGIC, "Multiboot is not valid!");
 		DEBUGVALID();
-		
+
 		/* Command line was initialized early: */
 		if (mboot_ptr->cmdline) { kputs("> Setting up command line - "); DEBUGOK(); }
 		/* GDT was installed early: */
@@ -153,11 +167,11 @@ namespace Kernel {
 		}
 		DEBUGOK();
 
-		/* Initialize multitasking: */
-		kputs("> Initializing multitasking - "); tasking_install(); DEBUGOK();
-
 		/* Load CORE modules ONLY: */
 		kputs("> Loading up modules - "); Module::modules_load(); DEBUGOK();
+
+		/* Initialize multitasking: */
+		kputs("> Initializing multitasking - "); tasking_install(); DEBUGOK();
 
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);

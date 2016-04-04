@@ -18,11 +18,11 @@
 #define PIT_CHANNEL_COUNT 3
 #define RESYNC_TIME 1
 
-hashmap_t * pit_cbacks;
-int pit_cback_count = 0;
-uint32_t current_hz = 0;
-uint32_t ticks = 0;
-uint32_t subticks = 0;
+static hashmap_t * pit_cbacks = 0;
+static uint16_t pit_cback_count = 0;
+static uint32_t current_hz = 0;
+static uint32_t ticks = 0;
+static uint32_t subticks = 0;
 FDECLV(hashmap_get_i, hashmap_get_i_t, void*, hashmap_t*, int);
 
 enum PIT_CHANNEL {
