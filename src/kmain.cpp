@@ -114,7 +114,7 @@ namespace Kernel {
 		char kernel_version_buff[24];
 		sprintf(kernel_version_buff, ver_kernel_version_fmt, ver_kernel_major, ver_kernel_minor, ver_kernel_lower);
 		/* Output initial data from multiboot: */
-		kprintfc(COLOR_INIT_HEADER, ">>>>>>>> Kernel: %s %s (%s) <<<<<<<<\n> Build: %s %s %s (by %s) | Author: %s\n",
+		kprintfc(COLOR_INIT_HEADER, ">>>>>>>> Kernel: %s %s (%s) <<<<<<<<\n> Build: %s %s %s (by %s)\n> Compiler: %s | Author: %s\n",
 			ver_kernel_name,
 			ver_kernel_codename,
 			ver_kernel_arch,
@@ -122,6 +122,7 @@ namespace Kernel {
 			ver_kernel_build_date,
 			ver_kernel_build_time,
 			ver_kernel_builtby,
+			COMPILER_VERSION,
 			ver_kernel_author);
 		kprintf("> Bootloader: %s| Bootloader Mod Count: %d at 0x%x\n> Memory: 0x%x ",
 			mboot_ptr->boot_loader_name,
