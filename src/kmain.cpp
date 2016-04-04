@@ -111,9 +111,9 @@ namespace Kernel {
 
 		Log::redirect_log(args_present("serial") ? Log::LOG_SERIAL : args_present("vga_serial") ? Log::LOG_VGA_SERIAL : Log::LOG_VGA);
 
+		/* Output initial data from multiboot: */
 		char kernel_version_buff[24];
 		sprintf(kernel_version_buff, ver_kernel_version_fmt, ver_kernel_major, ver_kernel_minor, ver_kernel_lower);
-		/* Output initial data from multiboot: */
 		kprintfc(COLOR_INIT_HEADER, ">>>>>>>> Kernel: %s %s (%s) <<<<<<<<\n> Build: %s %s %s (by %s)\n> Compiler: %s | Author: %s\n",
 			ver_kernel_name,
 			ver_kernel_codename,

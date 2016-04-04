@@ -1,4 +1,4 @@
-import os, sys, re
+import os, sys, re, getpass, socket
 
 version_obj_file = "build/version.o"
 version_src_file = "src/version/version.cpp"
@@ -20,7 +20,7 @@ if os.path.exists(version_src_file) and os.path.exists(version_header_file):
 		# Updating user (who is building the Kernel): 
 		builtby_match = re.search(r'ver_kernel_builtby(?:.+?)?=(.+?);', whole_file, re.M)
 		if(builtby_match):
-			whole_file = re.sub(r'ver_kernel_builtby(?:.+?)?=.+?;','ver_kernel_builtby = (char*)"'+os.getenv('COMPUTERNAME')+'";', whole_file)
+			whole_file = re.sub(r'ver_kernel_builtby(?:.+?)?=.+?;','ver_kernel_builtby = (char*)"'+getpass.getuser()+'@'+socket.gethostname()+'";', whole_file)
 	
 		ver_src.seek(0)
 		ver_src.write(whole_file)
