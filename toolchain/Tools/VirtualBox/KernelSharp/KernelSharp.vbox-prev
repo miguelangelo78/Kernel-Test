@@ -6,7 +6,7 @@
 ** Use VBoxManage or the VirtualBox Manager GUI to make changes.
 -->
 <VirtualBox xmlns="http://www.innotek.de/VirtualBox-settings" version="1.15-windows">
-  <Machine uuid="{bc4df4cc-e44c-474c-b28b-2f37e36c5f24}" name="KernelSharp" OSType="Other" snapshotFolder="Snapshots" lastStateChange="2016-04-05T00:50:45Z">
+  <Machine uuid="{bc4df4cc-e44c-474c-b28b-2f37e36c5f24}" name="KernelSharp" OSType="Other" snapshotFolder="Snapshots" lastStateChange="2016-04-05T01:27:07Z">
     <MediaRegistry>
       <HardDisks>
         <HardDisk uuid="{5d88d360-a3bf-44c1-98e7-1e0647f303d5}" location="KernelSharp.vdi" format="VDI" type="Normal"/>
@@ -154,7 +154,7 @@
       </EmulatedUSB>
       <Guest memoryBalloonSize="0"/>
       <GuestProperties>
-        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="C" timestamp="1459817243466865500" flags=""/>
+        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="C" timestamp="1459819565343370200" flags=""/>
       </GuestProperties>
     </Hardware>
     <StorageControllers>

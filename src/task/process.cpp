@@ -15,12 +15,10 @@ volatile int * current_process = 0;
 */
 void switch_task(void) {
 	if (!current_process) return; /* Tasking is not yet installed. */
-
 }
 
 void tasking_install(void) {
 	MOD_IOCTL("pit_driver", 1, (uintptr_t)"switch_task", (uintptr_t)switch_task);
-
 }
 
 }

@@ -19,7 +19,7 @@
 #define RESYNC_TIME 1
 
 static hashmap_t * pit_cbacks = 0;
-static uint16_t pit_cback_count = 0;
+static volatile uint16_t pit_cback_count = 0;
 static uint32_t current_hz = 0;
 static uint32_t ticks = 0;
 static uint32_t subticks = 0;
@@ -105,14 +105,19 @@ static void pit_handler(void) {
 		ticks++;
 		subticks = 0;
 	}
-	for(int i = 0; i < pit_cback_count; i++)
-		FCASTF(hashmap_get_i(pit_cbacks, i), void, void)();
+
+	for(int i = 0; i < pit_cback_count; i++) {
+		uintptr_t addr = (uintptr_t)hashmap_get_i(pit_cbacks, i);
+		if(addr)
+			FCASTF(addr, void, void)();
+	}
 }
 
 static uintptr_t pit_install_cback(char * func_name, uintptr_t address) {
 	if(hashmap_has(pit_cbacks, (char*)func_name)) return IOCTL_NULL;
+	uintptr_t ret = (uintptr_t)hashmap_set(pit_cbacks, (char*)func_name, (void*)address);
 	pit_cback_count++;
-	return (uintptr_t)hashmap_set(pit_cbacks, (char*)func_name, (void*)address);
+	return ret;
 }
 
 static uintptr_t pit_uninstall_cback(char * func_name) {
