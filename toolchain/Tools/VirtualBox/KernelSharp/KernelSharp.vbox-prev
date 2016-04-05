@@ -6,7 +6,7 @@
 ** Use VBoxManage or the VirtualBox Manager GUI to make changes.
 -->
 <VirtualBox xmlns="http://www.innotek.de/VirtualBox-settings" version="1.15-windows">
-  <Machine uuid="{64f66e96-948c-4cc2-990c-9f731729e727}" name="KernelSharp" OSType="Other" snapshotFolder="Snapshots" lastStateChange="2016-04-05T00:17:12Z">
+  <Machine uuid="{64f66e96-948c-4cc2-990c-9f731729e727}" name="KernelSharp" OSType="Other" snapshotFolder="Snapshots" lastStateChange="2016-04-05T00:22:30Z">
     <MediaRegistry>
       <HardDisks>
         <HardDisk uuid="{72442308-4a5a-4c28-ae98-f467b2ba12a6}" location="C:/usb.vmdk" format="VMDK" type="Normal"/>
@@ -23,7 +23,7 @@
     </MediaRegistry>
     <ExtraData>
       <ExtraDataItem name="GUI/LastCloseAction" value="PowerOff"/>
-      <ExtraDataItem name="GUI/LastNormalWindowPosition" value="255,70,800,642"/>
+      <ExtraDataItem name="GUI/LastNormalWindowPosition" value="4,29,640,522"/>
       <ExtraDataItem name="GUI/LastScaleWindowPosition" value="161,101,886,463"/>
       <ExtraDataItem name="GUI/RestrictedRuntimeDevicesMenuActions" value="HardDrives"/>
       <ExtraDataItem name="GUI/RestrictedRuntimeMachineMenuActions" value="SaveState,PowerOff"/>
@@ -161,7 +161,7 @@
       </EmulatedUSB>
       <Guest memoryBalloonSize="0"/>
       <GuestProperties>
-        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="C" timestamp="1459815334811322700" flags=""/>
+        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="C" timestamp="1459815432959175500" flags=""/>
       </GuestProperties>
     </Hardware>
     <StorageControllers>
