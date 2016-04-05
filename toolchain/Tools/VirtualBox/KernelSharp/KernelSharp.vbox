@@ -17,6 +17,7 @@
       <FloppyImages/>
     </MediaRegistry>
     <ExtraData>
+      <ExtraDataItem name="GUI/Fullscreen" value="true"/>
       <ExtraDataItem name="GUI/LastCloseAction" value="PowerOff"/>
       <ExtraDataItem name="GUI/LastNormalWindowPosition" value="363,103,640,522"/>
       <ExtraDataItem name="GUI/RestrictedRuntimeDevicesMenuActions" value="HardDrives"/>
@@ -154,7 +155,7 @@
       </EmulatedUSB>
       <Guest memoryBalloonSize="0"/>
       <GuestProperties>
-        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="C" timestamp="1459817243466865500" flags=""/>
+        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="C" timestamp="1459817446040608600" flags=""/>
       </GuestProperties>
     </Hardware>
     <StorageControllers>

@@ -6,7 +6,7 @@
 ** Use VBoxManage or the VirtualBox Manager GUI to make changes.
 -->
 <VirtualBox xmlns="http://www.innotek.de/VirtualBox-settings" version="1.15-windows">
-  <Machine uuid="{bc4df4cc-e44c-474c-b28b-2f37e36c5f24}" name="KernelSharp" OSType="Other" snapshotFolder="Snapshots" lastStateChange="2016-04-05T00:50:45Z">
+  <Machine uuid="{bc4df4cc-e44c-474c-b28b-2f37e36c5f24}" name="KernelSharp" OSType="Other" stateFile="Snapshots/2016-04-05T00-44-28-857304900Z.sav" snapshotFolder="Snapshots" lastStateChange="2016-04-05T00:44:29Z">
     <MediaRegistry>
       <HardDisks>
         <HardDisk uuid="{5d88d360-a3bf-44c1-98e7-1e0647f303d5}" location="KernelSharp.vdi" format="VDI" type="Normal"/>
@@ -17,8 +17,7 @@
       <FloppyImages/>
     </MediaRegistry>
     <ExtraData>
-      <ExtraDataItem name="GUI/LastCloseAction" value="PowerOff"/>
-      <ExtraDataItem name="GUI/LastNormalWindowPosition" value="363,103,640,522"/>
+      <ExtraDataItem name="GUI/LastCloseAction" value="SaveState"/>
       <ExtraDataItem name="GUI/RestrictedRuntimeDevicesMenuActions" value="HardDrives"/>
       <ExtraDataItem name="GUI/RestrictedRuntimeMachineMenuActions" value="SaveState,PowerOff"/>
       <ExtraDataItem name="GUI/StatusBar/IndicatorOrder" value="HardDisks,OpticalDisks,FloppyDisks,Network,USB,SharedFolders,Display,VideoCapture,Features,Mouse,Keyboard"/>
@@ -40,18 +39,18 @@
       <Chipset type="PIIX3"/>
       <Paravirt provider="Default"/>
       <Boot>
-        <Order position="1" device="DVD"/>
-        <Order position="2" device="HardDisk"/>
-        <Order position="3" device="None"/>
+        <Order position="1" device="Floppy"/>
+        <Order position="2" device="DVD"/>
+        <Order position="3" device="HardDisk"/>
         <Order position="4" device="None"/>
       </Boot>
       <Display VRAMSize="6" monitorCount="1" accelerate3D="false" accelerate2DVideo="false"/>
       <VideoCapture enabled="false" screens="18446744073709551615" horzRes="1024" vertRes="768" rate="512" fps="25" maxTime="0" maxSize="0"/>
-      <RemoteDisplay enabled="false" authType="Null" authTimeout="5000"/>
+      <RemoteDisplay enabled="false" authType="Null"/>
       <BIOS>
         <ACPI enabled="true"/>
         <IOAPIC enabled="false"/>
-        <Logo fadeIn="true" fadeOut="true" displayTime="1"/>
+        <Logo fadeIn="true" fadeOut="true" displayTime="0"/>
         <BootMenu mode="MessageAndMenu"/>
         <TimeOffset value="0"/>
         <PXEDebug enabled="false"/>
@@ -65,10 +64,7 @@
       </USB>
       <Network>
         <Adapter slot="0" enabled="true" MACAddress="080027A0E7D4" cable="true" speed="0" type="Am79C973">
-          <DisabledModes>
-            <InternalNetwork name="intnet"/>
-            <NATNetwork name="NatNetwork"/>
-          </DisabledModes>
+          <DisabledModes/>
           <NAT>
             <DNS pass-domain="true" use-proxy="false" use-host-resolver="false"/>
             <Alias logging="false" proxy-only="false" use-same-ports="false"/>
@@ -134,9 +130,7 @@
       <UART>
         <Port slot="0" enabled="true" IOBase="0x3f8" IRQ="4" server="false" path="COM1:" hostMode="HostPipe"/>
       </UART>
-      <LPT>
-        <Port slot="1" enabled="false" IOBase="0x378" IRQ="7"/>
-      </LPT>
+      <LPT/>
       <AudioAdapter controller="AC97" driver="DirectSound" enabled="true"/>
       <RTC localOrUTC="local"/>
       <SharedFolders/>
@@ -154,7 +148,7 @@
       </EmulatedUSB>
       <Guest memoryBalloonSize="0"/>
       <GuestProperties>
-        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="C" timestamp="1459817243466865500" flags=""/>
+        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="C" timestamp="1459817068776091800" flags=""/>
       </GuestProperties>
     </Hardware>
     <StorageControllers>

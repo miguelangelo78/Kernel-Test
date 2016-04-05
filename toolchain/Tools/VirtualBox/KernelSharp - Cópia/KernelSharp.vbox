@@ -6,28 +6,21 @@
 ** Use VBoxManage or the VirtualBox Manager GUI to make changes.
 -->
 <VirtualBox xmlns="http://www.innotek.de/VirtualBox-settings" version="1.15-windows">
-  <Machine uuid="{64f66e96-948c-4cc2-990c-9f731729e727}" name="KernelSharp" OSType="Other" snapshotFolder="Snapshots" lastStateChange="2016-04-05T00:24:04Z">
+  <Machine uuid="{bc4df4cc-e44c-474c-b28b-2f37e36c5f24}" name="KernelSharp" OSType="Other" stateFile="Snapshots/2016-04-05T00-44-28-857304900Z.sav" snapshotFolder="Snapshots" lastStateChange="2016-04-05T00:44:29Z">
     <MediaRegistry>
       <HardDisks>
-        <HardDisk uuid="{72442308-4a5a-4c28-ae98-f467b2ba12a6}" location="C:/usb.vmdk" format="VMDK" type="Normal"/>
-        <HardDisk uuid="{97b1d75e-be54-4671-a6e5-e18795c236a3}" location="C:/usb2.vmdk" format="VMDK" type="Normal"/>
+        <HardDisk uuid="{5d88d360-a3bf-44c1-98e7-1e0647f303d5}" location="KernelSharp.vdi" format="VDI" type="Normal"/>
       </HardDisks>
       <DVDImages>
-        <Image uuid="{db1e030e-4255-48b6-a1f5-8098ff3a5310}" location="C:/Users/Miguel/Desktop/KernelSharp/KernelSharp.iso"/>
-        <Image uuid="{1fe7ca6c-64b8-4cc8-971c-106cb2b28b39}" location="C:/Users/Miguel/Desktop/KernelSharp/iso/KernelSharp.iso"/>
-        <Image uuid="{395c5c3e-22e7-4b7e-9c85-b6aecd2daee2}" location="C:/Users/Miguel/Documents/Visual Studio 2015/Projects/Kernel-Test/Kernel-Test/iso/KernelSharp.iso"/>
-        <Image uuid="{c97484e2-bb31-494f-989d-f01b9901a80f}" location="C:/Users/Miguel/Dropbox/Kernel-Test/Kernel-Test/iso/KernelSharp.iso"/>
-        <Image uuid="{bc87e8cf-e081-4f19-8b16-6376618473f9}" location="C:/Users/Miguel/Dropbox/Kernel-Test/iso/KernelSharp.iso"/>
+        <Image uuid="{209eb945-c78e-4df8-accd-1b6aaab599db}" location="C:/Users/Miguel/Dropbox/Kernel-Test/iso/KernelSharp.iso"/>
       </DVDImages>
       <FloppyImages/>
     </MediaRegistry>
     <ExtraData>
-      <ExtraDataItem name="GUI/LastCloseAction" value="PowerOff"/>
-      <ExtraDataItem name="GUI/LastNormalWindowPosition" value="4,29,640,522"/>
-      <ExtraDataItem name="GUI/LastScaleWindowPosition" value="161,101,886,463"/>
+      <ExtraDataItem name="GUI/LastCloseAction" value="SaveState"/>
+      <ExtraDataItem name="GUI/LastNormalWindowPosition" value="363,103,720,442"/>
       <ExtraDataItem name="GUI/RestrictedRuntimeDevicesMenuActions" value="HardDrives"/>
       <ExtraDataItem name="GUI/RestrictedRuntimeMachineMenuActions" value="SaveState,PowerOff"/>
-      <ExtraDataItem name="GUI/ScaleFactor" value="1"/>
       <ExtraDataItem name="GUI/StatusBar/IndicatorOrder" value="HardDisks,OpticalDisks,FloppyDisks,Network,USB,SharedFolders,Display,VideoCapture,Features,Mouse,Keyboard"/>
     </ExtraData>
     <Hardware version="2">
@@ -36,12 +29,12 @@
         <HardwareVirtExNestedPaging enabled="true"/>
         <HardwareVirtExVPID enabled="true"/>
         <HardwareVirtExUX enabled="true"/>
-        <PAE enabled="true"/>
+        <PAE enabled="false"/>
         <LongMode enabled="false"/>
         <HardwareVirtExLargePages enabled="true"/>
         <HardwareVirtForce enabled="false"/>
       </CPU>
-      <Memory RAMSize="512" PageFusion="false"/>
+      <Memory RAMSize="256" PageFusion="false"/>
       <HID Pointing="PS2Mouse" Keyboard="PS2Keyboard"/>
       <HPET enabled="false"/>
       <Chipset type="PIIX3"/>
@@ -54,11 +47,11 @@
       </Boot>
       <Display VRAMSize="6" monitorCount="1" accelerate3D="false" accelerate2DVideo="false"/>
       <VideoCapture enabled="false" screens="18446744073709551615" horzRes="1024" vertRes="768" rate="512" fps="25" maxTime="0" maxSize="0"/>
-      <RemoteDisplay enabled="false" authType="Null" authTimeout="5000"/>
+      <RemoteDisplay enabled="false" authType="Null"/>
       <BIOS>
         <ACPI enabled="true"/>
-        <IOAPIC enabled="true"/>
-        <Logo fadeIn="true" fadeOut="true" displayTime="1"/>
+        <IOAPIC enabled="false"/>
+        <Logo fadeIn="true" fadeOut="true" displayTime="0"/>
         <BootMenu mode="MessageAndMenu"/>
         <TimeOffset value="0"/>
         <PXEDebug enabled="false"/>
@@ -71,17 +64,14 @@
         <DeviceFilters/>
       </USB>
       <Network>
-        <Adapter slot="0" enabled="true" MACAddress="080027A2F9AD" cable="true" speed="0" type="Am79C973">
-          <DisabledModes>
-            <InternalNetwork name="intnet"/>
-            <NATNetwork name="NatNetwork"/>
-          </DisabledModes>
+        <Adapter slot="0" enabled="true" MACAddress="080027A0E7D4" cable="true" speed="0" type="Am79C973">
+          <DisabledModes/>
           <NAT>
             <DNS pass-domain="true" use-proxy="false" use-host-resolver="false"/>
             <Alias logging="false" proxy-only="false" use-same-ports="false"/>
           </NAT>
         </Adapter>
-        <Adapter slot="1" enabled="false" MACAddress="08002794F766" cable="true" speed="0" type="Am79C973">
+        <Adapter slot="1" enabled="false" MACAddress="080027F558D7" cable="true" speed="0" type="Am79C973">
           <DisabledModes>
             <NAT>
               <DNS pass-domain="true" use-proxy="false" use-host-resolver="false"/>
@@ -89,7 +79,7 @@
             </NAT>
           </DisabledModes>
         </Adapter>
-        <Adapter slot="2" enabled="false" MACAddress="0800271E88CF" cable="true" speed="0" type="Am79C973">
+        <Adapter slot="2" enabled="false" MACAddress="080027367B2F" cable="true" speed="0" type="Am79C973">
           <DisabledModes>
             <NAT>
               <DNS pass-domain="true" use-proxy="false" use-host-resolver="false"/>
@@ -97,7 +87,7 @@
             </NAT>
           </DisabledModes>
         </Adapter>
-        <Adapter slot="3" enabled="false" MACAddress="08002746276A" cable="true" speed="0" type="Am79C973">
+        <Adapter slot="3" enabled="false" MACAddress="080027F55BC8" cable="true" speed="0" type="Am79C973">
           <DisabledModes>
             <NAT>
               <DNS pass-domain="true" use-proxy="false" use-host-resolver="false"/>
@@ -105,7 +95,7 @@
             </NAT>
           </DisabledModes>
         </Adapter>
-        <Adapter slot="4" enabled="false" MACAddress="080027281B77" cable="true" speed="0" type="Am79C973">
+        <Adapter slot="4" enabled="false" MACAddress="08002778178B" cable="true" speed="0" type="Am79C973">
           <DisabledModes>
             <NAT>
               <DNS pass-domain="true" use-proxy="false" use-host-resolver="false"/>
@@ -113,7 +103,7 @@
             </NAT>
           </DisabledModes>
         </Adapter>
-        <Adapter slot="5" enabled="false" MACAddress="0800271C32F3" cable="true" speed="0" type="Am79C973">
+        <Adapter slot="5" enabled="false" MACAddress="080027C91BD3" cable="true" speed="0" type="Am79C973">
           <DisabledModes>
             <NAT>
               <DNS pass-domain="true" use-proxy="false" use-host-resolver="false"/>
@@ -121,7 +111,7 @@
             </NAT>
           </DisabledModes>
         </Adapter>
-        <Adapter slot="6" enabled="false" MACAddress="080027BC8CD7" cable="true" speed="0" type="Am79C973">
+        <Adapter slot="6" enabled="false" MACAddress="080027DAE877" cable="true" speed="0" type="Am79C973">
           <DisabledModes>
             <NAT>
               <DNS pass-domain="true" use-proxy="false" use-host-resolver="false"/>
@@ -129,7 +119,7 @@
             </NAT>
           </DisabledModes>
         </Adapter>
-        <Adapter slot="7" enabled="false" MACAddress="0800271B0163" cable="true" speed="0" type="Am79C973">
+        <Adapter slot="7" enabled="false" MACAddress="0800278FB499" cable="true" speed="0" type="Am79C973">
           <DisabledModes>
             <NAT>
               <DNS pass-domain="true" use-proxy="false" use-host-resolver="false"/>
@@ -141,11 +131,9 @@
       <UART>
         <Port slot="0" enabled="true" IOBase="0x3f8" IRQ="4" server="false" path="COM1:" hostMode="HostPipe"/>
       </UART>
-      <LPT>
-        <Port slot="1" enabled="false" IOBase="0x378" IRQ="7"/>
-      </LPT>
+      <LPT/>
       <AudioAdapter controller="AC97" driver="DirectSound" enabled="true"/>
-      <RTC localOrUTC="UTC"/>
+      <RTC localOrUTC="local"/>
       <SharedFolders/>
       <Clipboard mode="Disabled"/>
       <DragAndDrop mode="Disabled"/>
@@ -161,13 +149,16 @@
       </EmulatedUSB>
       <Guest memoryBalloonSize="0"/>
       <GuestProperties>
-        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="C" timestamp="1459815432959175500" flags=""/>
+        <GuestProperty name="/VirtualBox/HostInfo/GUI/LanguageID" value="C" timestamp="1459817069327944700" flags=""/>
       </GuestProperties>
     </Hardware>
     <StorageControllers>
       <StorageController name="IDE" type="PIIX4" PortCount="2" useHostIOCache="true" Bootable="true">
-        <AttachedDevice passthrough="false" type="DVD" hotpluggable="false" port="0" device="0">
-          <Image uuid="{bc87e8cf-e081-4f19-8b16-6376618473f9}"/>
+        <AttachedDevice type="HardDisk" hotpluggable="false" port="0" device="0">
+          <Image uuid="{5d88d360-a3bf-44c1-98e7-1e0647f303d5}"/>
+        </AttachedDevice>
+        <AttachedDevice passthrough="false" type="DVD" hotpluggable="false" port="1" device="0">
+          <Image uuid="{209eb945-c78e-4df8-accd-1b6aaab599db}"/>
         </AttachedDevice>
       </StorageController>
     </StorageControllers>
