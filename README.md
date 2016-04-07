@@ -118,7 +118,7 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 	
 >4) src - **Entire source code** of the Project
 	
->5) toolchain/* - Tools for building (**nasm** + cross **compiler** (uncommitted)), for **ISO generation**, **Launchers** and **generators** (aka Utility scripts, e.g. makefile generator)
+>5) toolchain/* - Tools for building (**nasm** + cross **compiler** (uncommitted)), for **ISO generation**, **Launchers** and **generators** (aka Utility scripts, e.g. makefile generator and versioning script)
 
 # Source code structure
 
