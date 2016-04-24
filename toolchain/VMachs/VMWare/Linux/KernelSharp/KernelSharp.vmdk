@@ -1,0 +1,21 @@
+# Disk DescriptorFile
+version=1
+encoding="UTF-8"
+CID=fffffffe
+parentCID=ffffffff
+isNativeSnapshot="no"
+createType="twoGbMaxExtentSparse"
+
+# Extent description
+RW 20480 SPARSE "KernelSharp-s001.vmdk"
+
+# The Disk Data Base 
+#DDB
+
+ddb.adapterType = "ide"
+ddb.geometry.cylinders = "20"
+ddb.geometry.heads = "16"
+ddb.geometry.sectors = "63"
+ddb.longContentID = "6553fe8be572d6b420d3b1b9fffffffe"
+ddb.uuid = "60 00 C2 92 2e 3d 75 98-8e fd c5 f7 be 46 d3 6f"
+ddb.virtualHWVersion = "12"

@@ -13,7 +13,7 @@ printf "\nSTEP 3 - Generating initrd disk ...\n\n"
 rm -f iso/initrd.img
 toolchain/Debian/Tools/initrd_gen `find build/modules/*` 
 
-printf "\n\nSTEP 4 - Creating disk ...\n\n"
+printf "\n\nSTEP 4 - Creating disk (ISO) ...\n\n"
 rm -f iso/KernelSharp.iso
 mkisofs -o iso/KernelSharp.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -input-charset utf-8 iso/boot/syslinux iso/ksharp.bin iso/initrd.img
 

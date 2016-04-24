@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<Foundry>
+<VM>
+<VMId type="string">52 88 9c bd d3 2d 0f 29-fa d1 e4 e6 62 0c f2 b0</VMId>
+<ClientMetaData>
+<clientMetaDataAttributes/>
+<HistoryEventList/></ClientMetaData>
+<vmxPathName type="string">KernelSharp.vmx</vmxPathName></VM></Foundry>
