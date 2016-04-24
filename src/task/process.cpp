@@ -17,8 +17,18 @@ void switch_task(void) {
 	if (!current_process) return; /* Tasking is not yet installed. */
 }
 
+void task1(void) {
+	for(;;);
+}
+
+void task2(void) {
+	for(;;);
+}
+
 void tasking_install(void) {
 	MOD_IOCTL("pit_driver", 1, (uintptr_t)"switch_task", (uintptr_t)switch_task);
+
+	task1();
 }
 
 }

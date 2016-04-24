@@ -1,4 +1,4 @@
-#include <libc\list.h>
+#include <libc/list.h>
 #include <system.h>
 
 void list_destroy(list_t * list) {

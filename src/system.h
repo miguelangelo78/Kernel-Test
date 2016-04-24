@@ -2,7 +2,7 @@
 
 #include <kinit.h>
 #include <terminal/terminal.h>
-#include <Serial.h>
+#include <serial.h>
 #include <libc.h>
 #include <io.h>
 #include <attr.h>
@@ -237,6 +237,16 @@ namespace Kernel {
 using namespace Kernel::Memory::Man;
 using namespace Kernel::Memory::Alloc;
 using namespace Kernel::Task;
+
+#ifdef __cplusplus
+inline void * operator new(__SIZE_TYPE__ n) {
+	return malloc(n);
+}
+inline void * operator new[](__SIZE_TYPE__ n) {
+	return malloc(n);
+}
+#endif
+
 #endif
 using namespace Kernel::Error;
 using namespace Kernel::KInit;

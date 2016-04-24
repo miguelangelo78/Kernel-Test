@@ -1,7 +1,19 @@
-import os, fnmatch, re
-cls = lambda: os.system('cls'); cls()
+################################################# PROLOGUE: IMPORTS AND OS DEFINITIONS #################################################
+import os, fnmatch, re, platform, commands
+
+# Determine which operating system we're using:
+os_plat = platform.system()
+if os_plat != "Windows":
+	# Which Linux is this?
+	os_plat = commands.getstatusoutput("cat /etc/os-release | grep 'ID_LIKE.*'")[1][8:].capitalize()
+
+osp = os_plat # Alias
+
+cls = lambda: os.system('cls' if os_plat == 'Windows' else 'clear'); cls()
 
 LLVM_ENABLED = 1 # DEFAULT CONSTANT LLVM FLAG
+
+################################################# STAGE ONE: TOOLCHAIN DEFINITIONS #################################################
 
 class ToolCompiler:
 	def __init__(self):
@@ -32,40 +44,40 @@ class Toolchain:
 
 # Create GCC toolchain: ############################################################################
 gccToolchain = Toolchain(); gt = gccToolchain # Alias
-gt.toolname="GCC Toolchain"
+gt.toolname = "GCC Toolchain"
 gt.file_formats = ["c", "cpp", "s", "asm"] # Case insensitive
 # Setup CPP compiler:
 gt.compiler_cpp.make_sym = "CXX"
-gt.compiler_cpp.execpath = "$(TOOLCH)\\Tools\\Windows\\Cross\i686-elf\\bin\i686-elf-g++.exe"
+gt.compiler_cpp.execpath = "$(TOOLCH)/"+osp+"/Tools/Cross/i686-elf/bin/i686-elf-g++"
 gt.compiler_cpp.make_flagsym = "CPPFLAGS"
 gt.compiler_cpp.name = "Cross i686-elf GCC Compiler"
 gt.compiler_cpp.is_asm = 0
-gt.compiler_cpp.include_path = "-Itoolchain\\Tools\\Windows\\Cross\\i686-elf\\lib\\gcc\\i686-elf\\4.8.2\\include -Isrc"
-gt.compiler_cpp.flags = "-T $(TOOLCH)\$(LINKER) " + gt.compiler_cpp.include_path + " -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions"
+gt.compiler_cpp.include_path = "-Itoolchain/"+osp+"/Tools/Cross/i686-elf/lib/gcc/i686-elf/include -Isrc"
+gt.compiler_cpp.flags = "-T $(TOOLCH)/$(LINKER) " + gt.compiler_cpp.include_path + " -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions"
 # Setup C compiler:
 gt.compiler_c.make_sym = "CC"
-gt.compiler_c.execpath = "$(TOOLCH)\Tools\\Windows\\Cross\i686-elf\\bin\i686-elf-gcc.exe"
+gt.compiler_c.execpath = "$(TOOLCH)/"+osp+"/Tools/Cross/i686-elf/bin/i686-elf-gcc"
 gt.compiler_c.make_flagsym = "CFLAGS"
 gt.compiler_c.name = "Cross i686-elf GCC Compiler"
 gt.compiler_c.is_asm = 0
 gt.compiler_c.include_path = gt.compiler_cpp.include_path
-gt.compiler_c.flags = "-T $(TOOLCH)\$(LINKER) " + gt.compiler_c.include_path + " -g -finline-functions -ffreestanding -fbuiltin -Wall -Wextra"
+gt.compiler_c.flags = "-T $(TOOLCH)/$(LINKER) " + gt.compiler_c.include_path + " -g -finline-functions -ffreestanding -fbuiltin -Wall -Wextra"
 # Setup Linker:
 gt.linker.make_sym = "LD"
-gt.linker.execpath = "$(TOOLCH)\\Tools\Windows\\Cross\i686-elf\\bin\i686-elf-ld.exe"
+gt.linker.execpath = "$(TOOLCH)/"+osp+"/Tools/Cross/i686-elf/bin/i686-elf-ld"
 gt.linker.make_flagsym = "LDFLAGS"
 gt.linker.name = "Cross i686-elf GCC Linker"
 gt.linker.is_asm = 0
 gt.linker.flags = "-f elf"
 # Setup GAS Assembler:
 gt.assembler_gas.make_sym = "AS"
-gt.assembler_gas.execpath = "$(TOOLCH)\\Tools\\Windows\\Cross\i686-elf\\bin\i686-elf-as.exe"
+gt.assembler_gas.execpath = "$(TOOLCH)/"+osp+"/Tools/Cross/i686-elf/bin/i686-elf-as"
 gt.assembler_gas.make_flagsym = "ASFLAGS"
 gt.assembler_gas.name = "Cross i686-elf GCC Assembler"
 gt.assembler_gas.is_asm = 1
 # Setup NASM/Intel Assembler:
 gt.assembler_nasm.make_sym = "NAS"
-gt.assembler_nasm.execpath = "$(TOOLCH)\\Tools\\Windows\\NASM\\nasm.exe"
+gt.assembler_nasm.execpath = "$(TOOLCH)/"+osp+"/Tools/NASM/nasm"
 gt.assembler_nasm.make_flagsym = "NASFLAGS"
 gt.assembler_nasm.name = "NASM Assembler"
 gt.assembler_nasm.is_asm = 1
@@ -86,15 +98,15 @@ lt.toolname = "LLVM Toolchain"
 lt.file_formats = ["c", "cpp", "s", "asm", "ll", "bc"] # Case insensitive
 # Setup CPP compiler:
 lt.compiler_cpp.make_sym = "CXX_LLVM"
-lt.compiler_cpp.execpath = "clang++"
+lt.compiler_cpp.execpath = "clang++" + ("-3.8" if osp != "Windows" else "")
 lt.compiler_cpp.make_flagsym = "LLVMCPPFLAGS"
 lt.compiler_cpp.name = "LLVM C++ Clang++"
 lt.compiler_cpp.is_asm = 0
-lt.compiler_cpp.include_path = "-IC:\\llvm\\lib\\clang\\3.8.0\\include -Isrc"
+lt.compiler_cpp.include_path = "-I" + ("C:/llvm/lib/clang/3.8.0/include" if osp == "Windows" else "/usr/lib/llvm-3.8/lib/clang/3.8.0/include") + " -Isrc"
 lt.compiler_cpp.flags = "-ffreestanding -nostdlib -nodefaultlibs -target i686-pc-none-elf -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions " + lt.compiler_cpp.include_path
 # Setup C compiler:
 lt.compiler_c.make_sym = "CC_LLVM"
-lt.compiler_c.execpath = "clang"
+lt.compiler_c.execpath = "clang" + ("-3.8" if osp != "Windows" else "")
 lt.compiler_c.make_flagsym = "LLVMCFLAGS"
 lt.compiler_c.name = "LLVM C Clang"
 lt.compiler_c.is_asm = 0
@@ -117,8 +129,7 @@ lt.tool_ptrs = {'c': lt.compiler_c, 'cpp': lt.compiler_cpp, 's': lt.assembler_ga
 # Toggle between LLVM and GCC toolchain:
 curr_tool = lt if LLVM_ENABLED else gt; ct = curr_tool # Alias
 
-# Special constants for OSDeving:
-stage2obj = "$(BOUT)\ksharp_stage2.o" # This will be linked with the kernel and is built with NASM
+################################################# STAGE TWO: MAKEFILE GENERATOR FUNCTIONS #################################################
 
 def toggle_llvm(use_llvm):
 	global ct
@@ -203,7 +214,7 @@ def write_subdir_entry(subdirmk_file, toolchain, file_objname, file_path, custom
 		customflags += "-r -fno-zero-initialized-in-bss -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE"
 		entry_output_path = "build/modules/"+file_objname+".mod"
 	
-	subdirmk_file.write('\n$(BOUT)\\'+('modules\\' if ismod else '') + file_objname + ('.o' if not ismod else'.mod')+': ' + file_path + ' ' + deps + '\n\
+	subdirmk_file.write('\n$(BOUT)/'+('modules/' if ismod else '') + file_objname + ('.o' if not ismod else'.mod')+': ' + file_path + ' ' + deps + '\n\
 	@echo \'>> Building file $<\'\n\
 	@echo \'>> Invoking ' + toolchain.toolname + '\'\n\
 	$(' + ( toolchain.compiler_in_use if not deps else gt.compiler_cpp.make_sym) + ') $(' + (toolchain.flags_in_use if not deps else "CPPFLAGS_MODS") + ') ' + customflags + ' -o '+entry_output_path+' '+ ('-c' if not toolchain.is_asm and not deps else '') +' $< '+ deps + ' '+ injection +'\n\
@@ -217,7 +228,7 @@ def gen_make(tree):
 	#Build subdir.mk files:
 	for dir in tree:
 		# Create subdir.mk for every directory on the list
-		path = dir[0][:dir[0].rfind('\\')] + "\\subdir.mk"
+		path = dir[0][:dir[0].rfind('/')] + "/subdir.mk"
 		include_list += "\ninclude " + path
 
 		subdirmk = open(path, "wb")
@@ -226,7 +237,7 @@ def gen_make(tree):
 		files = [] # File without extension nor path
 		modcount = []
 		for ffile in dir:
-			files.append(ffile[ffile.rfind('\\')+1:ffile.rfind('.')])
+			files.append(ffile[ffile.rfind('/')+1:ffile.rfind('.')])
 			
 			# Prevent this mod from being linked to the core kernel:
 			if re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?MODULE_(?:DEF|EXT)\((.+)?\)', open(ffile).read(), re.M):
@@ -234,13 +245,13 @@ def gen_make(tree):
 				continue
 			
 			# Append objects to $(OBJS):
-			subdirmk.write(' \\\n$(BOUT)\\' + files[-1] + '.o')
+			subdirmk.write(' \\\n$(BOUT)/' + files[-1] + '.o')
 		subdirmk.write('\n')
 
 		if len(modcount) > 0:
 			subdirmk.write('MODS +=')
 			for ffile in files:
-				subdirmk.write(' \\\n$(BOUT)\\modules\\' + ffile + '.mod')
+				subdirmk.write(' \\\n$(BOUT)/modules/' + ffile + '.mod')
 			subdirmk.write('\n')
 
 		# Add targets:
@@ -268,12 +279,13 @@ def gen_make(tree):
 		subdirmk.close() # Subdir.mk file done for this directory
 
 	# Now build the main makefile.mak (contains a mix of both toolchains):
-	makefile = open(ct.make_path + "\\makefile.mak", "wb")
+	makefile = open(ct.make_path + "/makefile.mak", "wb")
 	makefile.write("# Tools, tools' path and flags\n\
 TOOLCH = " + ct.make_path 			+ "\n\
 LINKER = " + ct.linker_script 		+ "\n\
 " + gt.compiler_cpp.make_sym 		+ " = " + gt.compiler_cpp.execpath		+ "\n\
 " + gt.compiler_c.make_sym 			+ " = " + gt.compiler_c.execpath 		+ "\n\
+" + gt.linker.make_sym 			+ " = " + gt.linker.execpath 		+ "\n\
 " + lt.compiler_cpp.make_sym 		+ " = " + lt.compiler_cpp.execpath 		+ "\n\
 " + lt.compiler_c.make_sym 			+ " = " + lt.compiler_c.execpath 		+ "\n\
 " + ct.assembler_gas.make_sym 		+ " = " + ct.assembler_gas.execpath 	+ "\n\
@@ -291,7 +303,6 @@ DISKPATH = " + ct.runnable_path + "\n\
 BOUT = " + ct.build_path + "\n\
 # Kernel filename:\n\
 KOUT = " + ct.output_file + "\n\
-STAGE2OBJ = " + stage2obj + "\n\n\
 ################# Includes #################\n\
 " + include_list + "\n\n\
 ############### Main targets ###############\n\n\
@@ -301,14 +312,16 @@ kernel-link: $(OBJS) $(MODS)\n\
 	@echo '----------'\n\
 	@echo 'Toolchain: " + ct.toolname + "'\n\
 	@echo '>>>> Linking Kernel <<<<'\n\
-	@echo '>>>> Invoking: Cross i686-elf GCC Linker <<<<'\n\
-	$(CXX) $(CPPFLAGS) -o $(DISKPATH)\$(KOUT) $(OBJS)\n\
+	@echo '>>>> Invoking: LLVM C++ Linker <<<<'\n\
+	$(CXX_LLVM) -T $(TOOLCH)/$(LINKER) $(LLVMCPPFLAGS) -o $(DISKPATH)/$(KOUT) $(OBJS)\n\
 	@echo '>>>> Finished building target: $@ <<<<'\n\
 	@echo '----------'\n\n\
 clean:\n\
 	rm $(BOUT)/*.o\n\
 	rm $(BOUT)/modules/*.mod\n")
 	makefile.close()
+
+################################################# STAGE THREE: MAIN SECTION #################################################
 
 print "**** Generating Makefile project. ****\n**** Source code's top path: '"+ct.top_path+"'. ****\n**** Main makefile's path: '"+ct.make_path+"'. ****"
 gen_make(scan_tree())

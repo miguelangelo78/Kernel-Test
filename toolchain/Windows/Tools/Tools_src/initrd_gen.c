@@ -55,8 +55,7 @@ void create_initrd(char ** argv) {
 
 int main(char argc, char **argv) {
 	if(!(argc-1)) {
-		printf("ERROR: You did not provide files!\nUsage: initrd.exe mod1.mod mod2.mod mod3.mod ...");
-		getch();
+		printf("ERROR: You did not provide files!\nUsage: initrd mod1.mod mod2.mod mod3.mod ...");
 		return 1;
 	}
 	printf("- Module count: %d\n", argc - 1);

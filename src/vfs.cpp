@@ -1,7 +1,7 @@
 #include <fs.h>
-#include <libc\tree.h>
-#include <libc\list.h>
-#include <libc\hashmap.h>
+#include <libc/tree.h>
+#include <libc/list.h>
+#include <libc/hashmap.h>
 #include <system.h>
 
 FILE * root = 0;
