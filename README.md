@@ -93,6 +93,8 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 
 8 - Syslinux Wiki (http://www.syslinux.org/wiki/index.php/SYSLINUX)
 
+9 - OSDev Brasil - (http://www.osdevbrasil.net/)
+
 # x86 Virtual Machines
 
 1 - QEMU (Windows - http://qemu.weilnetz.de/)
@@ -103,7 +105,7 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 
 3 - Bochs (http://bochs.sourceforge.net/)
 
-3 - VMware (http://www.vmware.com/)
+4 - VMware (http://www.vmware.com/)
 
 # Project structure
 >1) Documentation - The Documentation of this Kernel will progressively go here
@@ -116,7 +118,7 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 	
 >4) src - **Entire source code** of the Project
 	
->5) toolchain/* - Tools for building (**nasm** + cross **compiler** (uncommitted)), for **ISO generation**, **Launchers** and **generators** (aka Utility scripts, e.g. makefile generator)
+>5) toolchain/* - Tools for building (**nasm** + cross **compiler** (uncommitted)), for **ISO generation**, **Launchers** and **generators** (aka Utility scripts, e.g. makefile generator and versioning script)
 
 # Source code structure
 
@@ -135,6 +137,8 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 			2.1.3. ISR (Interrupt Service Routine)  
 			2.1.4. IRQ (Interrupt Request)  
 			2.1.5. Bootloader Stage 2 (asm)  
+			2.1.7. cpu.h - CPU constants and register definitions  
+			2.1.6. VM8086.cpp - Virtual 8086 Mode  
 
 	3. Memory
 		3.1. kmemory.cpp (Physical Memory Manager)
@@ -158,11 +162,24 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 	 	8.1. elf.cpp/.h (ELF object parser, loader and executor)
 
 	9. Task
-		9.1 - Soon...
+		9.1. process.cpp
+		9.2. spin.cpp
+		9.3. tss_flush.s
+
+	10. Kernel Information
+		10.1. version.cpp/.h - Kernel constants and versioning system
+
+	11. Video
+		11.1. video.cpp/.h - Video Manager/Installer/Initializer for the Kernel
 
 > - **Modules**
 
 	 1. module.cpp/.h (Installs/Uninstalls modules and Function/Variable Symbols)
+	 2. pit.cpp - Programmable Interval Timer
+	 3. cmos.cpp - BIOS information
+	 4. keyboard.cpp / kbd_scan.h - Keyboard driver
+	 5. video_vesa.cpp - VBE graphics driver
+	 6. fpu.cpp - Floating Point Unit driver
 	 
 > - **Libraries**
 
