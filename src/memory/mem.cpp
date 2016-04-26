@@ -95,7 +95,7 @@ paging_directory_t * clone_directory(paging_directory_t * src) {
 	for(uintptr_t i = 0; i < TABLES_PER_DIR;i++)
 		new_dir->table_entries[i].table_address = ((uintptr_t)&new_dir->tables[i]) >> 12;
 
-	/* Remember that the pages' addressess still point to the src's contents, which would make sense */
+	/* Remember that the pages' addresses still point to the src's contents, which would make sense */
 
 	return new_dir;
 }

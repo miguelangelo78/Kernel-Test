@@ -9,11 +9,12 @@
 #define SRC_ARCH_X86_CPU_H_
 
 #include <libc.h>
+#include <attr.h>
 
 namespace Kernel {
 namespace CPU {
 	enum REGLIST {
-		gs,fs,es,ds,edi,esi,ebp,esp,ebx,edx,ecx,eax,eip,cs,eflags,usersp,ss
+		gs, fs, es, ds, edi, esi, ebp, esp, ebx, edx, ecx, eax, eip, cs, eflags, usersp, ss
 	};
 
 	typedef struct {
@@ -28,6 +29,7 @@ namespace CPU {
 		switch(regid) {
 		case esp: asm volatile("mov %%esp, %%eax\nmov %%eax, %0\n":"=r"(reg)::"%ebx"); break;
 		case ebp: asm volatile("mov %%ebp, %%eax\nmov %%eax, %0\n":"=r"(reg)::"%ebx"); break;
+		case eflags: asm volatile("pushfl; movl (%%esp), %%eax; movl %%eax, %0; popfl;":"=m"(reg)::"%eax"); break;
 		default: break;
 		}
 		return reg;
@@ -220,6 +222,70 @@ namespace CPU {
 	#define cpu_is_intel(cpuid_struct) (cpuid_struct.ebx == 0x756e6547)	/* Intel Magic code */
 	#define cpu_is_amd(cpuid_struct)  (cpuid_struct.ebx == 0x68747541) /* AMD Magic code */
 	#define cpu_is_unknown(cpuid_struct) (cpu_is_intel(cpuid_struct) | cpu_is_amd(cpuid_struct))
+
+	/************* X86 specific Definitions: *************/
+
+	#define X86_SEGMENT_SELECTOR( seg, rpl )  (((seg)<<3)+(rpl))
+
+	#define X86_SEGMENT_KERNEL_CODE  X86_SEGMENT_SELECTOR(1,0)
+	#define X86_SEGMENT_KERNEL_DATA  X86_SEGMENT_SELECTOR(2,0)
+	#define X86_SEGMENT_USER_CODE    X86_SEGMENT_SELECTOR(3,3)
+	#define X86_SEGMENT_USER_DATA    X86_SEGMENT_SELECTOR(4,3)
+	#define X86_SEGMENT_TSS          X86_SEGMENT_SELECTOR(5,0)
+
+	typedef struct {
+		int32_t	eax;
+		int32_t	ebx;
+		int32_t	ecx;
+		int32_t	edx;
+		int32_t	esi;
+		int32_t	edi;
+		int32_t	ebp;
+	} __packed x86_regs_t;
+
+	typedef struct {
+		unsigned carry:1;
+		unsigned reserved0:1;
+		unsigned parity:1;
+		unsigned reserved1:1;
+
+		unsigned auxcarry:1;
+		unsigned reserved2:1;
+		unsigned zero:1;
+		unsigned sign:1;
+
+		unsigned trap:1;
+		unsigned interrupt:1;
+		unsigned direction:1;
+		unsigned overflow:1;
+
+		unsigned iopl:2;
+		unsigned nested:1;
+		unsigned reserved3:1;
+
+		unsigned resume:1;
+		unsigned v86:1;
+		unsigned align:1;
+		unsigned vinterrupt:1;
+
+		unsigned vpending:1;
+		unsigned id:1;
+	} __packed x86_eflags_t;
+
+	typedef struct {
+		x86_regs_t regs2;
+		int32_t	old_ebp;
+		int32_t	old_addr;
+		x86_regs_t regs1;
+		int32_t	ds;
+		int32_t	intr_num;
+		int32_t	intr_code;
+		int32_t	eip;
+		int32_t	cs;
+		x86_eflags_t eflags;
+		int32_t	esp;
+		int32_t	ss;
+	} __packed x86_stack_t;
 }
 }
 

@@ -8,7 +8,7 @@ namespace Kernel {
 namespace CPU {
 namespace TSS { /* Forward TSS declaration */
 	void write_tss(int32_t num, uint16_t ss0, uint32_t esp0);
-	extern "C" { void tss_flush(void); } /* Declared in task/tss_flush.s: */
+	void tss_flush(void);
 }
 namespace GDT {
 	/* Declared in arch/x86/gdt/gdt_flush.s: */
@@ -92,6 +92,10 @@ namespace TSS {
 	void tss_set_kernel_stack(uintptr_t stack) {
 		/* Set the kernel stack */
 		CPU::GDT::gdt.tss.esp0 = stack;
+	}
+
+	void tss_flush(void) {
+		asm volatile ("mov $0x2B, %ax; ltr %ax");
 	}
 }
 }

@@ -47,8 +47,6 @@ extern void spin_init(spin_lock_t lock);
 extern void spin_lock(spin_lock_t lock);
 extern void spin_unlock(spin_lock_t lock);
 
-extern void switch_task(uint8_t reschedule);
-
 namespace Kernel {
 	extern Terminal term;
 	extern Serial serial;
@@ -204,9 +202,26 @@ namespace Kernel {
 	}
 
 	namespace Task {
-		extern volatile int * current_process;
+		typedef struct {
+			uint32_t eax, ebx, ecx, edx, esi, edi, esp, ebp, eip, eflags, cr3;
+		} regs_t;
+
+		enum task_state {
+			TASKST_CRADLE, TASKST_READY, TASKST_RUNNING, TASKST_BLOCKED, TASKST_GRAVE
+		};
+
+		typedef struct task {
+			regs_t regs;
+			char state;
+			int exitcode;
+			struct task * next;
+		} task_t;
+
+		extern task_t * current_task;
+		task_t * task_create(void (*entry)(void), uint32_t eflags, uint32_t pagedir);
 		void tasking_install(void);
-		void switch_task(void);
+		void tasking_enable(char enable);
+		void switch_task(char new_process_state);
 	}
 
 #endif
