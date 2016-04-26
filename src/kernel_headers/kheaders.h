@@ -25,11 +25,16 @@
 #define calloc(nmemb, bytecount) FCASTF(SYF((char*)"malloc"), void *, uintptr_t, uintptr_t)(nmemb, bytecount)
 #define valloc(bytecount) FCASTF(SYF((char*)"malloc"), void *, uintptr_t)(bytecount)
 
+#define free(ptr) FCASTF(SYF((char*)"free"), void, void *)(ptr);
+
 #define hashmap_create(count) FCASTF(SYF((char*)"hashmap_create"), hashmap_t *, int)(count)
 #define hashmap_set(map, key, value) FCASTF(SYF((char*)"hashmap_set"), void *, hashmap_t *, void *, void *)(map, key, value)
 #define hashmap_remove(map, key) FCASTF(SYF((char*)"hashmap_remove"), void *, hashmap_t*, void*)(map, key)
 #define hashmap_get_i(map, idx) FCASTF(SYF((char*)"hashmap_get_i"), void *, hashmap_t *, int)(map, idx)
 #define hashmap_has(map, key) FCASTF(SYF((char*)"hashmap_has"), int, hashmap_t *, void*)(map, key)
+
+#define strlen(str) FCASTF(SYF((char*)"strlen"), unsigned long, char*)(str)
+#define strcpy(dst, src) FCASTF(SYF((char*)"strcpy"), char*, char*, char*)(dst, src)
 
 #endif
 

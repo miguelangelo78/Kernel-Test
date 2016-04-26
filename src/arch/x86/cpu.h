@@ -13,6 +13,8 @@
 
 namespace Kernel {
 namespace CPU {
+	extern "C" { uintptr_t read_eip(void); } /* Declared in memory/mem_copy_page_phys.s */
+
 	enum REGLIST {
 		gs, fs, es, ds, edi, esi, ebp, esp, ebx, edx, ecx, eax, eip, cs, eflags, usersp, ss
 	};
@@ -30,6 +32,7 @@ namespace CPU {
 		case esp: asm volatile("mov %%esp, %%eax\nmov %%eax, %0\n":"=r"(reg)::"%ebx"); break;
 		case ebp: asm volatile("mov %%ebp, %%eax\nmov %%eax, %0\n":"=r"(reg)::"%ebx"); break;
 		case eflags: asm volatile("pushfl; movl (%%esp), %%eax; movl %%eax, %0; popfl;":"=m"(reg)::"%eax"); break;
+		case eip: return read_eip(); break;
 		default: break;
 		}
 		return reg;

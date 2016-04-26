@@ -1,4 +1,5 @@
 #include <system.h>
+#include <module.h>
 
 unsigned short * memsetw(unsigned short * dest, unsigned short val, int count) {
 	int i = 0;
@@ -105,6 +106,7 @@ size_t strlen(const char * s) {
 	for (s = (const char *)w; *s; s++);
 	return s - a;
 }
+EXPORT_SYMBOL(strlen);
 
 char * strdup(const char * s) {
 	size_t l = strlen(s);
@@ -135,6 +137,7 @@ char * strcpy(char * __restrict__ dest, const char * __restrict__ src) {
 	stpcpy(dest, src);
 	return dest;
 }
+EXPORT_SYMBOL(strcpy);
 
 size_t strspn(const char * s, const char * c) {
 	const char * a = s;

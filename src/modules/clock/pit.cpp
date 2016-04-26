@@ -12,6 +12,8 @@
 
 /* Information: http://wiki.osdev.org/Programmable_Interval_Timer */
 
+#define PIT_CALLBACK_SERVICE_MAX 16 /* Maximum amount of callbacks that the pit can serve */
+
 #define PIT_DEFAULT_HZ 1000
 #define PIT_CLOCK 1193180
 #define PIT_CMD_PORT 0x43
@@ -23,7 +25,9 @@ static volatile uint16_t pit_cback_count = 0;
 static uint32_t current_hz = 0;
 static uint32_t ticks = 0;
 static uint32_t subticks = 0;
-FDECLV(hashmap_get_i, hashmap_get_i_t, void*, hashmap_t*, int);
+char ** services_names;
+uint16_t next_available_service = 0;
+FDECLV(hashmap_get, hashmap_get_t, void*, hashmap_t * , void *);
 
 enum PIT_CHANNEL {
 	PIT_CHANNEL_0, PIT_CHANNEL_1, PIT_CHANNEL_2, PIT_CHANNEL_READBACK
@@ -107,7 +111,7 @@ static void pit_handler(void) {
 	}
 
 	for(int i = 0; i < pit_cback_count; i++) {
-		uintptr_t addr = (uintptr_t)hashmap_get_i(pit_cbacks, i);
+		uintptr_t addr = (uintptr_t)hashmap_get(pit_cbacks, services_names[i]);
 		if(addr)
 			FCASTF(addr, void, void)();
 	}
@@ -116,13 +120,30 @@ static void pit_handler(void) {
 static uintptr_t pit_install_cback(char * func_name, uintptr_t address) {
 	if(hashmap_has(pit_cbacks, (char*)func_name)) return IOCTL_NULL;
 	uintptr_t ret = (uintptr_t)hashmap_set(pit_cbacks, (char*)func_name, (void*)address);
+	services_names[next_available_service] = (char*)malloc(strlen(func_name) + 1);
+	strcpy(services_names[next_available_service], func_name);
+
+	/* Find the next available service: */
+	for(int i = 0; i < PIT_CALLBACK_SERVICE_MAX; i++)
+		if(!services_names[i]) {
+			next_available_service = i;
+			break;
+		}
 	pit_cback_count++;
 	return ret;
 }
 
 static uintptr_t pit_uninstall_cback(char * func_name) {
 	if(!pit_cback_count) return IOCTL_NULL;
-	pit_cback_count--;
+	for(int i = 0; i < pit_cback_count; i++)
+		if(!strcmp(services_names[i], func_name)) {
+			free(services_names[i]);
+			services_names[i] = 0;
+			next_available_service = i;
+			pit_cback_count--;
+			break;
+		}
+
 	return (uintptr_t)hashmap_remove(pit_cbacks, (char*)func_name);
 }
 
@@ -141,8 +162,12 @@ static void relative_time(uint32_t seconds, uint32_t subseconds, uint32_t * out_
 }
 
 static int pit_init(void) {
-	hashmap_get_i = (hashmap_get_i_t)SYF((char*)"hashmap_get_i");
-	pit_cbacks = hashmap_create(1);
+	hashmap_get = (hashmap_get_t)SYF((char*)"hashmap_get");
+	/* Each service has a name, and we use this to iterate the hashmap: */
+	services_names = (char**)malloc(PIT_CALLBACK_SERVICE_MAX * sizeof(char**));
+	for(int i = 0;i < PIT_CALLBACK_SERVICE_MAX; i++)
+		services_names[i] = 0;
+	pit_cbacks = hashmap_create(PIT_CALLBACK_SERVICE_MAX);
 	pit_sethz(PIT_DEFAULT_HZ);
 	SYA(irq_install_handler, Kernel::CPU::IRQ::IRQ_PIT, pit_handler);
 	return 0;

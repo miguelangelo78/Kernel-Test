@@ -124,6 +124,7 @@ void * hashmap_get(hashmap_t * map, void * key) {
 		return 0;
 	}
 }
+EXPORT_SYMBOL(hashmap_get);
 
 void * hashmap_get_i(hashmap_t * map, int idx) {
 	hashmap_entry_t * x = map->entries[idx];

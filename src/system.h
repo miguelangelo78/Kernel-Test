@@ -214,14 +214,19 @@ namespace Kernel {
 			regs_t regs;
 			char state;
 			int exitcode;
+			int pid;
+			char * name;
 			struct task * next;
 		} task_t;
 
 		extern task_t * current_task;
-		task_t * task_create(void (*entry)(void), uint32_t eflags, uint32_t pagedir);
+
 		void tasking_install(void);
-		void tasking_enable(char enable);
+		task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
+		task_t * task_create_and_run(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
 		void switch_task(char new_process_state);
+		void tasking_enable(char enable);
+		void task_kill(int pid);
 	}
 
 #endif
