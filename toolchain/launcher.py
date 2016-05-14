@@ -1,8 +1,8 @@
-import platform, os, sys
+import platform, os, sys, commands
 
 if len(sys.argv) > 1:
 	if(sys.argv[1] == "-h"):
-		print "Usage: python launcher.py script_name   [no file extension]"
+		print "Usage: python launcher.py script_name   [no script file extension]"
 		sys.exit(0)
 
 pwd = os.path.abspath(os.path.dirname(sys.argv[0]))
