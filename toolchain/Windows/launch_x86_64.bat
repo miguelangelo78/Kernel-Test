@@ -3,14 +3,14 @@
 
 cd ..\..
 printf "\nLaunching Kernel... (x86_64)\n"
-start toolchain/Tools/Windows/putty.exe -load KernelSerial
+start toolchain/Windows/Tools/putty.exe -load KernelSerial
 start gdb -x toolchain/gdb.gdbinit
 
 @rem *********** AVAILABLE VIRTUAL MACHINES: ***********
 
 "C:\Program Files (x86)\qemu\qemu-system-x86_64" -cdrom iso\KernelSharp.iso -serial COM1 -gdb tcp:127.0.0.1:1234 -m 128
 @rem "C:\Program Files\Oracle\VirtualBox\VirtualBox.exe" --startvm KernelSharp --dbg
-@rem toolchain\Tools\Bochs\kerneltest.bxrc
+@rem toolchain\VMachs\Bochs\kerneltest.bxrc
 @rem "C:\Program Files (x86)\VMware\VMware Workstation\vmrun" start toolchain\Tools\VMWare\KernelTest\KernelTest.vmx
 
 @rem ****************************************************

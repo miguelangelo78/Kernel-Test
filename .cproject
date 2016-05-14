@@ -3,6 +3,57 @@
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="0.705783870.301156005">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="0.705783870.301156005" moduleId="org.eclipse.cdt.core.settings" name="Build">
+				<macros>
+					<stringListMacro name="Path" type="VALUE_TEXT_LIST">
+						<value name="C:\Python27"/>
+						<value name="C:\MinGW\bin"/>
+						<value name="C:\MinGW\msys\1.0\bin"/>
+						<value name="C:\llvm\bin"/>
+						<value name="C:/Program Files/Java/jre1.8.0_60/bin/server"/>
+						<value name="C:/Program Files/Java/jre1.8.0_60/bin"/>
+						<value name="C:/Program Files/Java/jre1.8.0_60/lib/amd64"/>
+						<value name="C:\Python27\"/>
+						<value name="C:\Python27\Scripts"/>
+						<value name="C:\ProgramData\Oracle\Java\javapath"/>
+						<value name="C:\Windows\system32"/>
+						<value name="C:\Windows"/>
+						<value name="C:\Windows\System32\Wbem"/>
+						<value name="C:\Windows\System32\WindowsPowerShell\v1.0\"/>
+						<value name="C:\Program Files\Hewlett-Packard\SimplePass\"/>
+						<value name="c:\Program Files (x86)\ATI Technologies\ATI.ACE\Core-Static"/>
+						<value name="C:\Program Files (x86)\AMD\ATI.ACE\Core-Static"/>
+						<value name="C:\MinGW\bin"/>
+						<value name="C:\Users\Miguel\.dnx\bin"/>
+						<value name="C:\Program Files\Microsoft DNX\Dnvm\"/>
+						<value name="C:\Program Files (x86)\Windows Kits\8.1\Windows Performance Toolkit\"/>
+						<value name="C:\ProgramData\chocolatey\bin"/>
+						<value name="C:\dos"/>
+						<value name="C:\Program Files\MATLAB\MATLAB Production Server\R2015a\runtime\win64"/>
+						<value name="C:\Program Files\MATLAB\MATLAB Production Server\R2015a\bin"/>
+						<value name="C:\Program Files\MATLAB\MATLAB Production Server\R2015a\polyspace\bin"/>
+						<value name="C:\Program Files (x86)\Microchip\xc8\v1.35\bin"/>
+						<value name="C:\Program Files (x86)\HI-TECH Software\PICC\9.80a\bin"/>
+						<value name="C:\Program Files (x86)\HI-TECH Software\PICC\9.82\bin"/>
+						<value name="C:\Program Files\Oracle\VirtualBox"/>
+						<value name="C:\Program Files\qemu"/>
+						<value name="C:\Program Files\nodejs\"/>
+						<value name="C:\CooCox\CoIDE_V2Beta\bin"/>
+						<value name="C:\Program Files (x86)\Skype\Phone\"/>
+						<value name="C:\Program Files (x86)\CMake\bin"/>
+						<value name="C:\llvm\bin"/>
+						<value name="C:\Users\Miguel\Dropbox\Kernel-Test\Kernel-Test\toolchain\Tools\Cross\i686-elf\bin"/>
+						<value name="C:\Program Files (x86)\GtkSharp\2.12\bin"/>
+						<value name="C:\WINDOWS\system32"/>
+						<value name="C:\WINDOWS"/>
+						<value name="C:\WINDOWS\System32\Wbem"/>
+						<value name="C:\WINDOWS\System32\WindowsPowerShell\v1.0\"/>
+						<value name="C:\Program Files (x86)\GNU Tools ARM Embedded\4.9 2015q3\bin"/>
+						<value name="C:\Program Files (x86)\Microchip\xc8\v1.35\bin"/>
+						<value name="C:\Users\Miguel\AppData\Roaming\npm"/>
+						<value name="C:\Users\Miguel\AppData\Local\atom\bin"/>
+						<value name="C:\Program Files (x86)\RocketDock"/>
+					</stringListMacro>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -14,11 +65,11 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration buildProperties="" description="" id="0.705783870.301156005" name="Build" parent="org.eclipse.cdt.build.core.prefbase.cfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="0.705783870.301156005" name="Build" parent="org.eclipse.cdt.build.core.prefbase.cfg">
 					<folderInfo id="0.705783870.301156005." name="/" resourcePath="">
 						<toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.735003807" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
 							<targetPlatform id="org.eclipse.cdt.build.core.prefbase.toolchain.735003807.1239353729" name=""/>
-							<builder command="${workspace_loc:/Kernel-Test}/toolchain/Debian/build.sh" id="org.eclipse.cdt.build.core.settings.default.builder.48701763" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
+							<builder arguments="${workspace_loc:/Kernel-Test}/toolchain/launcher.py build" command="python" id="org.eclipse.cdt.build.core.settings.default.builder.48701763" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.libs.466520711" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.1548457175" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1624043340" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
@@ -52,7 +103,7 @@
 					<folderInfo id="0.705783870.1650575416." name="/" resourcePath="">
 						<toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.660189842" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
 							<targetPlatform id="org.eclipse.cdt.build.core.prefbase.toolchain.660189842.1087317732" name=""/>
-							<builder command="${workspace_loc:/Kernel-Test}/toolchain/Debian/build_and_run.sh" id="org.eclipse.cdt.build.core.settings.default.builder.940282420" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
+							<builder arguments="${workspace_loc:/Kernel-Test}/toolchain/launcher.py build_and_run" command="python" id="org.eclipse.cdt.build.core.settings.default.builder.940282420" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.libs.2032914492" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.892215886" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1739018725" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
@@ -86,7 +137,7 @@
 					<folderInfo id="0.705783870.1116560144." name="/" resourcePath="">
 						<toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.252945061" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
 							<targetPlatform id="org.eclipse.cdt.build.core.prefbase.toolchain.252945061.1933241234" name=""/>
-							<builder command="${workspace_loc:/Kernel-Test}/toolchain/Debian/rebuild.sh" id="org.eclipse.cdt.build.core.settings.default.builder.1872008716" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
+							<builder arguments="${workspace_loc:/Kernel-Test}/toolchain/launcher.py rebuild" command="python" id="org.eclipse.cdt.build.core.settings.default.builder.1872008716" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.libs.497115716" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.634560304" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1996541381" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
@@ -120,7 +171,7 @@
 					<folderInfo id="0.705783870.301156005.40283752." name="/" resourcePath="">
 						<toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.633910977" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
 							<targetPlatform id="org.eclipse.cdt.build.core.prefbase.toolchain.633910977.324897545" name=""/>
-							<builder command="${workspace_loc:/Kernel-Test}/toolchain/Debian/rebuild_and_run.sh" id="org.eclipse.cdt.build.core.settings.default.builder.973088730" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
+							<builder arguments="${workspace_loc:/Kernel-Test}/toolchain/launcher.py rebuild_and_run" command="python" id="org.eclipse.cdt.build.core.settings.default.builder.973088730" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.libs.431724270" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.1087534273" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1500488651" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
@@ -154,7 +205,7 @@
 					<folderInfo id="0.705783870.301156005.1345679773." name="/" resourcePath="">
 						<toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.1001527610" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
 							<targetPlatform id="org.eclipse.cdt.build.core.prefbase.toolchain.1001527610.1150759236" name=""/>
-							<builder command="${workspace_loc:/Kernel-Test}/toolchain/Debian/clean.sh" id="org.eclipse.cdt.build.core.settings.default.builder.376874194" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
+							<builder arguments="${workspace_loc:/Kernel-Test}/toolchain/launcher.py clean" command="python" id="org.eclipse.cdt.build.core.settings.default.builder.376874194" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.libs.360480395" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.2063461273" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.137729444" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
@@ -186,7 +237,15 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="Build_Run">
+		<configuration configurationName="Build Run"/>
+		<configuration configurationName="build">
+			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
+		</configuration>
+		<configuration configurationName="Build">
+			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
+		</configuration>
+		<configuration configurationName="Rebuild Run"/>
+		<configuration configurationName="Clean">
 			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
 		</configuration>
 		<configuration configurationName="Default">
@@ -195,13 +254,7 @@
 		<configuration configurationName="Rebuild">
 			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
 		</configuration>
-		<configuration configurationName="Build">
-			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
-		</configuration>
-		<configuration configurationName="Clean">
-			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
-		</configuration>
-		<configuration configurationName="build">
+		<configuration configurationName="Build_Run">
 			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
 		</configuration>
 	</storageModule>

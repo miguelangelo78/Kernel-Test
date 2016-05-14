@@ -118,7 +118,7 @@ static void pit_handler(void) {
 }
 
 static uintptr_t pit_install_cback(char * func_name, uintptr_t address) {
-	if(hashmap_has(pit_cbacks, (char*)func_name)) return IOCTL_NULL;
+	if(hashmap_has(pit_cbacks, (char*)func_name) || pit_cback_count >= PIT_CALLBACK_SERVICE_MAX) return IOCTL_NULL;
 	uintptr_t ret = (uintptr_t)hashmap_set(pit_cbacks, (char*)func_name, (void*)address);
 	services_names[next_available_service] = (char*)malloc(strlen(func_name) + 1);
 	strcpy(services_names[next_available_service], func_name);

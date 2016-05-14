@@ -1,6 +1,5 @@
 #include <system.h>
 #include <libc.h>
-#include <libc/hashmap.h>
 #include <module.h>
 #include <stdint.h>
 #include <log.h>

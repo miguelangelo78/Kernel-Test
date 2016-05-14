@@ -21,7 +21,7 @@ char is_initialized = 0;
 task_t * current_task;
 task_t * main_task;
 tree_t * tasktree;
-uint16_t next_pid;
+uint16_t next_pid = 1;
 
 /*
 * Switch to the next ready task.
@@ -78,8 +78,8 @@ void task_kill(int pid) {
 
 	kprintf("KILLED MYSELF");
 
-	IRQ_RES(); /* Resume switching */
 	irq_already_off = 0;
+	IRQ_RES(); /* Resume switching */
 }
 
 /* Every task that returns will end up here: */
@@ -127,7 +127,6 @@ task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uin
 	} else {
 		if(!is_initialized) {
 			/* If entry is null, then we're allocating the very first process, which is the main core task */
-			next_pid = 1;
 			task->pid = next_pid;
 		} /* else we ignore it, we don't want to run a normal task with an entry point of address 0! */
 	}

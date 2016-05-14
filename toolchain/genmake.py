@@ -53,7 +53,7 @@ gt.compiler_cpp.make_flagsym = "CPPFLAGS"
 gt.compiler_cpp.name = "Cross i686-elf GCC Compiler"
 gt.compiler_cpp.is_asm = 0
 gt.compiler_cpp.include_path = "-Itoolchain/"+osp+"/Tools/Cross/i686-elf/lib/gcc/i686-elf/include -Isrc"
-gt.compiler_cpp.flags = "-T $(TOOLCH)/$(LINKER) " + gt.compiler_cpp.include_path + " -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions"
+gt.compiler_cpp.flags = "-T $(TOOLCH)/$(LINKER) " + gt.compiler_cpp.include_path + " -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions"
 # Setup C compiler:
 gt.compiler_c.make_sym = "CC"
 gt.compiler_c.execpath = "$(TOOLCH)/"+osp+"/Tools/Cross/i686-elf/bin/i686-elf-gcc"
@@ -84,7 +84,7 @@ gt.assembler_nasm.is_asm = 1
 gt.assembler_nasm.flags = "-g -f elf32"
 # Everything else:
 gt.top_path = "src"
-gt.build_path = "build"
+gt.build_path = "obj"
 gt.runnable_path = "iso"
 gt.make_path = "toolchain"
 gt.output_file = "ksharp.bin"
@@ -156,7 +156,7 @@ def parse_injections_sourcefile(source_content):
 	if match_deps:
 		deps = match_deps.group(1).split(',')
 		for dep in deps:
-			meta.deps += "build/" + (dep.strip()) + " "
+			meta.deps += "obj/" + (dep.strip()) + " "
 	match_misc = re.search(r'\$INJ\(((?:\w|\n|.)+?)\)', source_content, re.M)
 	if match_misc:
 		meta.misc = match_misc.group(1)
@@ -186,7 +186,7 @@ def scan_tree():
 				if(appenddir == 0):
 					file_matches.append([])
 					appenddir = 1
-				file_matches[-1].append(os.path.join(root, file))
+				file_matches[-1].append(os.path.join(root, file).replace("\\","/"))
 	return file_matches
 
 class ToolchainData:
@@ -194,6 +194,7 @@ class ToolchainData:
 	compiler_in_use="null"
 	flags_in_use="null"
 	is_asm = -1
+	build_path = "null"
 
 # Determins the flags, the tool names and what tools to use for each different file:
 def parseFileFormat(fileformat):
@@ -203,6 +204,7 @@ def parseFileFormat(fileformat):
 		dat.flags_in_use = ct.tool_ptrs[fileformat].make_flagsym
 		dat.toolname = ct.tool_ptrs[fileformat].name
 		dat.is_asm = ct.tool_ptrs[fileformat].is_asm
+		dat.build_path = ct.build_path
 	except: # Invalid file format
 		pass
 
@@ -212,7 +214,7 @@ def write_subdir_entry(subdirmk_file, toolchain, file_objname, file_path, custom
 	entry_output_path = "$@"
 	if ismod:
 		customflags += "-r -fno-zero-initialized-in-bss -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE"
-		entry_output_path = "build/modules/"+file_objname+".mod"
+		entry_output_path = toolchain.build_path + "/modules/"+file_objname+".mod"
 	
 	subdirmk_file.write('\n$(BOUT)/'+('modules/' if ismod else '') + file_objname + ('.o' if not ismod else'.mod')+': ' + file_path + ' ' + deps + '\n\
 	@echo \'>> Building file $<\'\n\
@@ -313,7 +315,7 @@ kernel-link: $(OBJS) $(MODS)\n\
 	@echo 'Toolchain: " + ct.toolname + "'\n\
 	@echo '>>>> Linking Kernel <<<<'\n\
 	@echo '>>>> Invoking: LLVM C++ Linker <<<<'\n\
-	$(CXX_LLVM) -T $(TOOLCH)/$(LINKER) $(LLVMCPPFLAGS) -o $(DISKPATH)/$(KOUT) $(OBJS)\n\
+	"+("$(CXX_LLVM) -T $(TOOLCH)/$(LINKER) $(LLVMCPPFLAGS) -o $(DISKPATH)/$(KOUT) $(OBJS)\n" if os_plat != "Windows" else "$(CXX) $(CPPFLAGS) -o $(DISKPATH)\$(KOUT) $(OBJS)\n") + "\
 	@echo '>>>> Finished building target: $@ <<<<'\n\
 	@echo '----------'\n\n\
 clean:\n\
