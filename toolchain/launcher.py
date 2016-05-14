@@ -14,12 +14,12 @@ if plat != "Windows":
 	if plat == "Debian":
 		# Run Debian's scripts
 		if len(sys.argv) > 1:
-			os.system(pwd + "/Debian/"+sys.argv[1]+".sh")
+			os.system(pwd + "/Debian/" + sys.argv[1] + ".sh")
 		else:
 			os.system(pwd + "/Debian/launch_x86_64.sh")
 else:
 	# Run Windows' scripts
 	if len(sys.argv) > 1:
-		os.system(pwd + "/Windows/"+sys.argv[1]+".bat")
+		os.system("'" + pwd + "/Windows/" + sys.argv[1]+".bat'")
 	else:
-		os.system(pwd + "/Windows/launch_x86_64.bat")
+		os.system("'" + pwd + "/Windows/launch_x86_64.bat'")

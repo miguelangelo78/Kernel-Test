@@ -11,7 +11,7 @@ make -f toolchain/makefile.mak all
 
 printf "\nSTEP 3 - Generating initrd disk ...\n\n"
 rm -f iso/initrd.img
-toolchain/Debian/Tools/initrd_gen `find build/modules/*` 
+toolchain/Debian/Tools/initrd_gen `find obj/modules/*` 
 
 printf "\n\nSTEP 4 - Creating disk (ISO) ...\n\n"
 rm -f iso/KernelSharp.iso
