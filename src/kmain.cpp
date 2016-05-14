@@ -184,11 +184,8 @@ namespace Kernel {
 		kputsc("\nReady", COLOR_GOOD);
 
 		for(;;)
-			if(serial.is_ready()) {
-				char c = serial.read_async();
-				/* Echo back: */
-				kprintf("%c", c);
-			}
+			if(serial.is_ready()) /* Echo back: */
+				kprintf("%c", serial.read_async());
 		return 0;
 	}
 

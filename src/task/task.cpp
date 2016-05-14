@@ -17,11 +17,20 @@ namespace Task {
 #define TASK_STACK_SIZE (PAGE_SIZE * 2)
 
 char is_tasking = 0;
-char is_initialized = 0;
+char is_tasking_initialized = 0;
 task_t * current_task;
 task_t * main_task;
 tree_t * tasktree;
 uint16_t next_pid = 1;
+
+task_t * fetch_next_task(void) {
+	if(current_task->next) {
+		return current_task->next;
+	}
+
+	/* Uh oh, we've reached the end of the switch queue. Either that or someone put a null task at the next node. Abort */
+	return 0;
+}
 
 /*
 * Switch to the next ready task.
@@ -33,22 +42,22 @@ void switch_task(char new_process_state) {
 	if (!is_tasking || !current_task) return; /* Tasking is not yet installed (or it's disabled). */
 	IRQ_OFF();
 
-	Kernel::serial.printf("SWITCH\n");
-
 	/* Save registers first: */
 	uintptr_t eip = Kernel::CPU::read_eip();
 	if(eip == 0x10000) return;
 	current_task->regs.eip = eip;
-	asm volatile("mov %%esp, %0" : "=r" (current_task->regs.esp));
-	asm volatile("mov %%ebp, %0" : "=r" (current_task->regs.ebp));
+	asm volatile("mov %%esp, %0" : "=r" (current_task->regs.esp)); /* Save ESP */
+	asm volatile("mov %%ebp, %0" : "=r" (current_task->regs.ebp)); /* Save EBP */
 
-	/* Update current task state: */
+	/* Update current task state to new state: */
 	current_task->state = new_process_state;
+
 	/* Fetch next task: */
-	if(current_task->next) {
-		current_task = current_task->next;
+	task_t * next_task = fetch_next_task();
+	if(next_task) {
+		current_task = next_task;
 	} else {
-		/* Uh oh, we've reached the end of the switch queue. Either that or someone put a null task at the next node. Abort */
+		/* Uh oh, couldn't fetch next task, handle error here */
 		return;
 	}
 
@@ -76,7 +85,7 @@ void task_kill(int pid) {
 
 	/* Set 'next' pointer to 0 first, then cleanup the rest (remove process from tree, deallocate task's stack and more) */
 
-	kprintf("KILLED MYSELF");
+	kprintf("pid: %d KILLED MYSELF", pid);
 
 	irq_already_off = 0;
 	IRQ_RES(); /* Resume switching */
@@ -125,7 +134,7 @@ task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uin
 		stack->ss = X86_SEGMENT_USER_DATA;
 		stack->regs2.eax = (uint32_t)task_return_grave; /* Return address of a task */
 	} else {
-		if(!is_initialized) {
+		if(!is_tasking_initialized) {
 			/* If entry is null, then we're allocating the very first process, which is the main core task */
 			task->pid = next_pid;
 		} /* else we ignore it, we don't want to run a normal task with an entry point of address 0! */
@@ -170,11 +179,11 @@ void tasking_install(void) {
 	MOD_IOCTL("pit_driver", 1, (uintptr_t)"pit_switch_task", (uintptr_t)pit_switch_task);
 
 	/* Initialize the very first task, which is the main thread that was already running: */
-	main_task = task_create((char*)"rootproc",0, Kernel::CPU::read_reg(Kernel::CPU::eflags), (uint32_t)Kernel::Memory::Man::curr_dir->table_entries);
-	current_task = main_task;
+	current_task = main_task =
+			task_create((char*)"rootproc",0, Kernel::CPU::read_reg(Kernel::CPU::eflags), (uint32_t)Kernel::Memory::Man::curr_dir->table_entries);
 
 	tasking_enable(1); /* Allow tasking to work */
-	is_initialized = 1;
+	is_tasking_initialized = 1;
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */
