@@ -12,5 +12,5 @@ if plat != "Windows":
 		os.system("x-terminal-emulator --noclose -e /bin/bash " + pwd + "/Debian/setup.sh &")
 else:
 	# Prepare toolchain for Windows:
-	os.system("start /wait '" + pwd + "/Windows/setup.bat'")
+	os.system(pwd + "/Windows/setup.bat")
 	
