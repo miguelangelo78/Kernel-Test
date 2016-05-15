@@ -13,6 +13,7 @@ namespace Task {
 
 /* Max number of processes the kernel will switch: */
 #define MAX_PID 32768
+#define MAX_TTL 60000 /* Maximum allowable time to live (expressed in switching count, not by ms or seconds) */
 
 #define TASK_STACK_SIZE (PAGE_SIZE * 2)
 
@@ -22,21 +23,25 @@ task_t * current_task;
 task_t * main_task;
 tree_t * tasktree;
 list_t * tasklist;
-uint16_t next_pid = 1;
+uint16_t next_pid = 0;
 
 /****************************** Task tree getters and setters ******************************/
-task_t * fetch_next_task(void) {
-	if(current_task->next) {
-		return current_task->next;
-	}
+int fetch_index = 0;
+int tasklist_size = 0;
 
-	/* Uh oh, we've reached the end of the switch queue. Either that or someone put a null task at the next node. Abort */
-	return 0;
+task_t * fetch_next_task(void) {
+	if(fetch_index > tasklist_size)
+		fetch_index = 0;
+	return (task_t*)list_get(tasklist, fetch_index++)->value;
 }
 
 void task_addtotree(task_t * parent_task, task_t * new_task) {
-	parent_task->next = new_task;
-	new_task->next = parent_task;
+	/* Add task to tree: */
+	//parent_task->next = new_task;
+
+	/* Insert into switch queue: */
+	list_insert(tasklist, new_task);
+	tasklist_size++;
 }
 
 /****************************** Task switching ******************************/
@@ -61,12 +66,21 @@ void switch_task(char new_process_state) {
 	current_task->state = new_process_state;
 
 	/* Fetch next task: */
-	task_t * next_task = fetch_next_task();
-	if(next_task) {
-		current_task = next_task;
-	} else {
-		/* Uh oh, couldn't fetch next task, handle error here */
-		return;
+	while(1) {
+		task_t * next_task = fetch_next_task();
+		if(next_task) {
+			if(next_task->ttl < MAX_TTL && next_task->pid != 0) {
+				next_task->ttl++;
+				continue; /* This task is not allowed to live while its TTL is counting */
+			} else {
+				next_task->ttl = next_task->start_ttl; /* Restart TTL counter */
+			}
+			current_task = next_task;
+			break;
+		} else {
+			/* Uh oh, couldn't fetch next task, handle error here */
+			return;
+		}
 	}
 
 	/* Acknowledge PIT interrupt: */
@@ -94,13 +108,27 @@ void pit_switch_task(void) {
 /****************************** Task killing ******************************/
 char irq_already_off = 0;
 
+void task_free(task_t * task_to_free) {
+	/* Clean up stack: */
+	free((void*)task_to_free->regs.esp);
+}
+
 void task_kill(int pid) {
+	if(!pid) return; /* Do not let the main task kill itself */
 	if(!irq_already_off)
 		IRQ_OFF();
 
-	/* Set 'next' pointer to 0 first, then cleanup the rest (remove process from tree, deallocate task's stack and more) */
+	kprintf("\nKILLED PID: %d\n", pid);
 
-	kprintf("pid: %d KILLED MYSELF", pid);
+	/* Remove the task from the list, then cleanup the rest (remove process from tree, deallocate task's stack and more) */
+	task_t * task_to_kill = (task_t*)list_get(tasklist, pid)->value; /* Store it first so we can clean up everything */
+	list_remove(tasklist, pid);
+	tasklist_size--;
+
+	/* Remove from tree: */
+
+	/* Cleanup everything else: */
+	task_free(task_to_kill);
 
 	irq_already_off = 0;
 	IRQ_RES(); /* Resume switching */
@@ -127,6 +155,7 @@ task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uin
 	task->name = task_name;
 	task->regs.eax = task->regs.ebx = task->regs.ecx = task->regs.edx = task->regs.esi = task->regs.edi = 0;
 	task->next = 0;
+	task->ttl = task->start_ttl = MAX_TTL;
 
 	if(entry) {
 		task->regs.eip = (uint32_t) entry;
@@ -184,11 +213,24 @@ void tasking_enable(char enable) {
 	is_tasking = enable ? 1 : 0;
 	IRQ_RES();
 }
+
+void task_set_ttl(int pid, int ttl) {
+	IRQ_OFF();
+	task_t * task = (task_t*)list_get(tasklist, pid)->value;
+	if(task) task->start_ttl = task->ttl = ttl;
+	IRQ_RES();
+}
 /***************************************************************************/
 
-
+int ctr1 = 0, ctr2 = 0;
 static void task1(void) {
-	kprintf("\n\n********* task 1: RUN *********\n\n");
+	for(;;)
+		Kernel::serial.printf("TASK1 %d\n", ctr1++);
+}
+
+static void task2(void) {
+	for(;;)
+		Kernel::serial.printf("TASK2 %d\n", ctr2++);
 }
 
 /****************************** Task initializers ******************************/
@@ -200,19 +242,21 @@ void tasking_install(void) {
 
 	/* Initialize the very first task, which is the main thread that was already running: */
 	current_task = main_task =
-			task_create((char*)"rootproc",0, Kernel::CPU::read_reg(Kernel::CPU::eflags), (uint32_t)Kernel::Memory::Man::curr_dir->table_entries);
+			task_create((char*)"rootproc", 0, Kernel::CPU::read_reg(Kernel::CPU::eflags), (uint32_t)Kernel::Memory::Man::curr_dir->table_entries);
 
 	/* Initialize task list and tree: */
 	tasklist = list_create();
 	tasktree = tree_create();
 	tree_set_root(tasktree, main_task);
+	list_insert(tasklist, main_task);
 
 	tasking_enable(1); /* Allow tasking to work */
 	is_tasking_initialized = 1;
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */
-	task_create_and_run((char*)"task1", task1, current_task->regs.eflags, current_task->regs.cr3);
+	task_t * t1 = task_create_and_run((char*)"task1", task1, current_task->regs.eflags, current_task->regs.cr3);
+	task_t * t2 = task_create_and_run((char*)"task2", task2, current_task->regs.eflags, current_task->regs.cr3);
 }
 /***************************************************************************/
 

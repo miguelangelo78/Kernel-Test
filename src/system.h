@@ -212,6 +212,8 @@ namespace Kernel {
 
 		typedef struct task {
 			regs_t regs;
+			int ttl;
+			int start_ttl;
 			char state;
 			int exitcode;
 			int pid;
@@ -227,7 +229,9 @@ namespace Kernel {
 		task_t * task_create_and_run(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
 		void switch_task(char new_process_state);
 		void tasking_enable(char enable);
+		void task_set_ttl(int pid, int ttl);
 		void task_kill(int pid);
+		void task_free(task_t * task_to_free);
 	}
 
 #endif
