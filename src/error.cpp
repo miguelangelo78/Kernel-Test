@@ -4,9 +4,8 @@
 
 namespace Kernel {
 	extern Terminal term; /* Used only for debugging to the screen */
-	
-	namespace Error {
 
+	namespace Error {
 		char kernel_panic_msg[] = "!! KERNEL PANIC !!";
 		char bsod_buff[256];
 

@@ -163,7 +163,7 @@ namespace Kernel {
 
 #ifndef MODULE
 	namespace Memory {
-		/* Kernel memory manager. Contains paging/physical memory functions and a Kernel memory 
+		/* Kernel memory manager. Contains paging/physical memory functions and a Kernel memory
 		allocator (kmalloc, a dumb version of Alloc's malloc to be used before paging is enabled) */
 		namespace Man {
 			void kheap_starts(uintptr_t start_addr);
@@ -263,9 +263,11 @@ using namespace Kernel::Task;
 inline void * operator new(__SIZE_TYPE__ n) {
 	return malloc(n);
 }
+
 inline void * operator new[](__SIZE_TYPE__ n) {
 	return malloc(n);
 }
+
 #endif
 
 #endif
