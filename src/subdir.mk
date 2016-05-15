@@ -8,7 +8,8 @@ $(BOUT)/log.o \
 $(BOUT)/serial.o \
 $(BOUT)/vfs.o \
 $(BOUT)/kmain.o \
-$(BOUT)/initrd.o
+$(BOUT)/initrd.o \
+$(BOUT)/syscall.o
 
 $(BOUT)/module.o: src/module.cpp 
 	@echo '>> Building file $<'
@@ -74,6 +75,13 @@ $(BOUT)/kmain.o: src/kmain.cpp
 	@echo ' '
 
 $(BOUT)/initrd.o: src/initrd.cpp 
+	@echo '>> Building file $<'
+	@echo '>> Invoking LLVM C++ Clang++'
+	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  
+	@echo '>> Finished building: $<'
+	@echo ' '
+
+$(BOUT)/syscall.o: src/syscall.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking LLVM C++ Clang++'
 	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  

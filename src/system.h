@@ -222,6 +222,7 @@ namespace Kernel {
 		} task_t;
 
 		extern task_t * current_task;
+		extern task_t * main_task;
 
 		void tasking_install(void);
 		task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
@@ -256,6 +257,22 @@ namespace Kernel {
 		void v86_int(CPU::regs_t *regs, unsigned int_num);
 		void v86_test(void);
 	}
+
+	namespace Syscall {
+		#define SYSCALL_MAXCALLS 128
+		typedef uint32_t (*syscall_callback_t)(unsigned int, ...);
+
+		void syscalls_initialize(void);
+		#define syscall_install(syscall_name, no) syscall_install_s((char*)# syscall_name, no, (uintptr_t)syscall_name)
+		void syscall_install_n(int no, uintptr_t syscall);
+		void syscall_install_s(char * syscall_name, int no, uintptr_t syscall_addr);
+		void syscall_install_s(char * syscall_name, uintptr_t syscall_addr);
+		void syscall_install_p(uintptr_t syscall_addr);
+		void syscall_uninstall(uintptr_t syscall);
+		void syscall_run_n(int intno);
+		void syscall_run_s(char * syscall_name);
+		#define syscall_run(syscall_name) syscall_run_s((char*)# syscall_name)
+	}
 }
 
 #ifndef MODULE
@@ -278,3 +295,4 @@ inline void * operator new[](__SIZE_TYPE__ n) {
 using namespace Kernel::Error;
 using namespace Kernel::KInit;
 using namespace Kernel::VM8086;
+using namespace Kernel::Syscall;

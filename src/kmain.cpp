@@ -174,9 +174,11 @@ namespace Kernel {
 		/* Initialize multitasking: */
 		kputs("> Initializing multitasking - "); tasking_install(); DEBUGOK();
 
+		kputs("> Initializing system calls - "); syscalls_initialize(); DEBUGOK();
+
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1 - Set up:\n  1.1 - FPU\n  1.2 - Syscalls\n  1.3 - Shared memory");
+		kputs("1 - Set up:\n  1.1 - Shared memory\n  1.2 - FPU\n  1.3 - Enter user mode\n  1.4 - Make more drivers!");
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);

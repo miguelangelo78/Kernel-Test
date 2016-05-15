@@ -44,6 +44,14 @@ void task_addtotree(task_t * parent_task, task_t * new_task) {
 	tasklist_size++;
 }
 
+/****************************** Task error handling ******************************/
+void task_error_handle(task_t * task, char error_type) {
+	switch(error_type) {
+	case 0: /* Couldn't fetch task from queue */ break;
+	}
+}
+/***************************************************************************/
+
 /****************************** Task switching ******************************/
 /*
 * Switch to the next ready task.
@@ -79,6 +87,7 @@ void switch_task(char new_process_state) {
 			break;
 		} else {
 			/* Uh oh, couldn't fetch next task, handle error here */
+			task_error_handle(next_task, 0);
 			return;
 		}
 	}
@@ -255,8 +264,10 @@ void tasking_install(void) {
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */
+#if 0
 	task_t * t1 = task_create_and_run((char*)"task1", task1, current_task->regs.eflags, current_task->regs.cr3);
 	task_t * t2 = task_create_and_run((char*)"task2", task2, current_task->regs.eflags, current_task->regs.cr3);
+#endif
 }
 /***************************************************************************/
 
