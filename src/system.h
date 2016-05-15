@@ -223,6 +223,7 @@ namespace Kernel {
 
 		void tasking_install(void);
 		task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
+		task_t * task_create_and_run(char * task_name, task_t * parent_task, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
 		task_t * task_create_and_run(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
 		void switch_task(char new_process_state);
 		void tasking_enable(char enable);

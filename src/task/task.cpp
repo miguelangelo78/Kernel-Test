@@ -21,8 +21,10 @@ char is_tasking_initialized = 0;
 task_t * current_task;
 task_t * main_task;
 tree_t * tasktree;
+list_t * tasklist;
 uint16_t next_pid = 1;
 
+/****************************** Task tree getters and setters ******************************/
 task_t * fetch_next_task(void) {
 	if(current_task->next) {
 		return current_task->next;
@@ -32,6 +34,12 @@ task_t * fetch_next_task(void) {
 	return 0;
 }
 
+void task_addtotree(task_t * parent_task, task_t * new_task) {
+	parent_task->next = new_task;
+	new_task->next = parent_task;
+}
+
+/****************************** Task switching ******************************/
 /*
 * Switch to the next ready task.
 *
@@ -77,6 +85,13 @@ void switch_task(char new_process_state) {
 			: "%ebx", "%esp", "%eax");
 }
 
+/* PIT Callback: */
+void pit_switch_task(void) {
+	switch_task(TASKST_READY);
+}
+/***************************************************************************/
+
+/****************************** Task killing ******************************/
 char irq_already_off = 0;
 
 void task_kill(int pid) {
@@ -98,7 +113,9 @@ void task_return_grave(void) {
 	task_kill(current_task->pid); /* Commit suicide */
 	for(;;); /* Never return. Remember that this 'for' won't be actually running, we just don't want to run 'ret' */
 }
+/***************************************************************************/
 
+/****************************** Task creation ******************************/
 task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir) {
 	IRQ_OFF();
 
@@ -144,34 +161,37 @@ task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uin
 	return task;
 }
 
-task_t * task_create_and_run(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir) {
+task_t * task_create_and_run(char * task_name, task_t * parent_task, void (*entry)(void), uint32_t eflags, uint32_t pagedir) {
 	/* Create task: */
 	task_t * new_task = task_create(task_name, entry, eflags, pagedir);
 	IRQ_OFF(); /* Keep IRQs off */
 
 	/* Add it to the tree (and by adding, the switcher function will now switch to this process): */
-	main_task->next = new_task;
-	new_task->next = main_task;
+	task_addtotree(parent_task, new_task);
 
 	IRQ_RES();
 	return new_task;
 }
 
+task_t * task_create_and_run(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir) {
+	return task_create_and_run(task_name, current_task, entry, eflags, pagedir);
+}
+/***************************************************************************/
+
+/****************************** Task control ******************************/
 void tasking_enable(char enable) {
 	IRQ_OFF();
 	is_tasking = enable ? 1 : 0;
 	IRQ_RES();
 }
+/***************************************************************************/
 
-/* PIT Callback: */
-void pit_switch_task(void) {
-	switch_task(TASKST_READY);
-}
 
 static void task1(void) {
-	kprintf("\n\ntask 1 RUN\n\n");
+	kprintf("\n\n********* task 1: RUN *********\n\n");
 }
 
+/****************************** Task initializers ******************************/
 void tasking_install(void) {
 	IRQ_OFF();
 
@@ -182,6 +202,11 @@ void tasking_install(void) {
 	current_task = main_task =
 			task_create((char*)"rootproc",0, Kernel::CPU::read_reg(Kernel::CPU::eflags), (uint32_t)Kernel::Memory::Man::curr_dir->table_entries);
 
+	/* Initialize task list and tree: */
+	tasklist = list_create();
+	tasktree = tree_create();
+	tree_set_root(tasktree, main_task);
+
 	tasking_enable(1); /* Allow tasking to work */
 	is_tasking_initialized = 1;
 	IRQ_RES(); /* Kickstart tasking */
@@ -189,6 +214,7 @@ void tasking_install(void) {
 	/* Test tasking: */
 	task_create_and_run((char*)"task1", task1, current_task->regs.eflags, current_task->regs.cr3);
 }
+/***************************************************************************/
 
 }
 }
