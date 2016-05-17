@@ -222,7 +222,7 @@ task_t * task_create_and_run(char * task_name, task_t * parent_task, void (*entr
 	IRQ_OFF(); /* Keep IRQs off */
 
 	/* Add it to the tree (and by adding, the switcher function will now switch to this process): */
-	task_addtotree(parent_task, new_task);
+	task_run(parent_task, new_task);
 
 	IRQ_RES();
 	return new_task;
@@ -234,6 +234,10 @@ task_t * task_create_and_run(char * task_name, void (*entry)(void), uint32_t efl
 /***************************************************************************/
 
 /****************************** Task creation bootstrap functions ******************************/
+void task_run(task_t * parent, task_t * child) {
+	task_addtotree(parent, child); /* And by adding to the tree, the task will now be considered as a RUNNING task */
+}
+
 uint32_t fork(void) {
 
 	return 0;
@@ -252,6 +256,9 @@ uint32_t getpid(void) {
 	return current_task->pid;
 }
 
+task_t * task_get(void) {
+	return current_task;
+}
 /***************************************************************************/
 
 /****************************** Task control ******************************/

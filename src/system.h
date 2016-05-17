@@ -244,6 +244,8 @@ namespace Kernel {
 		void task_kill(int pid);
 		void task_free(task_t * task_to_free);
 
+		void task_run(task_t * parent, task_t * child);
+		task_t * task_get(void);
 		uint32_t fork(void);
 		uint32_t task_clone(uintptr_t new_stack, uintptr_t thread_function, uintptr_t arg);
 		int task_create_tasklet(void);
@@ -309,7 +311,6 @@ inline void * operator new(__SIZE_TYPE__ n) {
 inline void * operator new[](__SIZE_TYPE__ n) {
 	return malloc(n);
 }
-
 #endif
 
 #endif
