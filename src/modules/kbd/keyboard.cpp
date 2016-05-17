@@ -40,10 +40,6 @@ static int keyboard_handler(Kernel::CPU::regs_t * regs) {
 	return 0;
 }
 
-static void cback() {
-	kprintf("MY CALLBACK IS WORKING");
-}
-
 static int keyboard_ini(void) {
 	SYA(irq_install_handler, Kernel::CPU::IRQ::IRQ_KBD, keyboard_handler);
 	return 0;

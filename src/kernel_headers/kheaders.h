@@ -15,7 +15,7 @@
 #ifdef MODULE
 
 #define syscall_schedule_install(syscall_name, no) FCASTF(SYF("syscall_schedule_install"), char, char*, int, uintptr_t)((char*)# syscall_name, no, (uintptr_t)syscall_name)
-#define syscall_uninstall(syscall_addr) FCASTF(SYF("syscall_uninstall"), void, uintptr_t)(syscall_addr)
+#define syscall_uninstall(syscall_addr) FCASTF(SYF("syscall_uninstall"), void, uintptr_t)((uintptr_t)syscall_addr)
 #define syscall_run_n(intno) FCASTF(SYF("syscall_run_n"), void, int)(intno)
 #define syscall_run_s(syscall_name) FCASTF(SYF("syscall_run_s"), void, char*)(syscall_name)
 #define syscall_run_ss(syscall_name) FCASTF(SYF("syscall_run_s"), void, char*)(# syscall_name)
