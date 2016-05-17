@@ -211,13 +211,17 @@ namespace Kernel {
 		};
 
 		typedef struct task {
-			regs_t regs;
+			regs_t * regs;
+			regs_t * syscall_regs;
+			char ttl_pwm_mode;
 			int ttl;
 			int start_ttl;
 			char state;
 			int exitcode;
 			int pid;
 			char * name;
+			char * desc;
+
 			struct task * next;
 		} task_t;
 
@@ -230,9 +234,15 @@ namespace Kernel {
 		task_t * task_create_and_run(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
 		void switch_task(char new_process_state);
 		void tasking_enable(char enable);
-		void task_set_ttl(int pid, int ttl);
+		void task_set_ttl(int pid, int duty_cycle_or_preload);
+		void task_set_ttl_mode(int pid, char pwm_or_pulse_mode);
 		void task_kill(int pid);
 		void task_free(task_t * task_to_free);
+
+		uint32_t fork(void);
+		uint32_t task_clone(uintptr_t new_stack, uintptr_t thread_function, uintptr_t arg);
+		int task_create_tasklet(void);
+		uint32_t getpid(void);
 	}
 
 #endif
@@ -258,6 +268,7 @@ namespace Kernel {
 		void v86_test(void);
 	}
 
+	/* System Calls: */
 	namespace Syscall {
 		#define SYSCALL_MAXCALLS 128
 		typedef uint32_t (*syscall_callback_t)(unsigned int, ...);
@@ -272,6 +283,11 @@ namespace Kernel {
 		void syscall_run_n(int intno);
 		void syscall_run_s(char * syscall_name);
 		#define syscall_run(syscall_name) syscall_run_s((char*)# syscall_name)
+	}
+
+	/* Shared Memory: */
+	namespace SharedMemory {
+		void shm_install(void);
 	}
 }
 
@@ -296,3 +312,4 @@ using namespace Kernel::Error;
 using namespace Kernel::KInit;
 using namespace Kernel::VM8086;
 using namespace Kernel::Syscall;
+using namespace Kernel::SharedMemory;

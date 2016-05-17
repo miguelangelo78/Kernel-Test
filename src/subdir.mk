@@ -5,6 +5,7 @@ $(BOUT)/elf.o \
 $(BOUT)/video.o \
 $(BOUT)/args.o \
 $(BOUT)/log.o \
+$(BOUT)/shm.o \
 $(BOUT)/serial.o \
 $(BOUT)/vfs.o \
 $(BOUT)/kmain.o \
@@ -47,6 +48,13 @@ $(BOUT)/args.o: src/args.cpp
 	@echo ' '
 
 $(BOUT)/log.o: src/log.cpp 
+	@echo '>> Building file $<'
+	@echo '>> Invoking LLVM C++ Clang++'
+	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  
+	@echo '>> Finished building: $<'
+	@echo ' '
+
+$(BOUT)/shm.o: src/shm.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking LLVM C++ Clang++'
 	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  

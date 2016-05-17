@@ -13,7 +13,7 @@ namespace Task {
 
 /* Max number of processes the kernel will switch: */
 #define MAX_PID 32768
-#define MAX_TTL 60000 /* Maximum allowable time to live (expressed in switching count, not by ms or seconds) */
+#define MAX_TTL 1000 /* Maximum allowable time to live (expressed in switching count, not by ms or seconds) */
 
 #define TASK_STACK_SIZE (PAGE_SIZE * 2)
 
@@ -66,9 +66,9 @@ void switch_task(char new_process_state) {
 	/* Save registers first: */
 	uintptr_t eip = Kernel::CPU::read_eip();
 	if(eip == 0x10000) return;
-	current_task->regs.eip = eip;
-	asm volatile("mov %%esp, %0" : "=r" (current_task->regs.esp)); /* Save ESP */
-	asm volatile("mov %%ebp, %0" : "=r" (current_task->regs.ebp)); /* Save EBP */
+	current_task->regs->eip = eip;
+	asm volatile("mov %%esp, %0" : "=r" (current_task->regs->esp)); /* Save ESP */
+	asm volatile("mov %%ebp, %0" : "=r" (current_task->regs->ebp)); /* Save EBP */
 
 	/* Update current task state to new state: */
 	current_task->state = new_process_state;
@@ -77,12 +77,23 @@ void switch_task(char new_process_state) {
 	while(1) {
 		task_t * next_task = fetch_next_task();
 		if(next_task) {
-			if(next_task->ttl < MAX_TTL && next_task->pid != 0) {
-				next_task->ttl++;
-				continue; /* This task is not allowed to live while its TTL is counting */
-			} else {
-				next_task->ttl = next_task->start_ttl; /* Restart TTL counter */
+			if(next_task->pid != 0) {
+				if(next_task->ttl_pwm_mode) { /* Decide the switch via PWM conditions */
+					if(next_task->ttl++ < next_task->start_ttl)
+						continue; /* This task is not allowed to live while its TTL is counting */
+					else
+						if(next_task->ttl >= MAX_TTL)
+							next_task->ttl = 0; /* Restart TTL counter AND switch */
+				} else { /* Decide the switch via non-PWM conditions */
+					if(next_task->ttl < MAX_TTL) {
+						next_task->ttl++;
+						continue; /* This task is not allowed to live while its TTL is counting */
+					}
+					else
+						next_task->ttl = next_task->start_ttl; /* Restart TTL counter AND switch */
+				}
 			}
+
 			current_task = next_task;
 			break;
 		} else {
@@ -104,7 +115,7 @@ void switch_task(char new_process_state) {
 			"mov $0x10000, %%eax\n" /* read_eip() will return 0x10000 */
 			"sti\n" /* Enable interrupts again */
 			"jmp *%%ebx" /* Jump! */
-			: : "r" (current_task->regs.eip), "r" (current_task->regs.esp), "r" (current_task->regs.ebp), "r" (current_task->regs.cr3)
+			: : "r" (current_task->regs->eip), "r" (current_task->regs->esp), "r" (current_task->regs->ebp), "r" (current_task->regs->cr3)
 			: "%ebx", "%esp", "%eax");
 }
 
@@ -118,8 +129,10 @@ void pit_switch_task(void) {
 char irq_already_off = 0;
 
 void task_free(task_t * task_to_free) {
-	/* Clean up stack: */
-	free((void*)task_to_free->regs.esp);
+	free(task_to_free->regs);
+	free(task_to_free->syscall_regs);
+	free((void*)task_to_free->regs->esp);
+	free(task_to_free);
 }
 
 void task_kill(int pid) {
@@ -157,24 +170,27 @@ task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uin
 	IRQ_OFF();
 
 	task_t * task = new task_t;
+	task->regs = new regs_t;
+	task->syscall_regs = new regs_t;
 
-	task->regs.eflags = eflags;
-	task->regs.cr3 = pagedir;
+	task->regs->eflags = eflags;
+	task->regs->cr3 = pagedir;
 	task->state = TASKST_CRADLE;
 	task->name = task_name;
-	task->regs.eax = task->regs.ebx = task->regs.ecx = task->regs.edx = task->regs.esi = task->regs.edi = 0;
+	task->regs->eax = task->regs->ebx = task->regs->ecx = task->regs->edx = task->regs->esi = task->regs->edi = 0;
 	task->next = 0;
-	task->ttl = task->start_ttl = MAX_TTL;
+	task->ttl = task->start_ttl = 0;
+	task->ttl_pwm_mode = 1;
 
 	if(entry) {
-		task->regs.eip = (uint32_t) entry;
-		task->regs.esp = (uint32_t) malloc(TASK_STACK_SIZE) + TASK_STACK_SIZE;
+		task->regs->eip = (uint32_t) entry;
+		task->regs->esp = (uint32_t) malloc(TASK_STACK_SIZE) + TASK_STACK_SIZE;
 
 		/* Set next pid: */
 		task->pid = ++next_pid;
 
 		/* Prepare X86 stack: */
-		uint32_t * stack_ptr = (uint32_t*)(task->regs.esp);
+		uint32_t * stack_ptr = (uint32_t*)(task->regs->esp);
 		/* Parse it and configure it: */
 		Kernel::CPU::x86_stack_t * stack = (Kernel::CPU::x86_stack_t*)stack_ptr;
 		stack->regs2.ebp = (uint32_t)(stack_ptr + 28);
@@ -182,10 +198,10 @@ task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uin
 		stack->old_addr = (unsigned)task_return_grave;
 		stack->ds = X86_SEGMENT_USER_DATA;
 		stack->cs = X86_SEGMENT_USER_CODE;
-		stack->eip = task->regs.eip;
+		stack->eip = task->regs->eip;
 		stack->eflags.interrupt = 1;
 		stack->eflags.iopl = 3;
-		stack->esp = task->regs.esp;
+		stack->esp = task->regs->esp;
 		stack->ss = X86_SEGMENT_USER_DATA;
 		stack->regs2.eax = (uint32_t)task_return_grave; /* Return address of a task */
 	} else {
@@ -216,6 +232,27 @@ task_t * task_create_and_run(char * task_name, void (*entry)(void), uint32_t efl
 }
 /***************************************************************************/
 
+/****************************** Task creation bootstrap functions ******************************/
+uint32_t fork(void) {
+
+	return 0;
+}
+
+uint32_t task_clone(uintptr_t new_stack, uintptr_t thread_function, uintptr_t arg) {
+
+	return 0;
+}
+
+int task_create_tasklet(void) {
+	return 0;
+}
+
+uint32_t getpid(void) {
+	return current_task->pid;
+}
+
+/***************************************************************************/
+
 /****************************** Task control ******************************/
 void tasking_enable(char enable) {
 	IRQ_OFF();
@@ -223,26 +260,55 @@ void tasking_enable(char enable) {
 	IRQ_RES();
 }
 
-void task_set_ttl(int pid, int ttl) {
+/* Duty cycle is expressed from 0% to 100% */
+void task_set_ttl(int pid, int duty_cycle_or_preload) {
 	IRQ_OFF();
 	task_t * task = (task_t*)list_get(tasklist, pid)->value;
-	if(task) task->start_ttl = task->ttl = ttl;
+	if(task){
+		if(task->ttl_pwm_mode) {
+			task->start_ttl = MAX_TTL - ((duty_cycle_or_preload * MAX_TTL) / 100); /* Duty cycle */
+			task->ttl = 0;
+		} else {
+			task->start_ttl = task->ttl = ((duty_cycle_or_preload * MAX_TTL) / 100); /* Preload value */
+		}
+	}
+	IRQ_RES();
+}
+
+void task_set_ttl_mode(int pid, char pwm_or_pulse_mode) {
+	IRQ_OFF();
+	task_t * task = (task_t*)list_get(tasklist, pid)->value;
+	if(task) {
+		if(pwm_or_pulse_mode) {
+			task->ttl_pwm_mode = 1;
+			task->ttl = task->start_ttl = 0;
+		} else {
+			task->ttl_pwm_mode = 0;
+			task->ttl = task->start_ttl = MAX_TTL;
+		}
+	}
 	IRQ_RES();
 }
 /***************************************************************************/
 
+/****************************** Task initializers ******************************/
 int ctr1 = 0, ctr2 = 0;
 static void task1(void) {
-	for(;;)
+	for(;;) {
+		IRQ_OFF();
 		Kernel::serial.printf("TASK1 %d\n", ctr1++);
+		IRQ_RES();
+	}
 }
 
 static void task2(void) {
-	for(;;)
+	for(;;) {
+		IRQ_OFF();
 		Kernel::serial.printf("TASK2 %d\n", ctr2++);
+		IRQ_RES();
+	}
 }
 
-/****************************** Task initializers ******************************/
 void tasking_install(void) {
 	IRQ_OFF();
 
@@ -264,10 +330,12 @@ void tasking_install(void) {
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */
-#if 0
-	task_t * t1 = task_create_and_run((char*)"task1", task1, current_task->regs.eflags, current_task->regs.cr3);
-	task_t * t2 = task_create_and_run((char*)"task2", task2, current_task->regs.eflags, current_task->regs.cr3);
-#endif
+	task_t * t1 = task_create_and_run((char*)"task1", task1, current_task->regs->eflags, current_task->regs->cr3);
+	task_t * t2 = task_create_and_run((char*)"task2", task2, current_task->regs->eflags, current_task->regs->cr3);
+	task_set_ttl_mode(t1->pid, 0);
+	task_set_ttl_mode(t2->pid, 1);
+	task_set_ttl(t1->pid, 80);
+	task_set_ttl(t2->pid, 10);
 }
 /***************************************************************************/
 

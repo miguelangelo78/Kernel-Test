@@ -14,7 +14,7 @@ char * ver_kernel_version_fmt = (char*)"%d.%d.%d";
 
 int ver_kernel_major = 0;
 int ver_kernel_minor = 0;
-int ver_kernel_lower = 1248;
+int ver_kernel_lower = 1328;
 
 char * ver_kernel_codename = VER_UNKNOWN;
 
@@ -27,4 +27,5 @@ char * ver_kernel_builtby = (char*)"miguel@miguel-pc plat: Linux";
 
 char * ver_kernel_author = (char*)"Miguel Santos";
 ;
+
 

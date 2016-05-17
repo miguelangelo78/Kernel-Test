@@ -24,10 +24,6 @@ void syscall_handler(CPU::regs_t * regs) {
 	uint32_t ret = cback(regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi);
 }
 
-void call(void) {
-	kprintf("CALLED!");
-}
-
 void syscalls_initialize(void) {
 	syscall_vector = new syscall_callback_t[SYSCALL_MAXCALLS];
 	memset(syscall_vector, 0, SYSCALL_MAXCALLS);

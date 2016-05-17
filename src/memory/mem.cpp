@@ -24,7 +24,7 @@ namespace Man {
 #define DIR_PAGE_ITADDRST(startaddr) for(uint32_t page_ctr = startaddr; page_ctr < ALIGNP(PAGES_PER_TABLE * page_count); page_ctr += PAGE_SIZE)
 /*************************************************************************/
 
-paging_directory_t * kernel_directory; /* Declare kernel_directory "statically" */
+paging_directory_t * kernel_directory; /* Declare kernel_directory's pointer */
 paging_directory_t * curr_dir;
 uintptr_t page_count; /* How many pages in TOTAL */
 uintptr_t table_count; /* How many tables in TOTAL */
@@ -96,8 +96,15 @@ paging_directory_t * clone_directory(paging_directory_t * src) {
 		new_dir->table_entries[i].table_address = ((uintptr_t)&new_dir->tables[i]) >> 12;
 
 	/* Remember that the pages' addresses still point to the src's contents, which would make sense */
-
 	return new_dir;
+}
+
+void release_directory(paging_directory_t* dir) {
+
+}
+
+page_table_t * clone_table(page_table_t * src, uintptr_t * physAddr) {
+
 }
 
 bool check_paging(void) {
@@ -115,13 +122,13 @@ void enable_paging(void) {
 }
 
 void disable_paging(void) {
+	is_paging_enabled = 0;
 	/* Disable paging: */
 	asm volatile (
 		"mov %cr0, %eax\n"
 		"xorl $0x80000000, %eax\n"
 		"mov %eax, %cr0\n"
 	);
-	is_paging_enabled = 0;
 }
 
 void switch_directory(paging_directory_t * dir) {

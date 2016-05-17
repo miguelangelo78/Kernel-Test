@@ -62,6 +62,8 @@ namespace Kernel {
 		namespace Man {
 			extern bool check_paging(void);
 			extern paging_directory_t * clone_directory(paging_directory_t*);
+			extern void release_directory(paging_directory_t*);
+			extern page_table_t * clone_table(page_table_t * src, uintptr_t * physAddr);
 			extern void switch_directory(paging_directory_t * dir);
 			extern void enable_paging(void);
 			extern void disable_paging(void);
