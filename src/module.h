@@ -111,7 +111,7 @@ static inline sym_t * symbol_t_find(char * name) {
 
 #define symbol_call_args(function_name, ...) symbol_call_args_((char*)#function_name, PP_NARG(__VA_ARGS__), __VA_ARGS__)
 
-#define SYF(symbol_name) symbol_find(symbol_name)
+#define SYF(symbol_name) symbol_find((char*)symbol_name)
 #define SYA(function_name, ...) symbol_call_args(function_name, __VA_ARGS__)
 #define SYC(function_name) symbol_call(function_name)
 

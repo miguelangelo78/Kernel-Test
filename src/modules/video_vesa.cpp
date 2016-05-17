@@ -13,7 +13,7 @@ static gfx_t * gfx = 0;
 static char is_video_enabled = 0;
 
 static int vid_vesa_init(void) {
-	gfx = (gfx_t*)SYF("gfx");
+	gfx = (gfx_t*)SYF("gfx"); /* Fetch graphics' context */
 	if(gfx->vid_mode) is_video_enabled = 1;
 	SYC("video_finalize");
 	return 0;
@@ -34,4 +34,4 @@ static uintptr_t vid_vesa_ioctl(void * ioctl_packet) {
 	return 0;
 }
 
-MODULE_DEF(vid_vesa_driver, vid_vesa_init, vid_vesa_finit, MODT_CLOCK, "Miguel S.", vid_vesa_ioctl);
+MODULE_DEF(vid_vesa_driver, vid_vesa_init, vid_vesa_finit, MODT_VIDEO, "Miguel S.", vid_vesa_ioctl);

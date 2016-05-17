@@ -19,6 +19,7 @@ static int keyboard_handler(Kernel::CPU::regs_t * regs) {
 	char scan = Kernel::inb(0x60);
 	if(!(scan & 0x80)) {
 		kprintf("%c", kbdus[scan]);
+
 		if(scan==72)
 			scup();
 		if(scan==80)
@@ -37,6 +38,10 @@ static int keyboard_handler(Kernel::CPU::regs_t * regs) {
 	keyboard_wait();
 
 	return 0;
+}
+
+static void cback() {
+	kprintf("MY CALLBACK IS WORKING");
 }
 
 static int keyboard_ini(void) {

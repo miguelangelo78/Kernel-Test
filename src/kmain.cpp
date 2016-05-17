@@ -12,6 +12,7 @@ namespace Kernel {
 		/* Multiboot pointer: */
 		struct multiboot_t * mboot_ptr = 0;
 		mboot_mod_t * mboot_mods = (mboot_mod_t*)0;
+		char is_kinit;
 
 		/* Initial stack pointer: */
 		uintptr_t init_esp = 0;
@@ -82,8 +83,14 @@ namespace Kernel {
 		}
 	}
 
+	char is_kernel_init(void) {
+		return is_kinit;
+	}
+	EXPORT_SYMBOL(is_kernel_init);
+
 	int kmain(struct multiboot_t * mboot, unsigned magic, uint32_t initial_esp)
 	{
+		is_kinit = 0;
 		/******* Initialize everything: *******/
 		/* Initialize critical data: */
 		KInit::init_esp = initial_esp;
@@ -188,6 +195,7 @@ namespace Kernel {
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
 
 		kputsc("\nReady", COLOR_GOOD);
+		is_kinit = 1;
 
 		int ctr=0;
 		for(;;) {

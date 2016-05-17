@@ -281,6 +281,7 @@ namespace Kernel {
 		typedef uint32_t (*syscall_callback_t)(unsigned int, ...);
 
 		void syscalls_initialize(void);
+		char syscall_schedule_install(char * syscall_name, int no, uintptr_t syscall_addr);
 		#define syscall_install(syscall_name, no) syscall_install_s((char*)# syscall_name, no, (uintptr_t)syscall_name)
 		void syscall_install_n(int no, uintptr_t syscall);
 		void syscall_install_s(char * syscall_name, int no, uintptr_t syscall_addr);
