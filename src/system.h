@@ -215,7 +215,8 @@ namespace Kernel {
 			regs_t * syscall_regs;
 			char ttl_pwm_mode;
 			int ttl;
-			int start_ttl;
+			int ttl_start;
+			int ttl_fscale; /* Switching frequency scale */
 			char state;
 			int exitcode;
 			int pid;
@@ -234,7 +235,11 @@ namespace Kernel {
 		task_t * task_create_and_run(char * task_name, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
 		void switch_task(char new_process_state);
 		void tasking_enable(char enable);
+		void task_set_ttl(task_t * task, int duty_cycle_or_preload);
 		void task_set_ttl(int pid, int duty_cycle_or_preload);
+		void task_set_ttl_fscale(task_t * task, int fscale);
+		void task_set_ttl_fscale(int pid, int fscale);
+		void task_set_ttl_mode(task_t * task, char pwm_or_pulse_mode);
 		void task_set_ttl_mode(int pid, char pwm_or_pulse_mode);
 		void task_kill(int pid);
 		void task_free(task_t * task_to_free);

@@ -189,9 +189,14 @@ namespace Kernel {
 
 		kputsc("\nReady", COLOR_GOOD);
 
-		for(;;)
+		int ctr=0;
+		for(;;) {
+			Point p = term.go_to(50, 2);
+			term.printf("MAINTASK: %d      ", ctr++);
+			term.go_to(p.X, p.Y);
 			if(serial.is_ready()) /* Echo back: */
 				kprintf("%c", serial.read_async());
+		}
 		return 0;
 	}
 

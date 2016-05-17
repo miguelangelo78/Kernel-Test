@@ -13,7 +13,7 @@ namespace Task {
 
 /* Max number of processes the kernel will switch: */
 #define MAX_PID 32768
-#define MAX_TTL 1000 /* Maximum allowable time to live (expressed in switching count, not by ms or seconds) */
+#define MAX_TTL 2000 /* Maximum allowable time to live (expressed in switching count, not by ms or seconds) */
 
 #define TASK_STACK_SIZE (PAGE_SIZE * 2)
 
@@ -79,18 +79,18 @@ void switch_task(char new_process_state) {
 		if(next_task) {
 			if(next_task->pid != 0) {
 				if(next_task->ttl_pwm_mode) { /* Decide the switch via PWM conditions */
-					if(next_task->ttl++ < next_task->start_ttl)
+					if(next_task->ttl++ < next_task->ttl_start)
 						continue; /* This task is not allowed to live while its TTL is counting */
 					else
-						if(next_task->ttl >= MAX_TTL)
+						if(next_task->ttl >= next_task->ttl_fscale)
 							next_task->ttl = 0; /* Restart TTL counter AND switch */
 				} else { /* Decide the switch via non-PWM conditions */
-					if(next_task->ttl < MAX_TTL) {
+					if(next_task->ttl < next_task->ttl_fscale) {
 						next_task->ttl++;
 						continue; /* This task is not allowed to live while its TTL is counting */
 					}
 					else
-						next_task->ttl = next_task->start_ttl; /* Restart TTL counter AND switch */
+						next_task->ttl = next_task->ttl_start; /* Restart TTL counter AND switch */
 				}
 			}
 
@@ -179,7 +179,8 @@ task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uin
 	task->name = task_name;
 	task->regs->eax = task->regs->ebx = task->regs->ecx = task->regs->edx = task->regs->esi = task->regs->edi = 0;
 	task->next = 0;
-	task->ttl = task->start_ttl = 0;
+	task->ttl = task->ttl_start = 0;
+	task->ttl_fscale = MAX_TTL;
 	task->ttl_pwm_mode = 1;
 
 	if(entry) {
@@ -261,15 +262,54 @@ void tasking_enable(char enable) {
 }
 
 /* Duty cycle is expressed from 0% to 100% */
+void task_set_ttl(task_t * task, int duty_cycle_or_preload) {
+	IRQ_OFF();
+	if(task){
+		if(task->ttl_pwm_mode) {
+			task->ttl_start = task->ttl_fscale - ((duty_cycle_or_preload * task->ttl_fscale) / 100); /* Duty cycle */
+			task->ttl = 0;
+		} else {
+			task->ttl_start = task->ttl = ((duty_cycle_or_preload * task->ttl_fscale) / 100); /* Preload value */
+		}
+	}
+	IRQ_RES();
+}
+
+/* Duty cycle is expressed from 0% to 100% */
 void task_set_ttl(int pid, int duty_cycle_or_preload) {
 	IRQ_OFF();
 	task_t * task = (task_t*)list_get(tasklist, pid)->value;
-	if(task){
-		if(task->ttl_pwm_mode) {
-			task->start_ttl = MAX_TTL - ((duty_cycle_or_preload * MAX_TTL) / 100); /* Duty cycle */
-			task->ttl = 0;
+	if(task)
+		task_set_ttl(task, duty_cycle_or_preload);
+	IRQ_RES();
+}
+
+void task_set_ttl_fscale(task_t * task, int fscale) {
+	IRQ_OFF();
+	if(task) {
+		task->ttl_fscale = fscale <= 0 ? MAX_TTL : (fscale >= MAX_TTL ? MAX_TTL : fscale);
+		task_set_ttl(task, 100); /* Set default duty cycle to 100% */
+	}
+	IRQ_RES();
+}
+
+void task_set_ttl_fscale(int pid, int fscale) {
+	IRQ_OFF();
+	task_t * task = (task_t*)list_get(tasklist, pid)->value;
+	if(task)
+		task_set_ttl_fscale(task->pid, fscale);
+	IRQ_RES();
+}
+
+void task_set_ttl_mode(task_t * task, char pwm_or_pulse_mode) {
+	IRQ_OFF();
+	if(task) {
+		if(pwm_or_pulse_mode) {
+			task->ttl_pwm_mode = 1;
+			task->ttl = task->ttl_start = 0;
 		} else {
-			task->start_ttl = task->ttl = ((duty_cycle_or_preload * MAX_TTL) / 100); /* Preload value */
+			task->ttl_pwm_mode = 0;
+			task->ttl = task->ttl_start = task->ttl_fscale;
 		}
 	}
 	IRQ_RES();
@@ -278,15 +318,8 @@ void task_set_ttl(int pid, int duty_cycle_or_preload) {
 void task_set_ttl_mode(int pid, char pwm_or_pulse_mode) {
 	IRQ_OFF();
 	task_t * task = (task_t*)list_get(tasklist, pid)->value;
-	if(task) {
-		if(pwm_or_pulse_mode) {
-			task->ttl_pwm_mode = 1;
-			task->ttl = task->start_ttl = 0;
-		} else {
-			task->ttl_pwm_mode = 0;
-			task->ttl = task->start_ttl = MAX_TTL;
-		}
-	}
+	if(task)
+		task_set_ttl_mode(task, pwm_or_pulse_mode);
 	IRQ_RES();
 }
 /***************************************************************************/
@@ -296,7 +329,9 @@ int ctr1 = 0, ctr2 = 0;
 static void task1(void) {
 	for(;;) {
 		IRQ_OFF();
-		Kernel::serial.printf("TASK1 %d\n", ctr1++);
+		Point p = Kernel::term.go_to(50, 0);
+		Kernel::term.printf("TASK1 (pulse) %d      ", ctr1++);
+		Kernel::term.go_to(p.X, p.Y);
 		IRQ_RES();
 	}
 }
@@ -304,7 +339,9 @@ static void task1(void) {
 static void task2(void) {
 	for(;;) {
 		IRQ_OFF();
-		Kernel::serial.printf("TASK2 %d\n", ctr2++);
+		Point p = Kernel::term.go_to(50, 1);
+		Kernel::term.printf("TASK2 (pwm) %d      ", ctr2++);
+		Kernel::term.go_to(p.X, p.Y);
 		IRQ_RES();
 	}
 }
@@ -334,8 +371,11 @@ void tasking_install(void) {
 	task_t * t2 = task_create_and_run((char*)"task2", task2, current_task->regs->eflags, current_task->regs->cr3);
 	task_set_ttl_mode(t1->pid, 0);
 	task_set_ttl_mode(t2->pid, 1);
-	task_set_ttl(t1->pid, 80);
-	task_set_ttl(t2->pid, 10);
+
+	task_set_ttl_fscale(t1, 1000);
+
+	task_set_ttl(t1, 80);
+	task_set_ttl(t2, 10);
 }
 /***************************************************************************/
 
