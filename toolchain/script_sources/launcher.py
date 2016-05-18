@@ -2,12 +2,11 @@ import platform, os, sys, commands
 from os import listdir
 from os.path import isfile, join
 
-plat = platform.system()
-
 pwd = os.path.abspath(os.path.dirname(sys.argv[0]))
-if plat != "Windows":
-	# Which Linux is this?
-	plat = commands.getstatusoutput("cat /etc/os-release | grep 'ID_LIKE.*'")[1][8:].capitalize()
+sys.path.append(pwd + "/script_sources")
+from platform_inc import plat_get
+
+plat = plat_get()
 
 # Show help message:
 if len(sys.argv) > 1:
@@ -26,7 +25,7 @@ if plat == "Debian":
 		os.system(pwd + "/Debian/" + sys.argv[1] + ".sh")
 	else:
 		os.system(pwd + "/Debian/launch_x86_64.sh")
-else:
+if plat == "Windows":
 	# Run Windows' scripts
 	if len(sys.argv) > 1:
 		os.system(pwd + "/Windows/" + sys.argv[1]+".bat")

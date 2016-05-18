@@ -44,6 +44,13 @@ void task_addtotree(task_t * parent_task, task_t * new_task) {
 	tasklist_size++;
 }
 
+uint32_t getpid(void) {
+	return current_task->pid;
+}
+
+task_t * task_get(void) {
+	return current_task;
+}
 /****************************** Task error handling ******************************/
 void task_error_handle(task_t * task, char error_type) {
 	switch(error_type) {
@@ -250,14 +257,6 @@ uint32_t task_clone(uintptr_t new_stack, uintptr_t thread_function, uintptr_t ar
 
 int task_create_tasklet(void) {
 	return 0;
-}
-
-uint32_t getpid(void) {
-	return current_task->pid;
-}
-
-task_t * task_get(void) {
-	return current_task;
 }
 /***************************************************************************/
 

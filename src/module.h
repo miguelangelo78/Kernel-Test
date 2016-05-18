@@ -213,7 +213,7 @@ namespace Module {
 	extern char module_type_exists(char mod_type);
 	extern char module_exists(char * modname);
 	extern char module_exists(modent_t * mod);
-	extern int module_add(modent_t * mod);
+	extern int module_add(modent_t * mod, char run_module);
 	extern char module_remove(char * modname);
 	extern char module_remove(int mod_idx);
 	extern char module_remove(modent_t * mod);

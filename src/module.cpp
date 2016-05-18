@@ -104,12 +104,14 @@ char module_exists(modent_t * mod) {
 	return list_find(modlist, mod) ? 1 : 0;
 }
 
-int module_add(modent_t * mod) {
+int module_add(modent_t * mod, char run_module) {
 	if(module_exists(mod)) return 0;
 	hashmap_set(mod_initlist, &mod->name[0], (void*)mod->init);
 	hashmap_set(mod_quitlist, &mod->name[0], (void*)mod->finit);
 
-	int ret = mod->init();
+	int ret = -1;
+	if(run_module)
+		ret = mod->init();
 	/* Redirect callbacks: */
 	mod->init = module_init_cback;
 	mod->finit = module_remover_manager;
@@ -195,8 +197,14 @@ void modules_load(void) {
 		uint8_t * modblob = (uint8_t*)initrd_readfile(mod, 1);
 		char is_elf = elf32_is_elf(modblob);
 
-		kprintf("\n * %d - Module (%s): %s", i+1, mod->name, is_elf ? "VALID ELF" : "!INVALID ELF!");
-		if(!is_elf) continue;
+		kprintf("\n * %d - Module (%s): ", i+1, mod->name);
+		if(is_elf) {
+			kputsc("VALID ELF", COLOR_GOOD);
+		}
+		else {
+			kputsc("INVALID ELF", COLOR_BAD);
+			continue;
+		}
 
 		/* Prepare elf file first: */
 		if(elf_relocate((elf32_ehdr*)modblob)) {
@@ -209,7 +217,7 @@ void modules_load(void) {
 			}
 
 			if(modentry && modentry != (modent_t *)MOD_DEP && modentry->init) {
-				kprintf(" > ret: %d", module_add(modentry));
+				kprintf(" > ret: %d", module_add(modentry, 1));
 				/* Run scheduled initializations: */
 				if(hashmap_has(mod_sched_quick, modentry->name)) {
 					FCASTF(hashmap_get(mod_sched_quick, modentry->name), int, void)();
