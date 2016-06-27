@@ -5,53 +5,10 @@
 ![Kernel screenshot 2](http://i.imgur.com/PQ29Gcw.png)
 ![Kernel screenshot 3](http://i.imgur.com/FxDpD1g.png)
 
-# Before Building and Running
-You'll be required to make small preparations before compiling and testing the kernel.
-
-**Steps:**
-----------
-
-**Step 1)** Download this repository, and put it wherever you want (Desktop maybe?)
-
-**Step 2)**
- 
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
-
-> Download the prebuilt cross compiler i686-elf for Windows from here: [i686-elf Windows Cross Compiler Download](https://docs.google.com/uc?export=download&confirm=o2Dx&id=0B85K_c7mx3QjUnZuaFRPWlBIcXM).
-> Extract it and rename the folder to i686-elf.
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
-
-> (Soon...)
-
-**Step 3)** Create a new folder inside toolchain/Tools/{Windows|Linux} (Linux soon...) named 'Cross', and put the previous folder (i686-elf) inside the Cross folder. For example, you'd have the path: toolchain/Tools/Windows/Cross/i686-elf/ ......
-
-**Step 4)**
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
-
-> Install Prebuilt Clang from here: [Clang Download](http://llvm.org/releases/download.html)
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
-
-> (Soon...)
-
-
-**Step 5)**
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
-> Download QEMU binaries for windows from here: [QEMU Download](http://qemu.weilnetz.de/) and install them normally on your computer
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
-> (Soon...)
-
-**Step 6)**
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
-> Download and install MINGW from here: [MINGW Download](http://www.mingw.org/). This will be necessary because of GDB.
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
-> Simply install GDB using ```> sudo apt-get install gdb```
+# How To Install
+Simply Download the following scripts:
+* [**Windows**](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat)
+* [**Linux - Soon**](#)
 
 
 # How to Build and Run
