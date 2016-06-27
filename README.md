@@ -16,7 +16,7 @@ Follow all the prompts that are given during installation.
 
 # How to Build and Run
 
-> Access the folder 'toolchain/[Windows | Debian]/' and there you'll find 9 scripts:  
+Access the folder 'toolchain/[Windows | Debian]/' and there you'll find 9 scripts:  
 	> 1- **bindump**: Reads the kernel file with 'readelf' and opens a text editor with the result  
 	> 2- **bootable_usb**: Makes your flash drive bootable with the kernel  
 	> 3- **build**: Build the Kernel  
