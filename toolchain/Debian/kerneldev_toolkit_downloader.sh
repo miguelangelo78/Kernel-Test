@@ -16,7 +16,7 @@ NEW_PKG "Python 2.7.11" python2.7 python
 NEW_PKG GDB gdb gdb
 NEW_PKG "Clang 3.8.0 (LLVM)" clang-3.8 clang-3.8
 NEW_PKG Git git git
-NEW_PKG QEMU qemu qemu-system-x86_64
+NEW_PKG QEMU qemu-system-x86 qemu-system-x86_64
 #!!!!!!!!!!!!!!!!!!!!!!!! CREATE PACKAGES HERE !!!!!!!!!!!!!!!!!!!!!!!!
 
 printf "********* Kernel Development Toolkit Downloader *********\n"
