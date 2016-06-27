@@ -6,6 +6,7 @@ cls
 set pkg_count=0
 
 rem !!!!!!!!!!!!!!!!!!!!!!!! CREATE PACKAGES HERE !!!!!!!!!!!!!!!!!!!!!!!!
+call :NEW_PKG "Python 2.7.11" python-2.7.11.msi python.exe "https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi"
 call :NEW_PKG MinGW mingw-get-setup.exe gcc.exe "http://downloads.sourceforge.net/project/mingw/Installer/mingw-get-setup.exe?r=http%3A%2F%2Fwww.mingw.org%2Fdownload%2Finstaller%3F`&ts=1466972726`&use_mirror=ufpr"
 call :NEW_PKG "Clang 3.8.0 (LLVM)" LLVM-3.8.0-win32.exe clang.exe "http://llvm.org/releases/3.8.0/LLVM-3.8.0-win32.exe"
 call :NEW_PKG Git Git-2.9.0-64-bit.exe git.exe "https://github.com/git-for-windows/git/releases/download/v2.9.0.windows.1/Git-2.9.0-32-bit.exe"
