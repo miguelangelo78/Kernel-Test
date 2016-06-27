@@ -8,7 +8,7 @@
 # How To Install
 This project can be compiled and executed in both Windows and Linux distros.
 
-Simply Download and Run the following scripts (save as...):
+Simply Download (save as...) and Run the following scripts:
 * [**Windows**](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat)
 * [**Linux - Soon**](#)
 
