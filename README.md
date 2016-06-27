@@ -15,20 +15,17 @@ Follow all the prompts that are given during installation.
 # How to Build and Run
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
 
-> Access the folder 'toolchain/Windows/' and there you'll find 9 batch scripts:  
-	> 1- **bindump.bat**: Reads the kernel file with 'readelf' and opens a text editor with the result  
-	> 2- **bootable_usb.bat**: Makes your flash drive bootable with the kernel  
-	> 3- **build.bat**: Build the Kernel  
-	> 4- **build_and_run.bat**: Build the Kernel and run it immediately  
-	> 5- **clean.bat**: Delete all object files from the folder build  
-	> 6- **rebuild.bat**: Generates automatically the makefiles for all source files and rebuilds the Kernel  
-	> 7- **rebuild_and_run.bat**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it  
-	> 8/9- **launch_i386.bat / launch_x86_64.bat**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).  
+> Access the folder 'toolchain/[Windows | Debian]/' and there you'll find 9 batch scripts:  
+	> 1- **bindump**: Reads the kernel file with 'readelf' and opens a text editor with the result  
+	> 2- **bootable_usb**: Makes your flash drive bootable with the kernel  
+	> 3- **build**: Build the Kernel  
+	> 4- **build_and_run**: Build the Kernel and run it immediately  
+	> 5- **clean**: Delete all object files from the folder build  
+	> 6- **rebuild**: Generates automatically the makefiles for all source files and rebuilds the Kernel  
+	> 7- **rebuild_and_run**: Generates automatically the makefiles for all source files, rebuilds the Kernel and runs it  
+	> 8/9- **launch_i386 / launch_x86_64**: Simply launch the Kernel on QEMU/VirtualBox. (**NOTE**: If you want to launch on VirtualBox you'll have to install it and set up the VM and point the .iso path to VBox for boot up. The same applies to Bochs).  
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For a more productive way of development, simply use Eclipse IDE (with CDT plugin) and import this repository into the workspace. The scripts are already set up and ready to be built and run.
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Linux**
-> (Soon...)
 
 # How to Run on real machines
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If you want a more realistic approach to Kernel Development, you can simply access the folder 'toolchain/Windows' and run the script bootable_usb.bat. It'll ask what drive letter you want to install the kernel to, and you should select the Pendrive's correct letter. Then, simply boot the pendrive on any machine and it should work.
