@@ -1,7 +1,8 @@
 #!/bin/sh
+cd `dirname $0`
 echo "Setting up toolchain for Linux Debian"
 
-echo "Press any key to exit ..."
+./kerneldev_toolkit_downloader.sh
 read usr
 
 # Close Terminal Emulator:
