@@ -36,11 +36,16 @@ while true; do
 			printf "\n***** Step 1: Downloading and installing Packages *****\n"
 			for i in `seq 1 ${pkg_count}`;
 			do
-				printf "   $i- Installing ${pkg_name[$i]}\n"
+				printf "   $i- Installing '${pkg_name[$i]}'\n"
 				if hash ${pkg_exec[$i]} 2>/dev/null; then
 					printf "    ** The program '${pkg_name[$i]}' is already installed\n"
 				else
-					sudo apt-get install ${pkg_setup[$i]}
+					if [ "${pkg_setup[$i]}" = "update" ] 
+					then
+						sudo apt-get ${pkg_setup[$i]}
+					else
+						sudo apt-get install ${pkg_setup[$i]}
+					fi
 					printf "    ** Done"
 				fi
 			done
