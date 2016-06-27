@@ -6,6 +6,8 @@
 ![Kernel screenshot 3](http://i.imgur.com/FxDpD1g.png)
 
 # How To Install
+This project can be compiled and executed in both Windows and Linux distros.
+
 Simply Download and Run the following scripts (save as...):
 * [**Windows**](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat)
 * [**Linux - Soon**](#)
@@ -13,7 +15,6 @@ Simply Download and Run the following scripts (save as...):
 Follow all the prompts that are given during installation.
 
 # How to Build and Run
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**>> For Windows**
 
 > Access the folder 'toolchain/[Windows | Debian]/' and there you'll find 9 batch scripts:  
 	> 1- **bindump**: Reads the kernel file with 'readelf' and opens a text editor with the result  
