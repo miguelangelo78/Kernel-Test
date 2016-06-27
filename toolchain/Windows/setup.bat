@@ -1,6 +1,3 @@
+@cd "%~dp0"
 printf "Setting up toolchain for Windows"
-
-
-printf "Press any key to exit ..."
-
-PAUSE
+call kerneldev_toolkit_downloader.bat
