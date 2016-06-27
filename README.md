@@ -12,7 +12,18 @@ Simply Download (save as...) and Run the following scripts:
 * [**Windows**](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat)
 * [**Debian / Ubuntu / Linux Mint**](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Debian/kerneldev_toolkit_downloader.sh)
 
-Follow all the prompts that are given during installation.
+* **One liners:**
+* Alternatively, run on the command line the following commands:
+* **Windows**
+```
+ 
+```
+* **Debian / Ubuntu / Linux Mint**
+```
+wget https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Debian/kerneldev_toolkit_downloader.sh && chmod +x ./kerneldev_toolkit_downloader.sh && ./kerneldev_toolkit_downloader.sh
+```
+
+Follow all the prompts that are given during installation.  
 Note: remember to run chmod +x on the linux script in order to run it.
 
 # How to Build and Run
