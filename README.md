@@ -6,7 +6,7 @@
 ![Kernel screenshot 3](http://i.imgur.com/FxDpD1g.png)
 
 # How To Install
-Simply Download and Run the following scripts:
+Simply Download and Run the following scripts (save as...):
 * [**Windows**](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat)
 * [**Linux - Soon**](#)
 
