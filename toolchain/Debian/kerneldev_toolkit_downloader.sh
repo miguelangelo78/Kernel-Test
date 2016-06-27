@@ -46,7 +46,7 @@ while true; do
 					else
 						sudo apt-get install ${pkg_setup[$i]}
 					fi
-					printf "    ** Done"
+					printf "    ** Done\n"
 				fi
 			done
 			
