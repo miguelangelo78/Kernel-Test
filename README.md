@@ -67,7 +67,7 @@ These scripts were prepared for only Windows for now. Linux will come soon.
 # Project structure
 >1) Documentation - The Documentation of this Kernel will progressively go here
 
->2) build - All objects file will go here
+>2) build - All object files will go here
 
 >2.1) build/modules - All built modules will go here
 
