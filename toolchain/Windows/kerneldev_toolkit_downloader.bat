@@ -79,7 +79,7 @@ GOTO END
 set /A pkg_count=%pkg_count%+1
 set pkg[%pkg_count%].Name=%~1
 set pkg[%pkg_count%].Setup=%~2
-set pkt[%pkg_count%].Exec=%~3
+set pkg[%pkg_count%].Exec=%~3
 set pkg[%pkg_count%].URL="%~4"
 goto:EOF
 
