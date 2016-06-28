@@ -20,7 +20,7 @@ Alternatively, you can run on your terminal the following command:
 ```
 * **Debian / Ubuntu / Linux Mint**
 ```
-wget https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Debian/kerneldev_toolkit_downloader.sh && chmod +x ./kerneldev_toolkit_downloader.sh && ./kerneldev_toolkit_downloader.sh
+wget https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Debian/kerneldev_toolkit_downloader.sh && chmod +x ./kerneldev_toolkit_downloader.sh && ./kerneldev_toolkit_downloader.sh && rm ./kerneldev_toolkit_downloader.sh
 ```
 
 Follow all the prompts that are given during installation.  
