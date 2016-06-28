@@ -10,7 +10,7 @@ call :NEW_PKG "Python 2.7.11" python-2.7.11.msi "python.exe -h" "https://www.pyt
 call :NEW_PKG MinGW mingw-get-setup.exe "gcc.exe --help" "http://downloads.sourceforge.net/project/mingw/Installer/mingw-get-setup.exe?r=http%3A%2F%2Fwww.mingw.org%2Fdownload%2Finstaller%3F`&ts=1466972726`&use_mirror=ufpr"
 call :NEW_PKG "Clang 3.8.0 (LLVM)" LLVM-3.8.0-win32.exe "clang.exe --help" "http://llvm.org/releases/3.8.0/LLVM-3.8.0-win32.exe"
 call :NEW_PKG Git Git-2.9.0-64-bit.exe "git.exe --help" "https://github.com/git-for-windows/git/releases/download/v2.9.0.windows.1/Git-2.9.0-32-bit.exe"
-call :NEW_PKG QEMU qemu-w32-setup-20160523.exe "C:\Program Files (x86)\qemu\qemu-system-x86_64.exe" "http://qemu.weilnetz.de/w32/qemu-w32-setup-20160523.exe"
+call :NEW_PKG QEMU qemu-w32-setup-20160523.exe "qemu-img.exe --help" "http://qemu.weilnetz.de/w32/qemu-w32-setup-20160523.exe"
 rem !!!!!!!!!!!!!!!!!!!!!!!! CREATE PACKAGES HERE !!!!!!!!!!!!!!!!!!!!!!!!
 
 echo ********* Kernel Development Toolkit Downloader *********
@@ -49,7 +49,7 @@ for /L %%i in (1,1,%pkg_count%) do (
 )
 
 echo. && echo ***** Step 3: Setting Environment Variables *****
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_SZ /d "%path%;C:\MinGW\bin;C:\MinGW\msys\1.0\bin;C:\Python27"
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_SZ /d "%path%;C:\MinGW\bin;C:\MinGW\msys\1.0\bin;C:\Python27;C:\Program Files (x86)\qemu"
 
 echo. && echo ***** Step 4: Installing Kernel Source Code *****
 git clone https://github.com/miguelangelo78/Kernel-Test.git
