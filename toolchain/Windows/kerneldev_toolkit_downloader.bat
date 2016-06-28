@@ -49,11 +49,9 @@ for /L %%i in (1,1,%pkg_count%) do (
 )
 
 echo. && echo ***** Step 3: Setting Environment Variables *****
-"qemu-img.exe --help" >nul 2>&1 && (
+if not exist "C:\Program Files (x86)\qemu\" (
 	reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_SZ /d "%path%;C:\MinGW\bin;C:\MinGW\msys\1.0\bin;C:\Python27;C:\Program Files (x86)\qemu"
-) || (
-	echo Environment is already set
-)	
+)
 
 echo. && echo ***** Step 4: Installing Kernel Source Code *****
 git clone https://github.com/miguelangelo78/Kernel-Test.git
