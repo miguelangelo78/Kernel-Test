@@ -9,12 +9,12 @@
 This project can be compiled and executed in both Windows and Linux distros.
 
 Simply Download (save as...) and Run the following scripts:
-* [**Windows**](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat)
+* [**Windows** (run as admin)](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat)
 * [**Debian / Ubuntu / Linux Mint**](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Debian/kerneldev_toolkit_downloader.sh)
 
 
 Alternatively, you can run on your terminal the following command:
-* **Windows**
+* **Windows** (run as admin)  
 ```
 powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat', 'kerneldev_toolkit_downloader.bat')" && kerneldev_toolkit_downloader.bat && del kerneldev_toolkit_downloader.bat
 ```
