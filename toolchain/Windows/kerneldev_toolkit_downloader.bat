@@ -48,13 +48,16 @@ for /L %%i in (1,1,%pkg_count%) do (
 	)
 )
 
-echo. && echo ***** Step 3: Installing Kernel Source Code *****
+echo. && echo ***** Step 3: Setting Environment Variables *****
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_SZ /d "%path%;C:\MinGW\bin"
+
+echo. && echo ***** Step 4: Installing Kernel Source Code *****
 git clone https://github.com/miguelangelo78/Kernel-Test.git
 cd Kernel-Test
 git pull
 cd ..
 
-echo ***** Step 4: Success! ***** && echo.
+echo ***** Step 5: Success! ***** && echo.
 
 :PROMPT
 SET /P CLEAN_ACCEPT="* Do you wish to clean up the downloaded files [Y]/n: "
