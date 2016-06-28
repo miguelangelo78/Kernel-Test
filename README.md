@@ -16,7 +16,7 @@ Simply Download (save as...) and Run the following scripts:
 Alternatively, you can run on your terminal the following command:
 * **Windows**
 ```
- 
+ powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat', 'kerneldev_toolkit_downloader.bat')" && kerneldev_toolkit_downloader.bat && del kerneldev_toolkit_downloader.bat
 ```
 * **Debian / Ubuntu / Linux Mint**
 ```
