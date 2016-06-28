@@ -41,17 +41,17 @@ for /L %%i in (1,1,%pkg_count%) do (
 	echo.
 )
 
-echo ***** Step 2: Installing Packages *****
+echo. && echo ***** Step 2: Setting Environment Variables *****
+if not exist "C:\Program Files (x86)\qemu\" (
+	reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_SZ /d "%path%;C:\MinGW\bin;C:\MinGW\msys\1.0\bin;C:\Python27;C:\Program Files (x86)\qemu"
+)
+
+echo ***** Step 3: Installing Packages *****
 for /L %%i in (1,1,%pkg_count%) do (
 	if exist "!pkg[%%i].Setup!" (
 		call echo     %%i- Installing %%pkg[%%i].Name%% . . .
 		!pkg[%%i].Setup!
 	)
-)
-
-echo. && echo ***** Step 3: Setting Environment Variables *****
-if not exist "C:\Program Files (x86)\qemu\" (
-	reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_SZ /d "%path%;C:\MinGW\bin;C:\MinGW\msys\1.0\bin;C:\Python27;C:\Program Files (x86)\qemu"
 )
 
 echo. && echo ***** Step 4: Installing Kernel Source Code *****
