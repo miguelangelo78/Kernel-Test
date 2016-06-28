@@ -9,7 +9,7 @@
 This project can be compiled and executed in both Windows and Linux distros.
 
 Simply Download (save as...) and Run the following scripts:
-* [**Windows** (run as admin)](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat)
+* [**Windows**](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Windows/kerneldev_toolkit_downloader.bat)(run as admin)
 * [**Debian / Ubuntu / Linux Mint**](https://raw.githubusercontent.com/miguelangelo78/Kernel-Test/master/toolchain/Debian/kerneldev_toolkit_downloader.sh)
 
 
