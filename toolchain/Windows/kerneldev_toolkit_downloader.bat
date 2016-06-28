@@ -55,9 +55,9 @@ for /L %%i in (1,1,%pkg_count%) do (
 )
 
 echo. && echo ***** Step 4: Installing Kernel Source Code *****
-git clone https://github.com/miguelangelo78/Kernel-Test.git
+"C:\Program Files (x86)\Git\bin\git" clone https://github.com/miguelangelo78/Kernel-Test.git
 cd Kernel-Test
-git pull
+"C:\Program Files (x86)\Git\bin\git" pull
 cd ..
 
 echo ***** Step 5: Success! ***** && echo.
