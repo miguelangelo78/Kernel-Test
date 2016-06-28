@@ -37,7 +37,7 @@ while true; do
 			sudo apt-get install software-properties-common
 			# Clang:
 			printf "\n***** Step 1: Adding repositories *****\n"
-			printf "    1- Adding Clang repositores\n"
+			printf "    1- Adding Clang repositories\n"
 			wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
 			sudo add-apt-repository "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.8 main"
 			
