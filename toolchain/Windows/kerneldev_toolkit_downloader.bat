@@ -27,16 +27,15 @@ echo. && echo ***** Step 1: Downloading Packages *****
 
 for /L %%i in (1,1,%pkg_count%) do (
 	call echo     %%i- Downloading %%pkg[%%i].Name%% . . .
-	!pkg[%%i].Exec! 2> NUL
-	if %ERRORLEVEL%==9009 (
-		if NOT exist "!pkg[%%i].Setup!" (
+	!pkg[%%i].Exec! >nul 2>&1 && (
+    		echo     The program is already installed
+	) || (
+    		if NOT exist "!pkg[%%i].Setup!" (
 			powershell -Command "(New-Object Net.WebClient).DownloadFile('!pkg[%%i].URL!', '!pkg[%%i].Setup!')"
 			echo     Done
 		) else (
 			echo     File already exists
 		)
-	) else (
-		echo     The program is already installed
 	)
 	echo.
 )
