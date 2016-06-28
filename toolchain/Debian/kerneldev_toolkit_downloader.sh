@@ -32,8 +32,15 @@ while true; do
 	read -p "* Do you accept these changes [Y]/n: " yn
 	case $yn in
 		[Yy]* ) 
+			############### Add repositories: ###############
+			# Clang:
+			printf "\n***** Step 1: Adding repositories *****\n"
+			printf "    1- Adding Clang repositores\n"
+			wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
+			sudo add-apt-repository "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.8 main"
+			
 			############### Download and install packages: ###############
-			printf "\n***** Step 1: Downloading and installing Packages *****\n"
+			printf "\n***** Step 2: Downloading and installing Packages *****\n"
 			for i in `seq 1 ${pkg_count}`;
 			do
 				printf "   $i- Installing '${pkg_name[$i]}'\n"
@@ -51,7 +58,7 @@ while true; do
 			done
 			
 			############### Install Kernel Source Code: ###############
-			printf "\n***** Step 2: Installing Kernel Source Code *****\n"
+			printf "\n***** Step 3: Installing Kernel Source Code *****\n"
 			git clone https://github.com/miguelangelo78/Kernel-Test.git
 			cd Kernel-Test
 			git pull
@@ -59,7 +66,7 @@ while true; do
 			cd ..
 			
 			############### FINISHED ###############
-			printf "\n***** Step 3: Success *****\n"
+			printf "\n***** Step 4: Success *****\n"
 			printf "\n** Download and Installation complete! **\n"
 			read -p "Press Enter key to exit..."
 			
