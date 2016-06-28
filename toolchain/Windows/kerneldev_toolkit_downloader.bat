@@ -11,6 +11,7 @@ call :NEW_PKG MinGW mingw-get-setup.exe "gcc.exe --help" "http://downloads.sourc
 call :NEW_PKG "Clang 3.8.0 (LLVM)" LLVM-3.8.0-win32.exe "clang.exe --help" "http://llvm.org/releases/3.8.0/LLVM-3.8.0-win32.exe"
 call :NEW_PKG Git Git-2.9.0-64-bit.exe "git.exe --help" "https://github.com/git-for-windows/git/releases/download/v2.9.0.windows.1/Git-2.9.0-32-bit.exe"
 call :NEW_PKG QEMU qemu-w32-setup-20160523.exe "qemu-img.exe --help" "http://qemu.weilnetz.de/w32/qemu-w32-setup-20160523.exe"
+call :NEW_PKG "Eltima Virtual Serial Port Driver" vspd.exe "dummy_exe.exe" "http://www.eltima.com/download/vspd.exe"
 rem !!!!!!!!!!!!!!!!!!!!!!!! CREATE PACKAGES HERE !!!!!!!!!!!!!!!!!!!!!!!!
 
 echo ********* Kernel Development Toolkit Downloader *********
@@ -49,11 +50,9 @@ for /L %%i in (1,1,%pkg_count%) do (
 )
 
 echo. && echo ***** Step 3: Setting Environment Variables *****
-"qemu-img.exe --help" >nul 2>&1 && (
+if not exist "C:\Program Files (x86)\qemu\" (
 	reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_SZ /d "%path%;C:\MinGW\bin;C:\MinGW\msys\1.0\bin;C:\Python27;C:\Program Files (x86)\qemu"
-) || (
-	echo Environment is already set
-)	
+)
 
 echo. && echo ***** Step 4: Installing Kernel Source Code *****
 git clone https://github.com/miguelangelo78/Kernel-Test.git
