@@ -49,7 +49,7 @@ for /L %%i in (1,1,%pkg_count%) do (
 )
 
 echo. && echo ***** Step 3: Setting Environment Variables *****
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_SZ /d "%path%;C:\MinGW\bin;C:\Python27"
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path /t REG_SZ /d "%path%;C:\MinGW\bin;C:\MinGW\msys\1.0\bin;C:\Python27"
 
 echo. && echo ***** Step 4: Installing Kernel Source Code *****
 git clone https://github.com/miguelangelo78/Kernel-Test.git
