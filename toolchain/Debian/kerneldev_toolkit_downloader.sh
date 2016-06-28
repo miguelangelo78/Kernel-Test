@@ -33,6 +33,8 @@ while true; do
 	case $yn in
 		[Yy]* ) 
 			############### Add repositories: ###############
+			# Core components:
+			sudo apt-get install software-properties-common
 			# Clang:
 			printf "\n***** Step 1: Adding repositories *****\n"
 			printf "    1- Adding Clang repositores\n"
