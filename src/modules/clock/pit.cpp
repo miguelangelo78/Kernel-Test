@@ -20,6 +20,7 @@
 #define PIT_CHANNEL_COUNT 3
 #define RESYNC_TIME 1
 
+static char pit_servicing = 1;
 static hashmap_t * pit_cbacks = 0;
 static volatile uint16_t pit_cback_count = 0;
 static uint32_t current_hz = 0;
@@ -110,8 +111,10 @@ static void pit_handler(void) {
 		subticks = 0;
 	}
 
+	if(!pit_servicing) return;
+
 	for(int i = 0; i < pit_cback_count; i++) {
-		uintptr_t addr = (uintptr_t)hashmap_get(pit_cbacks, services_names[i]);
+		uintptr_t addr = (uintptr_t)hashmap_get(pit_cbacks, services_names[0]);
 		if(addr)
 			FCASTF(addr, void, void)();
 	}
@@ -190,6 +193,8 @@ static uintptr_t pit_ioctl(void * data) {
 		return pit_get_ticks();
 	case 4:
 		return pit_get_subticks();
+	case 5:
+		return (pit_servicing = (char)d[1]);
 	}
 	return 0;
 }

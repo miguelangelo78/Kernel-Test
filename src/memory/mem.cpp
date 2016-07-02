@@ -294,13 +294,13 @@ void paging_install(uint32_t memsize) {
 
 	/* Allocate entire kernel (from address 0 to frame_ptr): */
 	for (uintptr_t i = 0; i <= frame_ptr; i += PAGE_SIZE)
-		alloc_page(1, 0);
+		alloc_page(1, 1);
 	
 	/* VGA Text mode (user mode): */
 	for (uintptr_t i = 0xB8000; i <= 0xBF000; i += PAGE_SIZE)
 		alloc_page(0, 1, i);
 
-	/* And finally allocate space for the stack: */
+	/* And finally allocate space for the kernel stack: */
 	for(uintptr_t i = KInit::init_esp; i > CPU::read_reg(CPU::ebp)-(PAGE_SIZE * STACK_SIZE); i-=PAGE_SIZE)
 		alloc_page(1, 1, i);
 
@@ -320,7 +320,7 @@ void * sbrk(uintptr_t increment) {
 	uintptr_t * address = (uintptr_t*)heap_tail;
 	if(heap_tail + increment > heap_head) {
 		for (uintptr_t i = heap_tail; i < heap_tail + increment; i += PAGE_SIZE)
-			alloc_page(1, 0);
+			alloc_page(1, 1);
 		invalidate_page_tables();
 	}
 	heap_tail += increment;

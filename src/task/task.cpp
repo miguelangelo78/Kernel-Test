@@ -6,7 +6,8 @@
 /* Tasking reference:
  * http://wiki.osdev.org/Kernel_Multitasking
  * https://github.com/dthain/basekernel/blob/master/src/process.h
- * https://github.com/dthain/basekernel/blob/master/src/process.c */
+ * https://github.com/dthain/basekernel/blob/master/src/process.c 
+ */
 
 namespace Kernel {
 namespace Task {
@@ -79,13 +80,15 @@ void switch_task(char new_process_state) {
 
 	/* Update current task state to new state: */
 	current_task->state = new_process_state;
+	CPU::TSS::tss_set_kernel_stack(current_task->regs->esp);
 
 	/* Fetch next task: */
 	while(1) {
 		task_t * next_task = fetch_next_task();
 		if(next_task) {
 			if(next_task->pid != 0) {
-				if(next_task->ttl_pwm_mode) { /* Decide the switch via PWM conditions */
+				/* Decide the switch via PWM conditions: */
+				if(next_task->ttl_pwm_mode) {
 					if(next_task->ttl++ < next_task->ttl_start)
 						continue; /* This task is not allowed to live while its TTL is counting */
 					else
@@ -101,6 +104,7 @@ void switch_task(char new_process_state) {
 				}
 			}
 
+			/* Fetch task now: */
 			current_task = next_task;
 			break;
 		} else {
@@ -216,6 +220,7 @@ task_t * task_create(char * task_name, void (*entry)(void), uint32_t eflags, uin
 		if(!is_tasking_initialized) {
 			/* If entry is null, then we're allocating the very first process, which is the main core task */
 			task->pid = next_pid;
+			asm volatile("mov %%esp, %0" : "=r" (task->regs->esp)); /* Save ESP */
 		} /* else we ignore it, we don't want to run a normal task with an entry point of address 0! */
 	}
 
@@ -370,6 +375,7 @@ void tasking_install(void) {
 
 	tasking_enable(1); /* Allow tasking to work */
 	is_tasking_initialized = 1;
+
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */

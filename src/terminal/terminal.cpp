@@ -125,8 +125,8 @@ void Terminal::putc_textmode(const char chr, uint32_t color) {
 			scroll(1,1);
 		}
 		cursor_x = 0;
-
 	}
+
 	draw_cursor(0, COLOR_DEFAULT);
 }
 

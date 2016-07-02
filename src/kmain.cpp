@@ -187,9 +187,13 @@ namespace Kernel {
 		/* Initialize shared memory: */
 		kputs("> Initializing shared memory system - "); shm_install(); DEBUGOK();
 
+		/* TODO: Finish the usermode code. We will require drivers and more infrastructure,
+		 * such as EXT2, VFS, ATA, ELF, etc, so that we can actually jump into user code  */
+		kputs("> Entering usermode (ring 3) - "); CPU::usermode_enter(0,0,0,(uintptr_t)malloc(0x1000)); DEBUGOK();
+
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1 - Set up:\n  1.1 - Enter user mode\n  1.2 - FPU\n  1.3 - Make more drivers!");
+		kputs("1 - Set up:\n  1.1- Make drivers and modules!");
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
@@ -197,11 +201,7 @@ namespace Kernel {
 		kputsc("\nReady", COLOR_GOOD);
 		is_kinit = 1;
 
-		int ctr=0;
 		for(;;) {
-			Point p = term.go_to(50, 2);
-			term.printf("MAINTASK: %d      ", ctr++);
-			term.go_to(p.X, p.Y);
 			if(serial.is_ready()) /* Echo back: */
 				kprintf("%c", serial.read_async());
 		}

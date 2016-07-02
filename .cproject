@@ -222,6 +222,91 @@
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
+		<cconfiguration id="0.705783870.301156005.1413193545">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="0.705783870.301156005.1413193545" moduleId="org.eclipse.cdt.core.settings" name="Launch">
+				<macros>
+					<stringListMacro name="Path" type="VALUE_TEXT_LIST">
+						<value name="C:\Python27"/>
+						<value name="C:\MinGW\bin"/>
+						<value name="C:\MinGW\msys\1.0\bin"/>
+						<value name="C:\llvm\bin"/>
+						<value name="C:/Program Files/Java/jre1.8.0_60/bin/server"/>
+						<value name="C:/Program Files/Java/jre1.8.0_60/bin"/>
+						<value name="C:/Program Files/Java/jre1.8.0_60/lib/amd64"/>
+						<value name="C:\Python27\"/>
+						<value name="C:\Python27\Scripts"/>
+						<value name="C:\ProgramData\Oracle\Java\javapath"/>
+						<value name="C:\Windows\system32"/>
+						<value name="C:\Windows"/>
+						<value name="C:\Windows\System32\Wbem"/>
+						<value name="C:\Windows\System32\WindowsPowerShell\v1.0\"/>
+						<value name="C:\Program Files\Hewlett-Packard\SimplePass\"/>
+						<value name="c:\Program Files (x86)\ATI Technologies\ATI.ACE\Core-Static"/>
+						<value name="C:\Program Files (x86)\AMD\ATI.ACE\Core-Static"/>
+						<value name="C:\MinGW\bin"/>
+						<value name="C:\Users\Miguel\.dnx\bin"/>
+						<value name="C:\Program Files\Microsoft DNX\Dnvm\"/>
+						<value name="C:\Program Files (x86)\Windows Kits\8.1\Windows Performance Toolkit\"/>
+						<value name="C:\ProgramData\chocolatey\bin"/>
+						<value name="C:\dos"/>
+						<value name="C:\Program Files\MATLAB\MATLAB Production Server\R2015a\runtime\win64"/>
+						<value name="C:\Program Files\MATLAB\MATLAB Production Server\R2015a\bin"/>
+						<value name="C:\Program Files\MATLAB\MATLAB Production Server\R2015a\polyspace\bin"/>
+						<value name="C:\Program Files (x86)\Microchip\xc8\v1.35\bin"/>
+						<value name="C:\Program Files (x86)\HI-TECH Software\PICC\9.80a\bin"/>
+						<value name="C:\Program Files (x86)\HI-TECH Software\PICC\9.82\bin"/>
+						<value name="C:\Program Files\Oracle\VirtualBox"/>
+						<value name="C:\Program Files\qemu"/>
+						<value name="C:\Program Files\nodejs\"/>
+						<value name="C:\CooCox\CoIDE_V2Beta\bin"/>
+						<value name="C:\Program Files (x86)\Skype\Phone\"/>
+						<value name="C:\Program Files (x86)\CMake\bin"/>
+						<value name="C:\llvm\bin"/>
+						<value name="C:\Users\Miguel\Dropbox\Kernel-Test\Kernel-Test\toolchain\Tools\Cross\i686-elf\bin"/>
+						<value name="C:\Program Files (x86)\GtkSharp\2.12\bin"/>
+						<value name="C:\WINDOWS\system32"/>
+						<value name="C:\WINDOWS"/>
+						<value name="C:\WINDOWS\System32\Wbem"/>
+						<value name="C:\WINDOWS\System32\WindowsPowerShell\v1.0\"/>
+						<value name="C:\Program Files (x86)\GNU Tools ARM Embedded\4.9 2015q3\bin"/>
+						<value name="C:\Program Files (x86)\Microchip\xc8\v1.35\bin"/>
+						<value name="C:\Users\Miguel\AppData\Roaming\npm"/>
+						<value name="C:\Users\Miguel\AppData\Local\atom\bin"/>
+						<value name="C:\Program Files (x86)\RocketDock"/>
+					</stringListMacro>
+				</macros>
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="0.705783870.301156005.1413193545" name="Launch" parent="org.eclipse.cdt.build.core.prefbase.cfg">
+					<folderInfo id="0.705783870.301156005.1413193545." name="/" resourcePath="">
+						<toolChain id="org.eclipse.cdt.build.core.prefbase.toolchain.1241715796" name="No ToolChain" resourceTypeBasedDiscovery="false" superClass="org.eclipse.cdt.build.core.prefbase.toolchain">
+							<targetPlatform id="org.eclipse.cdt.build.core.prefbase.toolchain.1241715796.490350179" name=""/>
+							<builder arguments="${workspace_loc:/Kernel-Test}/toolchain/launcher.pyc" command="python" id="org.eclipse.cdt.build.core.settings.default.builder.496643126" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.libs.852532946" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.182767209" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.733340166" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.913955081" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.268985088" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+							<tool id="org.eclipse.cdt.build.core.settings.holder.1923293953" name="GNU C" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1553886871" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="Kernel-Test.null.1574332070" name="Kernel-Test"/>
@@ -249,6 +334,9 @@
 			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
 		</configuration>
 		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
+		</configuration>
+		<configuration configurationName="Launch">
 			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
 		</configuration>
 		<configuration configurationName="Rebuild">

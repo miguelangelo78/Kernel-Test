@@ -54,11 +54,14 @@ namespace GDT {
 		gdt.pointer->limit = sizeof gdt.entries - 1;
 		gdt.pointer->base = (uintptr_t)&gdt.entries[0];
 
+		/* Set GDT: */
 		gdt_set_gate(0, 0, 0, 0, 0);                /* NULL segment (seg. selector: 0x00) */
 		gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment (kernel's code, seg. selector: 0x08) */
 		gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Data segment (seg. selector: 0x10) */
 		gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* User code (seg. selector: 0x18) */
 		gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* User data (seg. selector: 0x20) */
+
+		/* Set TSS: */
 		CPU::TSS::write_tss(5, 0x10, 0x0);
 
 		/* Install GDT and TSS: */

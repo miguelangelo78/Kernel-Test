@@ -10,7 +10,7 @@ namespace CPU {
 namespace ISR {
 
 	/* ISR Messages: */
-	const char *exception_msgs[ISR_COUNT] = {
+	const char * exception_msgs[ISR_COUNT] = {
 		"Division by zero",
 		"Debug",
 		"Non-maskable interrupt",
@@ -48,9 +48,10 @@ namespace ISR {
 	/* Function pointers will be installed here: */
 	static isr_handler_t isr_routines[256];
 
-	void isr_install_handler(size_t isrs, isr_handler_t handler) {
-		isr_routines[isrs] = handler;
+	void isr_install_handler(size_t isr_num, isr_handler_t handler) {
+		isr_routines[isr_num] = handler;
 	}
+	EXPORT_SYMBOL(isr_install_handler);
 
 	void isr_uninstall_handler(size_t isrs) {
 		isr_routines[isrs] = 0;

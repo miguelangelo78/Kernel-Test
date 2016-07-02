@@ -42,6 +42,8 @@ enum SEGSEL {
 
 #define KERNEL_FULL_STOP() while(1) { IRQ_OFF(); KERNEL_FULL_PAUSE(); }
 
+#define PUSH(stack, type, item) stack -= sizeof(type); *((type *) stack) = item
+
 typedef volatile int spin_lock_t[2];
 extern void spin_init(spin_lock_t lock);
 extern void spin_lock(spin_lock_t lock);
@@ -133,7 +135,7 @@ namespace Kernel {
 			typedef void(*isr_handler_t) (CPU::regs_t *);
 
 			void isrs_install(void);
-			void isr_install_handler(size_t isrs, isr_handler_t handler);
+			void isr_install_handler(size_t isr_num, isr_handler_t handler);
 			void isr_uninstall_handler(size_t isrs);
 		}
 
@@ -159,6 +161,9 @@ namespace Kernel {
 			void irq_set_mask(uint8_t irq_num);
 			void irq_clear_mask(uint8_t irq_num);
 		}
+
+		/* Enter Ring3 (usermode): */
+		void usermode_enter(uintptr_t location, int argc, char ** argv, uintptr_t stack);
 	}
 
 #ifndef MODULE
