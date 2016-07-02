@@ -114,7 +114,7 @@ static void pit_handler(void) {
 	if(!pit_servicing) return;
 
 	for(int i = 0; i < pit_cback_count; i++) {
-		uintptr_t addr = (uintptr_t)hashmap_get(pit_cbacks, services_names[0]);
+		uintptr_t addr = (uintptr_t)hashmap_get(pit_cbacks, services_names[i]);
 		if(addr)
 			FCASTF(addr, void, void)();
 	}
