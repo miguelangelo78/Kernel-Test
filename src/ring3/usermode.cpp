@@ -28,7 +28,7 @@ void usermode_enter(uintptr_t location, int argc, char ** argv, uintptr_t stack)
 		usermode_enter_asm(location, stack);
 	} else {
 		/* Jump location provided is not valid. We cannot jump */
-    	kprintfc(COLOR_BAD, "\n!ERROR: Jump Address is null!");
+		kprintfc(COLOR_BAD, "\n!ERROR: Jump Address is null!");
 	}
     kprintf(" ");
 }
