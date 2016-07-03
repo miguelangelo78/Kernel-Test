@@ -81,17 +81,20 @@ namespace IRQ {
 		else /* Otherwise there is now an additional call depth */
 			sync_depth++;
 	}
+	EXPORT_SYMBOL(int_disable);
 
 	void int_enable(void) {
 		sync_depth = 0;
 		SYNC_STI();
 	}
+	EXPORT_SYMBOL(int_enable);
 
 	void int_resume(void) {
 		/* If there is one or no call depths, reenable interrupts */
 		if (sync_depth == 0 || sync_depth == 1) SYNC_STI();
 		else sync_depth--;
 	}
+	EXPORT_SYMBOL(int_resume);
 
 	void irq_install_handler(size_t irq_num, irq_handler_t irq_handler) {
 		/* Disable interrupts when changing handlers */

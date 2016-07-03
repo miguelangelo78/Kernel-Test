@@ -1,4 +1,5 @@
 #include <system.h>
+#include <module.h>
 
 static inline int arch_atomic_swap(volatile int * x, int v) {
 	asm("xchg %0, %1" : "=r"(v), "=m"(*x) : "0"(v) : "memory");
@@ -30,11 +31,13 @@ void spin_lock(spin_lock_t lock) {
 	while (arch_atomic_swap(lock, 1))
 		spin_wait(lock, lock + 1);
 }
+EXPORT_SYMBOL(spin_lock);
 
 void spin_init(spin_lock_t lock) {
 	lock[0] = 0;
 	lock[1] = 0;
 }
+EXPORT_SYMBOL(spin_init);
 
 void spin_unlock(spin_lock_t lock) {
 	if (lock[0]) {
@@ -43,3 +46,4 @@ void spin_unlock(spin_lock_t lock) {
 			Kernel::Task::switch_task(1); // xxx
 	}
 }
+EXPORT_SYMBOL(spin_unlock);

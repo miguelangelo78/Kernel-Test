@@ -9,6 +9,8 @@
 #include <module.h>
 #include "ata.h"
 
+#define ATA_SECTOR_SIZE 512
+
 typedef struct {
 	int io_base;
 	int control;
@@ -19,11 +21,102 @@ typedef struct {
 static spin_lock_t ata_lock = { 0 };
 
 static ata_dev_t ata_primary_master     = {0x1F0, 0x3F6, 0};
-static ata_dev_t ata_primary_slave 	    = {0x1F0, 0x3F6, 1};
+static ata_dev_t ata_primary_slave      = {0x1F0, 0x3F6, 1};
 static ata_dev_t ata_secondary_master   = {0x170, 0x376, 0};
 static ata_dev_t ata_secondary_slave    = {0x170, 0x376, 1};
 
-/************* ATA IOCTL Functions *************/
+/************* ATA Virtual Filesystem Functions *************/
+
+
+/************* ATA Sector Read/Write Functions *************/
+/* Prototype: */
+static int ata_wait(ata_dev_t * dev, int advanced);
+
+static void ata_device_read_sector(ata_dev_t * dev, uint32_t lba, uint8_t * buff) {
+	spin_lock(ata_lock);
+
+	int errors = 0;
+try_again:
+
+	outb(dev->io_base + ATA_REG_CONTROL, 0x02);
+	ata_wait(dev, 0);
+
+	outb(dev->io_base + ATA_REG_HDDEVSEL, 0xE0 | dev->slave << 4 | (lba & 0x0F000000) >> 24);
+	outb(dev->io_base + ATA_REG_FEATURES, 0x00);
+	outb(dev->io_base + ATA_REG_SECCOUNT0, 1);
+	outb(dev->io_base + ATA_REG_LBA0, (lba & 0x000000FF) >>  0);
+	outb(dev->io_base + ATA_REG_LBA1, (lba & 0x0000FF00) >>  8);
+	outb(dev->io_base + ATA_REG_LBA2, (lba & 0x00FF0000) >> 16);
+	outb(dev->io_base + ATA_REG_COMMAND, ATA_CMD_READ_PIO);
+
+	if(ata_wait(dev, 1)) {
+		kprintf("\n\t!Error during ATA read of lba block %d", lba);
+		if(++errors > 4) {
+			kprintf("\n\t!! Too many errors trying to read this block. Bailing. !!");
+			spin_unlock(ata_lock);
+			return;
+		}
+		goto try_again;
+	}
+
+	/* Read from sector: */
+	int size = 256;
+	insm(dev->io_base, buff, size);
+	ata_wait(dev, 0);
+
+	spin_unlock(ata_lock);
+}
+
+static void ata_device_write_sector(ata_dev_t * dev, uint32_t lba, uint8_t * buff) {
+	spin_lock(ata_lock);
+
+	outb(dev->io_base + ATA_REG_CONTROL, 0x02);
+
+	ata_wait(dev, 0);
+	outb(dev->io_base + ATA_REG_HDDEVSEL, 0xE0 | dev->slave << 4 | (lba & 0x0F000000) >> 24);
+	ata_wait(dev, 0);
+
+	outb(dev->io_base + ATA_REG_FEATURES, 0x00);
+	outb(dev->io_base + ATA_REG_SECCOUNT0, 0x01);
+	outb(dev->io_base + ATA_REG_LBA0, (lba & 0x000000FF) >>  0);
+	outb(dev->io_base + ATA_REG_LBA1, (lba & 0x0000FF00) >>  8);
+	outb(dev->io_base + ATA_REG_LBA2, (lba & 0x00FF0000) >> 16);
+	outb(dev->io_base + ATA_REG_COMMAND, ATA_CMD_WRITE_PIO);
+	ata_wait(dev, 0);
+
+	/* Write into sector: */
+	int size = ATA_SECTOR_SIZE / 2;
+	outsm(dev->io_base, buff, size);
+	outb(dev->io_base + 0x07, ATA_CMD_CACHE_FLUSH);
+	ata_wait(dev, 0);
+
+	spin_unlock(ata_lock);
+}
+
+static int buffer_compare(uint32_t * buff1, uint32_t * buff2, size_t size) {
+	size_t i = 0;
+	if(i < size) {
+		if(*buff1 != *buff2) return 1;
+		buff1++;
+		buff2++;
+		i += sizeof(uint32_t);
+	}
+	return 0;
+}
+
+static void ata_device_write_retry(ata_dev_t * dev, uint32_t lba, uint8_t * buff) {
+	uint8_t * read_buff = (uint8_t*)malloc(ATA_SECTOR_SIZE);
+	IRQ_OFF();
+	do {
+		ata_device_write_sector(dev, lba, buff);
+		ata_device_read_sector(dev, lba, read_buff);
+	} while(buffer_compare((uint32_t *)buff, (uint32_t*)read_buff, ATA_SECTOR_SIZE));
+	IRQ_RES();
+	free(read_buff);
+}
+
+
+/************* ATA Device IOCTL + Identify Functions *************/
 static void ata_io_wait(ata_dev_t * dev) {
 	inb(dev->io_base + ATA_REG_ALTSTATUS);
 	inb(dev->io_base + ATA_REG_ALTSTATUS);
@@ -63,7 +156,7 @@ static void ata_soft_reset(ata_dev_t * dev) {
 	outb(dev->control, 0x00);
 }
 
-static void ata_device_init(ata_dev_t * dev) {
+static char ata_device_init(ata_dev_t * dev) {
 	kprintf("\n\t\t> Initializing IDE device on bus %d", dev->io_base);
 
 	outb(dev->io_base + 1, 1);
@@ -82,7 +175,7 @@ static void ata_device_init(ata_dev_t * dev) {
 
 	if(status == 0) {
 		kprintf("\n\t\t!Not a hard disk!");
-		return;
+		return 1;
 	}
 
 	uint16_t * buff = (uint16_t*)&dev->identity;
@@ -101,9 +194,10 @@ static void ata_device_init(ata_dev_t * dev) {
 	kprintf("\n\t\t- Sectors (24): %d", dev->identity.sectors_28);
 
 	outb(dev->io_base + ATA_REG_CONTROL, 0x02);
+	return 0;
 }
 
-static int ata_device_detect(ata_dev_t * dev) {
+static char ata_device_detect(ata_dev_t * dev) {
 	ata_soft_reset(dev);
 	ata_io_wait(dev);
 	outb(dev->io_base + ATA_REG_HDDEVSEL, 0xA0 | dev->slave << 4);
@@ -114,7 +208,7 @@ static int ata_device_detect(ata_dev_t * dev) {
 	unsigned char ch = inb(dev->io_base + ATA_REG_LBA2);
 
 	kprintf("\n\tDevice detected - 0x%2x 0x%2x", cl, ch);
-	if(cl == 0xFF && ch == 0xFF) return 0;
+	if(cl == 0xFF && ch == 0xFF) return 1;
 
 	if((cl == 0x00 && ch == 0x00) || (cl == 0x3C && ch == 0xC3)) {
 		/* Found Parallel ATA device, or emulated SATA */
@@ -122,20 +216,19 @@ static int ata_device_detect(ata_dev_t * dev) {
 		/* Create VFS node and mount it */
 
 		/* Initialize ata device */
-		ata_device_init(dev);
-		return 1;
+		return ata_device_init(dev);
 	}
-	return 0;
+	return 1;
 }
 
 
 /************* ATA Initializers and IOCTL *************/
 static int ata_init(void) {
 	kprintf("\n\t>> ATA:");
-	ata_device_detect(&ata_primary_master);
-	ata_device_detect(&ata_primary_slave);
-	ata_device_detect(&ata_secondary_master);
-	ata_device_detect(&ata_secondary_slave);
+	if(!ata_device_detect(&ata_primary_master))   kprintf("\n\t\t- !Mounted!");
+	if(!ata_device_detect(&ata_primary_slave))    kprintf("\n\t\t- !Mounted!");
+	if(!ata_device_detect(&ata_secondary_master)) kprintf("\n\t\t- !Mounted!");
+	if(!ata_device_detect(&ata_secondary_slave))  kprintf("\n\t\t- !Mounted!");
 	kprintf("\n");
 	return 0;
 }

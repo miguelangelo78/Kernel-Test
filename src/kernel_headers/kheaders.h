@@ -44,6 +44,14 @@
 #define strlen(str) FCASTF(SYF("strlen"), unsigned long, char*)(str)
 #define strcpy(dst, src) FCASTF(SYF("strcpy"), char*, char*, char*)(dst, src)
 
+#define IRQ_OFF() SYC("int_disable")
+#define IRQ_RES() SYC("int_resume")
+#define IRQ_ON()  SYC("int_enable")
+
+#define spin_init(lock)   FCASTF(SYF("spin_init"),   void, spin_lock_t)(lock)
+#define spin_lock(lock)   FCASTF(SYF("spin_lock"),   void, spin_lock_t)(lock)
+#define spin_unlock(lock) FCASTF(SYF("spin_unlock"), void, spin_lock_t)(lock)
+
 #endif
 
 using namespace Kernel;

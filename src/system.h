@@ -37,9 +37,11 @@ enum SEGSEL {
 
 #define ASSERT(cond, msg) { if(!(cond)) { char buff[256]; sprintf(buff, "Assert (%s): %s", STR(cond), msg); Kernel::Error::panic(buff, __LINE__, __FILE__, 0); } }
 
+#ifndef MODULE
 #define IRQ_OFF() Kernel::CPU::IRQ::int_disable()
 #define IRQ_RES() Kernel::CPU::IRQ::int_resume()
 #define IRQ_ON() Kernel::CPU::IRQ::int_enable()
+#endif
 
 #define KERNEL_PAUSE() { asm volatile ("hlt"); }
 #define KERNEL_FULL_PAUSE() while (1) { KERNEL_PAUSE(); }
