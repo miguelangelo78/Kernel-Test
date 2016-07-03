@@ -189,11 +189,11 @@ namespace Kernel {
 
 		/* TODO: Finish the usermode code. We will require drivers and more infrastructure,
 		 * such as EXT2, VFS, ATA, ELF, etc, so that we can actually jump into user code  */
-		kputs("> Entering usermode (ring 3) - "); CPU::usermode_enter(0,0,0,(uintptr_t)malloc(0x1000)); DEBUGOK();
+		kputs("> Entering usermode (ring 3) - "); CPU::usermode_enter(0, 0, 0, USER_STACK_TOP); DEBUGOK();
 
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1 - Set up:\n  1.1- Make drivers and modules!");
+		kputs("1 - Set up:\n  1.1- Make drivers and modules: ATA, EXT2, ELF exec prog");
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);

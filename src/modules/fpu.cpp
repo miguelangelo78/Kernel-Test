@@ -73,4 +73,4 @@ static uintptr_t fpu_ioctl(void * ioctl_packet) {
 	return 0;
 }
 
-MODULE_DEF(fpu_driver, fpu_mod_init, fpu_mod_finit, MODT_CLOCK, "Miguel S.", fpu_ioctl);
+MODULE_DEF(fpu_driver, fpu_mod_init, fpu_mod_finit, MODT_SYS, "Miguel S.", fpu_ioctl);

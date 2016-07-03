@@ -35,7 +35,7 @@ usermode_enter_asm:
     popl %eax
 
     /* Request ring3 */
-    orl $0x200, %eax
+    orl $0x200, %eax /* Enable interrupt flag */
     pushl %eax
     pushl $0x1B
 

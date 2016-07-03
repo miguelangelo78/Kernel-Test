@@ -3,6 +3,8 @@
 
 using namespace Kernel::IO;
 
+#define TAB_SIZE 4
+
 /* Draw character in graphics mode: */
 void gfx_char(char c, int x, int y, uint32_t color, uint32_t bg_color, char transparent) {
 	for(int h = 0; h < FONT_HEIGHT; h++) {
@@ -115,6 +117,13 @@ void Terminal::putc_textmode(const char chr, uint32_t color) {
 		return;
 	}
 
+	/* Tab: */
+	if(chr == 9) {
+		for(int i = 0; i < TAB_SIZE; i++)
+			putc_textmode(' ', color);
+		return;
+	}
+
 	/* Normal character: */
 	textmode_char(chr, cursor_x, cursor_y, color);
 	if(++cursor_x >= gfx->width) {
@@ -171,6 +180,13 @@ void Terminal::putc_gfx(const char chr, uint32_t color, uint32_t bgcolor) {
 			gfx_char(' ', (cursor_x+1)*FONT_W_PADDING, cursor_y*FONT_H_PADDING, 0, bgcolor, 0);
 		}
 		gfx_char(TERMINAL_CURSOR, (cursor_x)*FONT_W_PADDING, cursor_y*FONT_H_PADDING, FONT_DEFAULT_COLOR, 0, 0);
+		return;
+	}
+
+	/* Tab: */
+	if(chr == 9) {
+		for(int i = 0; i < TAB_SIZE; i++)
+			putc_gfx(' ', color, bgcolor);
 		return;
 	}
 

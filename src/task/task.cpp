@@ -379,8 +379,8 @@ void tasking_install(void) {
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */
-	task_t * t1 = task_create_and_run((char*)"task1", task1, current_task->regs->eflags, current_task->regs->cr3);
-	task_t * t2 = task_create_and_run((char*)"task2", task2, current_task->regs->eflags, current_task->regs->cr3);
+//	task_t * t1 = task_create_and_run((char*)"task1", task1, current_task->regs->eflags, current_task->regs->cr3);
+//	task_t * t2 = task_create_and_run((char*)"task2", task2, current_task->regs->eflags, current_task->regs->cr3);
 }
 /***************************************************************************/
 

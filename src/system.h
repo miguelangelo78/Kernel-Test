@@ -28,6 +28,10 @@ enum SEGSEL {
 /* Returns the difference between the end of the kernel binary and the start */
 #define KERNELSIZE() SEGSIZE(kstart, end)
 
+#define USER_STACK_BOTTOM 0xAFF00000
+#define USER_STACK_TOP    0xB0000000
+#define SHM_START         0xB0000000
+
 #define asm __asm__
 #define volatile __volatile__
 
