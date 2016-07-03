@@ -2,7 +2,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An experimental project for training and testing with a Kernel for x86 systems (and maybe more) using C++ language. There will be no OS as this is focused specifically on the Kernel domain. We will however add userspace and some test programs.
 
 ![Kernel screenshot](http://i.imgur.com/UNDVGDN.png)
-![Kernel screenshot 2](http://i.imgur.com/PQ29Gcw.png)
+![Kernel screenshot 2](http://i.imgur.com/CrcYxKj.png)
 ![Kernel screenshot 3](http://i.imgur.com/FxDpD1g.png)
 
 # How To Install
