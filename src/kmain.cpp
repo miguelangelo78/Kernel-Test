@@ -185,7 +185,7 @@ namespace Kernel {
 		kputs("> Initializing system calls - "); syscalls_initialize(); DEBUGOK();
 
 		/* Initialize shared memory: */
-		kputs("> Initializing shared memory system - "); shm_install(); DEBUGOK();
+		kputs("> Initializing shared memory - "); shm_install(); DEBUGOK();
 
 		/* TODO: Finish the usermode code. We will require drivers and more infrastructure,
 		 * such as EXT2, VFS, ATA, ELF, etc, so that we can actually jump into user code  */
@@ -193,7 +193,7 @@ namespace Kernel {
 
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1 - Set up:\n  1.1- Make drivers and modules: ATA, EXT2, ELF exec prog");
+		kputs("1 - Set up:\n  1.1- Make drivers and modules: EXT2, ELF exec prog");
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);

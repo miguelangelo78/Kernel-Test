@@ -7,6 +7,7 @@
 #include <system.h>
 #include <kernel_headers/kheaders.h>
 #include <module.h>
+#include <fs.h>
 #include "ata.h"
 
 #define ATA_SECTOR_SIZE 512
@@ -26,7 +27,31 @@ static ata_dev_t ata_secondary_master   = {0x170, 0x376, 0};
 static ata_dev_t ata_secondary_slave    = {0x170, 0x376, 1};
 
 /************* ATA Virtual Filesystem Functions *************/
+static char ata_drive_char = 'a';
 
+static uint64_t ata_max_offset(ata_dev_t * dev) {
+
+}
+
+static uint32_t read_ata(FILE * node, uint32_t offset, uint32_t size, uint8_t * buffer) {
+
+}
+
+static uint32_t write_ata(FILE * node, uint32_t offset, uint32_t size, uint8_t * buffer) {
+
+}
+
+static void open_ata(FILE * node, unsigned int flags) {
+
+}
+
+static void close_ata(FILE * node) {
+
+}
+
+static FILE * ata_device_create(ata_dev_t * dev) {
+
+}
 
 /************* ATA Sector Read/Write Functions *************/
 /* Prototype: */
