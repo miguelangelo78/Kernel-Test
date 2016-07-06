@@ -45,6 +45,11 @@
 #define strlen(str) FCASTF(SYF("strlen"), unsigned long, char*)(str)
 #define strcpy(dst, src) FCASTF(SYF("strcpy"), char*, char*, char*)(dst, src)
 
+#define memset(dest, c, n) FCASTF(SYF("memset"), void *, void *, int, size_t)(dest, c, n)
+#define memcpy(dest, src, n) FCASTF(SYF("memcpy"), void *, void *, void *, size_t)(dest, src, n)
+
+#define sprintf(buf, fmt, ...) FCASTF(SYF("sprintf"), int, char *, char *, ...)(buf, fmt, __VA_ARGS__);
+
 #define IRQ_OFF() SYC("int_disable")
 #define IRQ_RES() SYC("int_resume")
 #define IRQ_ON()  SYC("int_enable")

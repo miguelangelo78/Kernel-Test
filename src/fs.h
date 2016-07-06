@@ -66,10 +66,12 @@ typedef struct fs_node {
 	uint32_t nlink;
 
 	/*********************** Callbacks/file operations**************/
+	/**** CRUD ****/
 	uint32_t (*read)(struct fs_node*, uint32_t, uint32_t, uint8_t*);
 	uint32_t (*write)(struct fs_node*, uint32_t, uint32_t, uint8_t*);
 	uint32_t (*open)(struct fs_node*, unsigned int flags);
 	uint32_t (*close)(struct fs_node*);
+	/**** CRUD ****/
 	struct dirent * (*readdir)(struct fs_node*, uint32_t);
 	struct fs_node *(*finddir)(struct fs_node*, char * name);
 	void (*create) (struct fs_node *, char *name, uint16_t permission);

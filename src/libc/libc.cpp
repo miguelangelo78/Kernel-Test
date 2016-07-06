@@ -1,6 +1,8 @@
 #include <system.h>
 #include <module.h>
 
+EXPORT_SYMBOL(memset);
+
 unsigned short * memsetw(unsigned short * dest, unsigned short val, int count) {
 	int i = 0;
 	for (; i < count; ++i) dest[i] = val;
@@ -8,15 +10,16 @@ unsigned short * memsetw(unsigned short * dest, unsigned short val, int count) {
 }
 
 void * memcpy(void * __restrict__ dest, const void * __restrict__ src, size_t n) {
-	int8_t* dst8 = (int8_t*)dest;
-	int8_t* src8 = (int8_t*)src;
+	int8_t * dst8 = (int8_t*)dest;
+	int8_t * src8 = (int8_t*)src;
 	while (n--) *dst8++ = *src8++;
 	return dest;
 }
+EXPORT_SYMBOL(memcpy);
 
 int memcmp(const void * vl, const void * vr, size_t n) {
-	const uint8_t *l = (uint8_t*)vl;
-	const uint8_t *r = (uint8_t*)vr;
+	const uint8_t * l = (uint8_t*)vl;
+	const uint8_t * r = (uint8_t*)vr;
 	for (; n && *l == *r; n--, l++, r++);
 	return n ? *l - *r : 0;
 }

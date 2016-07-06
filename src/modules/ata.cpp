@@ -26,31 +26,146 @@ static ata_dev_t ata_primary_slave      = {0x1F0, 0x3F6, 1};
 static ata_dev_t ata_secondary_master   = {0x170, 0x376, 0};
 static ata_dev_t ata_secondary_slave    = {0x170, 0x376, 1};
 
+/************* Prototypes *************/
+static void ata_device_read_sector(ata_dev_t * dev, uint32_t lba, uint8_t * buff);
+static void ata_device_write_retry(ata_dev_t * dev, uint32_t lba, uint8_t * buff);
+
 /************* ATA Virtual Filesystem Functions *************/
 static char ata_drive_char = 'a';
 
 static uint64_t ata_max_offset(ata_dev_t * dev) {
-
+	uint64_t sectors = dev->identity.sectors_48;
+	if(!sectors) {
+		/* Fall back to sectors_28 */
+		sectors = dev->identity.sectors_28;
+	}
+	return sectors * ATA_SECTOR_SIZE;
 }
 
 static uint32_t read_ata(FILE * node, uint32_t offset, uint32_t size, uint8_t * buffer) {
+	ata_dev_t * dev = (ata_dev_t*)node->device;
 
+	unsigned int start_block = offset / ATA_SECTOR_SIZE;
+	unsigned int end_block = (offset + size - 1) / ATA_SECTOR_SIZE;
+
+	unsigned int x_offset = 0;
+
+	if(offset > ata_max_offset(dev)) return 0;
+
+	if(offset + size > ata_max_offset(dev)) {
+		unsigned int i = ata_max_offset(dev) - offset;
+		size = i;
+	}
+
+	if (offset % ATA_SECTOR_SIZE) {
+		unsigned int prefix_size = (ATA_SECTOR_SIZE - (offset % ATA_SECTOR_SIZE));
+		char * tmp = (char*)malloc(ATA_SECTOR_SIZE);
+		ata_device_read_sector(dev, start_block, (uint8_t *)tmp);
+
+		memcpy(buffer, (void *)((uintptr_t)tmp + (offset % ATA_SECTOR_SIZE)), prefix_size);
+
+		free(tmp);
+		x_offset += prefix_size;
+		start_block++;
+	}
+
+	if ((offset + size)  % ATA_SECTOR_SIZE && start_block < end_block) {
+		unsigned int postfix_size = (offset + size) % ATA_SECTOR_SIZE;
+		char * tmp = (char*)malloc(ATA_SECTOR_SIZE);
+		ata_device_read_sector(dev, end_block, (uint8_t *)tmp);
+
+		memcpy((void *)((uintptr_t)buffer + size - postfix_size), tmp, postfix_size);
+
+		free(tmp);
+		end_block--;
+	}
+
+	while (start_block <= end_block) {
+		ata_device_read_sector(dev, start_block, (uint8_t *)((uintptr_t)buffer + x_offset));
+		x_offset += ATA_SECTOR_SIZE;
+		start_block++;
+	}
+
+	return size;
 }
 
 static uint32_t write_ata(FILE * node, uint32_t offset, uint32_t size, uint8_t * buffer) {
+	ata_dev_t * dev = (ata_dev_t*)node->device;
 
+	unsigned int start_block = offset / ATA_SECTOR_SIZE;
+	unsigned int end_block = (offset + size - 1) / ATA_SECTOR_SIZE;
+
+	unsigned int x_offset = 0;
+
+	if(offset > ata_max_offset(dev)) return 0;
+
+	if(offset + size > ata_max_offset(dev)) {
+		unsigned int i = ata_max_offset(dev) - offset;
+		size = i;
+	}
+
+	if(offset % ATA_SECTOR_SIZE) {
+		unsigned int prefix_size = (ATA_SECTOR_SIZE - (offset % ATA_SECTOR_SIZE));
+
+		char * tmp = (char*)malloc(ATA_SECTOR_SIZE);
+		ata_device_read_sector(dev, start_block, (uint8_t*)tmp);
+
+		memcpy((void *)((uintptr_t)tmp + (offset % ATA_SECTOR_SIZE)), buffer, prefix_size);
+		ata_device_write_retry(dev, start_block, (uint8_t *)tmp);
+
+		free(tmp);
+		x_offset += prefix_size;
+		start_block++;
+	}
+
+	if ((offset + size)  % ATA_SECTOR_SIZE && start_block < end_block) {
+		unsigned int postfix_size = (offset + size) % ATA_SECTOR_SIZE;
+
+		char * tmp = (char*)malloc(ATA_SECTOR_SIZE);
+		ata_device_read_sector(dev, end_block, (uint8_t *)tmp);
+
+		memcpy(tmp, (void *)((uintptr_t)buffer + size - postfix_size), postfix_size);
+
+		ata_device_write_retry(dev, end_block, (uint8_t *)tmp);
+
+		free(tmp);
+		end_block--;
+	}
+
+	while (start_block <= end_block) {
+		ata_device_write_retry(dev, start_block, (uint8_t *)((uintptr_t)buffer + x_offset));
+		x_offset += ATA_SECTOR_SIZE;
+		start_block++;
+	}
+	return size;
 }
 
-static void open_ata(FILE * node, unsigned int flags) {
-
+static uint32_t open_ata(FILE * node, unsigned int flags) {
+	return -1;
 }
 
-static void close_ata(FILE * node) {
-
+static uint32_t close_ata(FILE * node) {
+	return -1;
 }
 
 static FILE * ata_device_create(ata_dev_t * dev) {
-
+	FILE * fnode = (FILE*)malloc(sizeof(FILE));
+	memset(fnode, 0, sizeof(FILE));
+	fnode->inode = 0;
+	sprintf(fnode->name, "atadev%d", ata_drive_char);
+	fnode->device = dev;
+	fnode->uid = 0;
+	fnode->gid = 0;
+	fnode->size = ata_max_offset(dev);
+	fnode->flags = FS_BLOCKDEV;
+	fnode->read = read_ata;
+	fnode->write = write_ata;
+	fnode->open  = open_ata;
+	fnode->close = close_ata;
+	fnode->readdir = 0;
+	fnode->finddir = 0;
+	fnode->ioctl   = 0;
+	return fnode;
 }
 
 /************* ATA Sector Read/Write Functions *************/
@@ -182,7 +297,7 @@ static void ata_soft_reset(ata_dev_t * dev) {
 }
 
 static char ata_device_init(ata_dev_t * dev) {
-	kprintf("\n\t\t> Initializing IDE device on bus %d", dev->io_base);
+	kprintf("\t\t> Initializing IDE device on bus %d", dev->io_base);
 
 	outb(dev->io_base + 1, 1);
 	outb(dev->control, 0);
@@ -232,13 +347,17 @@ static char ata_device_detect(ata_dev_t * dev) {
 	unsigned char cl = inb(dev->io_base + ATA_REG_LBA1);
 	unsigned char ch = inb(dev->io_base + ATA_REG_LBA2);
 
-	kprintf("\n\tDevice detected - 0x%2x 0x%2x", cl, ch);
+	kprintf("\n\t> Device detected - 0x%2x 0x%2x", cl, ch);
 	if(cl == 0xFF && ch == 0xFF) return 1;
 
 	if((cl == 0x00 && ch == 0x00) || (cl == 0x3C && ch == 0xC3)) {
 		/* Found Parallel ATA device, or emulated SATA */
 
 		/* Create VFS node and mount it */
+		char devname[64];
+		sprintf((char*)&devname, "/dev/hd%c", ata_drive_char);
+		vfs_mount(devname, ata_device_create(dev));
+		ata_drive_char++;
 
 		/* Initialize ata device */
 		return ata_device_init(dev);

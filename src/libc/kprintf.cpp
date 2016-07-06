@@ -1,4 +1,5 @@
 #include <libc.h>
+#include <module.h>
 
 static void print_dec(unsigned int value, unsigned int width, char * buf, int * ptr) {
 	unsigned int n_width = 1;
@@ -117,3 +118,4 @@ int sprintf(char * buf, const char *fmt, ...) {
 	va_end(args);
 	return out;
 }
+EXPORT_SYMBOL(sprintf);

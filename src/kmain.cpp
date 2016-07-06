@@ -193,7 +193,18 @@ namespace Kernel {
 
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1- Make drivers and modules: \n\t1.1- EXT2\n\t1.2- Pipe (normal, slave and master)\n\t1.3- ELF exec prog");
+		kputs("1- Make drivers and modules: "
+				"\n\t1.1. EXT2 filesystem"
+				"\n\t1.2. Pipe (normal, slave and master)"
+				"\n\t1.3. Finish up the other modules (use VFS on them)"
+				"\n\t1.4. ELF exec prog"
+				"\n\t1.5. PCI"
+				"\n\t1.6. Mouse"
+				"\n\t1.7. Speaker"
+				"\n\t1.8. Audio"
+				"\n\t1.9. Procfs (process filesystem)"
+				"\n\t1.10. Devices (null, zero, random)"
+		);
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
