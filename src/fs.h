@@ -125,7 +125,7 @@ extern int vfs_register(char * filesystem_name, vfs_mount_callback * cback);
 extern int vfs_mount_type(char * type, char * arg, char * mountpoint);
 extern void vfs_lock(FILE * node);
 
-extern void map_vfs_directory(char *);
+extern void map_vfs_directory(char * c);
 extern int make_unix_pipe(FILE ** pipes);
 
 
@@ -151,7 +151,6 @@ extern int fs_unlink(char * filename);
 extern int fs_symlink(char * target, char * filename);
 extern int fs_readlink(FILE * node, char * buff, size_t size);
 extern int pty_create(void * size, FILE ** fs_master, FILE ** fs_slave);
-extern char * canonicalize_path(char * cwd, char * input);
 
 /** Virtual Filesystem Root: **/
 extern FILE * fs_root;

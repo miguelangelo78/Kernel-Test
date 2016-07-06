@@ -36,12 +36,12 @@ enum VIDColor {
 };
 
 #define COLOR(bg, fg) ((bg<<4) | fg)
-#define COLOR_DEFAULT gfx->vid_mode ? 0xBABABA : COLOR(VIDBlack, VIDLightGray)
-#define COLOR_GOOD gfx->vid_mode ? 0x1CBA1F : COLOR(VIDGreen, VIDWhite)
+#define COLOR_DEFAULT gfx && gfx->vid_mode ? 0xBABABA : COLOR(VIDBlack, VIDLightGray)
+#define COLOR_GOOD gfx && gfx->vid_mode ? 0x1CBA1F : COLOR(VIDGreen, VIDWhite)
 #define COLOR_BAD COLOR(VIDRed, VIDWhite)
 #define COLOR_WARNING COLOR(VIDYellow, VIDBlack)
-#define COLOR_INFO gfx->vid_mode ? 0x6071DB : COLOR(VIDBlue, VIDWhite)
-#define COLOR_INIT_HEADER gfx->vid_mode ? 0xE2E831 : COLOR(VIDBlack, VIDYellow)
+#define COLOR_INFO gfx && gfx->vid_mode ? 0x6071DB : COLOR(VIDBlue, VIDWhite)
+#define COLOR_INIT_HEADER gfx && gfx->vid_mode ? 0xE2E831 : COLOR(VIDBlack, VIDYellow)
 
 class Terminal {
 	public:

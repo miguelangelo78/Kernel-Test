@@ -57,6 +57,7 @@ void vfs_install(uintptr_t initrd_location) {
 }
 
 void * vfs_mount(char * path, FILE * local_root) {
+	kprintf("\n\t> VFS: Mounting '%s'\n", path);
 	if(!fs_tree) {
 		kprintfc(COLOR_BAD, "\n\tERROR: VFS hasn't been initialized, you can't mount things yet!");
 		return NULL;

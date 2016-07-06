@@ -51,7 +51,7 @@ static FILE * initrd_finddir(FILE * node, char * name) {
 FILE * initrd_init(uint32_t location) {
 	initrd_header = (initrd_header_t*)location;
 
-	kprintf("!Found %d files! ", initrd_header->file_count);
+	kprintf("\t> Initrd: Found %d files ", initrd_header->file_count);
 
 	/* Init root: */
 	initrd_root = (FILE*)kmalloc(sizeof(FILE));

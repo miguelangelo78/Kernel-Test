@@ -193,7 +193,7 @@ namespace Kernel {
 
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1 - Set up:\n  1.1- Make drivers and modules: EXT2, ELF exec prog");
+		kputs("1- Make drivers and modules: \n\t1.1- EXT2\n\t1.2- Pipe (normal, slave and master)\n\t1.3- ELF exec prog");
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
