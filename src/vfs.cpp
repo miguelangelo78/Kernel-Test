@@ -137,6 +137,7 @@ void * vfs_mount(char * path, FILE * local_root) {
 	spin_unlock(tmp_vfs_lock);
 	return 0;
 }
+EXPORT_SYMBOL(vfs_mount);
 
 /* Register new filesystem in the VFS: */
 int vfs_register(char * filesystem_name, vfs_mount_callback * cback) {
@@ -144,6 +145,7 @@ int vfs_register(char * filesystem_name, vfs_mount_callback * cback) {
 	hashmap_set(fs_types, filesystem_name, (void*)(uintptr_t)(cback));
 	return 0;
 }
+EXPORT_SYMBOL(vfs_register);
 
 /* Mount filesystem (EXT2, FAT32, ...) into path (mountpoint) */
 int vfs_mount_type(char * type, char * arg, char * mountpoint) {
@@ -161,12 +163,14 @@ int vfs_mount_type(char * type, char * arg, char * mountpoint) {
 	kprintfc(COLOR_INFO, "\n\tMounted %s[%s] to %s: 0x%x", type, arg, mountpoint, n);
 	return 0;
 }
+EXPORT_SYMBOL(vfs_mount_type);
 
 void vfs_lock(FILE * node) {
 	spin_lock(tmp_refcount_lock);
 	node->refcount = -1;
 	spin_unlock(tmp_refcount_lock);
 }
+EXPORT_SYMBOL(vfs_lock);
 
 /* Create virtual node/directory on the VFS: */
 void map_vfs_directory(char * c) {
@@ -174,6 +178,7 @@ void map_vfs_directory(char * c) {
 	struct vfs_entry * e = (struct vfs_entry *)vfs_mount(c, f);
 	f->device = !strcmp(c, "/") ? (void*)fs_tree->root : (void*)e;
 }
+EXPORT_SYMBOL(map_vfs_directory);
 
 
 /*****************************************/
