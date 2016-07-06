@@ -234,6 +234,8 @@ namespace Kernel {
 			char * name;
 			char * desc;
 
+			char * work_dirpath; /* Working directory */
+
 			struct task * next;
 		} task_t;
 

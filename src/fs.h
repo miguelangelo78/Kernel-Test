@@ -45,28 +45,47 @@ enum FS_FLAGS {
 /**** FILE structure ****/
 /************************/
 typedef struct fs_node {
-	char name[128];
-	uint32_t mask;
-	uint32_t uid;
-	uint32_t gid;
-	uint32_t flags;
-	uint32_t inode;
-	uint32_t size;
-	struct fs_node * ptr;
+	char name[128];      /* The filename */
+	void * device;       /* Device object (optional) */
+	uint32_t mask;       /* The permissions mask */
+	uint32_t uid;        /* The owning user */
+	uint32_t gid;        /* The owning group */
+	uint32_t flags;      /* Flags (node type, etc) */
+	uint32_t inode;      /* Inode number */
+	uint32_t size;       /* Size of the file, in bytes */
+	uint32_t impl;       /* Used to keep track which filesystem it belongs to */
+	uint32_t open_flags; /* Flags passed to open (read/write/append, etc.) */
 
-	/*********************** Callbacks **************************/
+	uint32_t atime; /* Accessed time */
+	uint32_t mtime; /* Modified time */
+	uint32_t ctime; /* Created time */
+
+	struct fs_node * ptr; /* Alias pointer, for symlinks. */
+	uint32_t offset;
+	int32_t refcount;
+	uint32_t nlink;
+
+	/*********************** Callbacks/file operations**************/
 	uint32_t (*read)(struct fs_node*, uint32_t, uint32_t, uint8_t*);
 	uint32_t (*write)(struct fs_node*, uint32_t, uint32_t, uint8_t*);
-	uint32_t (*open)(struct fs_node*);
+	uint32_t (*open)(struct fs_node*, unsigned int flags);
 	uint32_t (*close)(struct fs_node*);
 	struct dirent * (*readdir)(struct fs_node*, uint32_t);
 	struct fs_node *(*finddir)(struct fs_node*, char * name);
+	void (*create) (struct fs_node *, char *name, uint16_t permission);
+	void (*mkdir) (struct fs_node *, char *name, uint16_t permission);
+	int (*ioctl) (struct fs_node *, int request, void * argp);
+	int (*get_size) (struct fs_node *);
+	int (*chmod) (struct fs_node *, int mode);
+	void (*unlink) (struct fs_node *, char *name);
+	void (*symlink) (struct fs_node *, char * name, char * value);
+	int (*readlink) (struct fs_node *, char * buf, size_t size);
 } FILE;
 
 /** Directory entry **/
 struct dirent {
-	char name[128]; /* Filename */
-	uint32_t ino; /* INode number */
+	char name[128]; /* Directory name */
+	uint32_t ino;   /* INode number   */
 };
 
 /** Struct that holds packets of file statistics/information **/
@@ -115,7 +134,7 @@ extern int make_unix_pipe(FILE ** pipes);
 /*****************************************/
 extern uint32_t fread(FILE * node, uint32_t offset, uint32_t size, uint8_t * buffer);
 extern uint32_t fwrite(FILE * node, uint32_t offset, uint32_t size, uint8_t * buffer);
-extern uint32_t fopen(FILE * node, uint8_t read, uint8_t write);
+extern uint32_t fopen(FILE * node, unsigned int flags);
 extern uint32_t fclose(FILE * node);
 extern struct dirent * fs_readdir(FILE * node, uint32_t index);
 extern FILE * fs_finddir(FILE * node, char * name);
@@ -129,9 +148,10 @@ extern FILE * fs_clone(FILE * source);
 extern int fs_ioctl(FILE * node, int request, void * argp);
 extern int fs_chmod(FILE * node, int mode);
 extern int fs_unlink(char * filename);
-extern int fs_symlink(char * value, char * filename);
+extern int fs_symlink(char * target, char * filename);
 extern int fs_readlink(FILE * node, char * buff, size_t size);
 extern int pty_create(void * size, FILE ** fs_master, FILE ** fs_slave);
+extern char * canonicalize_path(char * cwd, char * input);
 
 /** Virtual Filesystem Root: **/
 extern FILE * fs_root;

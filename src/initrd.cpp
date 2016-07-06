@@ -55,10 +55,10 @@ FILE * initrd_init(uint32_t location) {
 
 	/* Init root: */
 	initrd_root = (FILE*)kmalloc(sizeof(FILE));
-	strcpy(initrd_root->name, "initrd");
+	strcpy(initrd_root->name, "ram1");
 	initrd_root->mask = initrd_root->uid = initrd_root->gid = initrd_root->inode = initrd_root->size = 0;
 	initrd_root->flags = FS_DIR;
-	initrd_root->read = 0;
+	initrd_root->read = initrd_read;
 	initrd_root->write = 0;
 	initrd_root->open = 0;
 	initrd_root->close = 0;
@@ -114,12 +114,12 @@ char * initrd_readfile(FILE * file) {
 }
 
 char * initrd_readfile(char * filename) {
-	FILE * node = fs_finddir(fs_root, filename);
+	FILE * node = fs_finddir(initrd_root, filename);
 	return (node && node->size) > 0 ? initrd_readfile(node) : 0;
 }
 
 char * initrd_readfile(int file_id) {
-	return file_id < initrd_filecount() ? initrd_readfile(initrd_readdir(fs_root, file_id)->name) : 0;
+	return file_id < initrd_filecount() ? initrd_readfile(initrd_readdir(initrd_root, file_id)->name) : 0;
 }
 
 char * initrd_getmod(char * modname) {
@@ -133,7 +133,7 @@ char * initrd_getmod(int mod_id) {
 	char * mod_name;
 
 	for(int i = 0; i < initrd_filecount(); i++)
-		if(IS_FILE_MOD((mod_name = initrd_readdir(fs_root, i)->name)))
+		if(IS_FILE_MOD((mod_name = initrd_readdir(initrd_root, i)->name)))
 			if(mod_ctr++ == mod_id) break; /* We found our mod */
 
 	return initrd_getmod(mod_name);
@@ -142,7 +142,7 @@ char * initrd_getmod(int mod_id) {
 char * initrd_getmod_name(int mod_id) {
 	char * modname;
 	for(int i = 0, mod_ctr = 0; i < initrd_filecount();i++)
-		if(IS_FILE_MOD((modname = initrd_readdir(fs_root, i)->name)))
+		if(IS_FILE_MOD((modname = initrd_readdir(initrd_root, i)->name)))
 			if(mod_ctr++ == mod_id)
 				return modname;
 	return 0; /* Module not found */
@@ -155,17 +155,17 @@ int initrd_filecount(void) {
 int initrd_modcount(void) {
 	int modcount = 0;
 	for(int i = 0;i < initrd_filecount(); i++)
-		if(IS_FILE_MOD(initrd_readdir(fs_root, i)->name))
+		if(IS_FILE_MOD(initrd_readdir(initrd_root, i)->name))
 			modcount++;
 	return modcount;
 }
 
 FILE * initrd_getfile(char * filename) {
-	return fs_finddir(fs_root, filename);
+	return fs_finddir(initrd_root, filename);
 }
 
 FILE * initrd_getfile(int file_id) {
-	return file_id < initrd_filecount() ? fs_finddir(fs_root, initrd_readdir(fs_root, file_id)->name) : 0;
+	return file_id < initrd_filecount() ? fs_finddir(initrd_root, initrd_readdir(initrd_root, file_id)->name) : 0;
 }
 
 FILE * initrd_getmod_file(char * modname) {
@@ -174,5 +174,5 @@ FILE * initrd_getmod_file(char * modname) {
 
 FILE * initrd_getmod_file(int mod_id) {
 	char * modname = initrd_getmod_name(mod_id);
-	return modname ? fs_finddir(fs_root, modname) : 0;
+	return modname ? fs_finddir(initrd_root, modname) : 0;
 }
