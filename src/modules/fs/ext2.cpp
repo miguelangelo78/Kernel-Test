@@ -7,20 +7,16 @@
 #include <system.h>
 #include <kernel_headers/kheaders.h>
 #include <module.h>
+#include "ext2.h"
 
-static int ext2_init_sched(void) {
+
+
+/****************************************************/
+/***** MODULE INITIALIZERS/DEINITIALIZERS/IOCTL *****/
+/****************************************************/
+static int ext2_init(void) {
 
 	return 0;
-}
-
-static int ext2_init(void) {
-	/* Initialize EXT2 after everything else.
-	 * This is because the initrd is still being used on the VFS.
-	 * If we switched now into ext2 we'd crash and could
-	 * not initialize the other modules */
-	module_schedule(ext2_init_sched);
-	kprintf(" Init scheduled");
-	return 1;
 }
 
 static int ext2_finit(void) {

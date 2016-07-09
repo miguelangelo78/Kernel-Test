@@ -204,6 +204,8 @@ namespace Kernel {
 				"\n\t1.8. Audio"
 				"\n\t1.9. Procfs (process filesystem)"
 				"\n\t1.10. Devices (null, zero, random)"
+				"\n2- Shared Memory"
+				"\n3- VM8086 mode"
 		);
 
 		/* All done! */
