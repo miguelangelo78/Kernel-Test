@@ -20,7 +20,7 @@ enum LOG_CHANNELS {
 
 	#define kprintf(msg, ...) do { \
 		if(Log::logging == Log::LOG_VGA) \
-			Kernel::term.printf(msg, ##__VA_ARGS__); \
+			Kernel::term.printf((char*)msg, ##__VA_ARGS__); \
 		else if(Log::logging == Log::LOG_SERIAL) \
 			Kernel::serial.printf((char*)msg, ##__VA_ARGS__); \
 		else if(Log::logging == Log::LOG_VGA_SERIAL) { \

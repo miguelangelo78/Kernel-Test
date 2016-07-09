@@ -322,28 +322,28 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="Build Run"/>
-		<configuration configurationName="build">
-			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
-		</configuration>
-		<configuration configurationName="Build">
-			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
-		</configuration>
-		<configuration configurationName="Rebuild Run"/>
-		<configuration configurationName="Clean">
+		<configuration configurationName="Build_Run">
 			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
 		</configuration>
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
 		</configuration>
-		<configuration configurationName="Launch">
-			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
-		</configuration>
+		<configuration configurationName="Rebuild Run"/>
 		<configuration configurationName="Rebuild">
 			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
 		</configuration>
-		<configuration configurationName="Build_Run">
+		<configuration configurationName="Build">
 			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
 		</configuration>
+		<configuration configurationName="Clean">
+			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
+		</configuration>
+		<configuration configurationName="build">
+			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
+		</configuration>
+		<configuration configurationName="Launch">
+			<resource resourceType="PROJECT" workspacePath="/Kernel-Test"/>
+		</configuration>
+		<configuration configurationName="Build Run"/>
 	</storageModule>
 </cproject>

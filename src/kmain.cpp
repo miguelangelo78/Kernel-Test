@@ -178,6 +178,11 @@ namespace Kernel {
 		/* Load CORE modules ONLY: */
 		kputs("> Loading up modules - "); Module::modules_load(); DEBUGOK();
 
+		/* Mount EXT2 filesystem: */
+		kputs("> Mounting EXT2 filesystem into / - ");
+		if(!vfs_mount_type((char*)"ext2", (char*)"/dev/hda", (char*)"/")) { DEBUGOK(); }
+		else { DEBUGBAD(); }
+
 		/* Initialize multitasking: */
 		kputs("> Initializing multitasking - "); tasking_install(); DEBUGOK();
 
@@ -193,19 +198,20 @@ namespace Kernel {
 
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
-		kputs("1- Make drivers and modules: "
-				"\n\t1.1. EXT2 filesystem"
-				"\n\t1.2. Pipe (normal, slave and master)"
-				"\n\t1.3. Finish up the other modules (use VFS on them)"
-				"\n\t1.4. ELF exec prog"
-				"\n\t1.5. PCI"
-				"\n\t1.6. Mouse"
-				"\n\t1.7. Speaker"
-				"\n\t1.8. Audio"
-				"\n\t1.9. Procfs (process filesystem)"
-				"\n\t1.10. Devices (null, zero, random)"
-				"\n2- Shared Memory"
-				"\n3- VM8086 mode"
+		kputs(
+			"1- Make drivers and modules: "
+			"\n\t1.1. EXT2 filesystem"
+			"\n\t1.2. Pipe (normal, slave and master)"
+			"\n\t1.3. Finish up the other modules (use VFS on them)"
+			"\n\t1.4. ELF exec prog"
+			"\n\t1.5. PCI"
+			"\n\t1.6. Mouse"
+			"\n\t1.7. Speaker"
+			"\n\t1.8. Audio"
+			"\n\t1.9. Procfs (process filesystem)"
+			"\n\t1.10. Devices (null, zero, random)"
+			"\n2- Shared Memory"
+			"\n3- VM8086 mode"
 		);
 
 		/* All done! */
