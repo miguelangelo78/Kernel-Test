@@ -14,7 +14,7 @@ char * ver_kernel_version_fmt = (char*)"%d.%d.%d";
 
 int ver_kernel_major = 0;
 int ver_kernel_minor = 0;
-int ver_kernel_lower = 2338;
+int ver_kernel_lower = 2341;
 
 char * ver_kernel_codename = VER_UNKNOWN;
 
@@ -23,7 +23,7 @@ char * ver_kernel_arch = (char*)"x86";
 char * ver_kernel_build_date = (char*)__DATE__;
 char * ver_kernel_build_time = (char*)__TIME__;
 
-char * ver_kernel_builtby = (char*)"Miguel@miguel plat: Windows";
+char * ver_kernel_builtby = (char*)"miguel@miguel-pc plat: Linux";
 
 char * ver_kernel_author = (char*)"Miguel Santos";
 ;
