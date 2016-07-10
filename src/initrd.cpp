@@ -21,6 +21,11 @@ unsigned int * fs_getfile_addr(FILE * node) {
 	return (unsigned int*)((uintptr_t)(&initrd_header->header_size) + ((unsigned int*)(&initrd_header->offset))[node->inode]);
 }
 
+static uint32_t initrd_rawread(FILE * initrd_file, uint32_t offset, uint32_t size, uint8_t * buffer) {
+	memcpy(buffer, initrd_header + offset, size);
+	return size;
+}
+
 static uint32_t initrd_read(FILE * node, uint32_t offset, uint32_t size, uint8_t * buffer) {
 	if(offset > node->size) offset = 0;
 	if(size > node->size) size = node->size;
@@ -58,7 +63,7 @@ FILE * initrd_init(uint32_t location) {
 	strcpy(initrd_root->name, "ram1");
 	initrd_root->mask = initrd_root->uid = initrd_root->gid = initrd_root->inode = initrd_root->size = 0;
 	initrd_root->flags = FS_DIR;
-	initrd_root->read = initrd_read;
+	initrd_root->read = initrd_rawread;
 	initrd_root->write = 0;
 	initrd_root->open = 0;
 	initrd_root->close = 0;
