@@ -54,6 +54,11 @@ typedef struct ext2_fs {
 	unsigned int              inode_size;
 } ext2_fs_t;
 
+/*********************************
+ ****** FUNCTION PROTOTYPES ******
+ *********************************/
+static int read_block(ext2_fs_t * fs, unsigned int block_no, uint8_t * buff);
+
 /*********************************************/
 /***** EXT2 FILESYSTEM HANDLER FUNCTIONS *****/
 /*********************************************/
@@ -116,9 +121,31 @@ static int cache_flush_dirty(ext2_fs_t * fs, unsigned int ent_no) {
 }
 
 /****** BLOCK / INODE READERS / WRITERS ******/
-static ext2_inodetable_t * read_inode(ext2_fs_t * fs, uint32_t inode) {
+static void refresh_inode(ext2_fs_t * fs, ext2_inodetable_t * inodet, uint32_t inode) {
+	uint32_t group = inode / fs->inodes_per_group;
+	if(group > fs->block_group_count)
+		return;
 
-	return 0;
+	/* Calculate inode location: */
+	uint32_t inode_table_block = fs->block_groups[group].inode_table;
+	inode -= group * fs->inodes_per_group; /* Adjust index within group */
+	uint32_t block_offset = ((inode - 1) * fs->inode_size) / fs->block_size;
+	uint32_t offset_in_block = (inode - 1) - block_offset * (fs->block_size / fs->inode_size);
+
+	/* Read the inode (from ATA) and cast into inode structure: */
+	uint8_t * buff = (uint8_t*)malloc(fs->block_size);
+	read_block(fs, inode_table_block + block_offset, buff);
+
+	/* Prepare inodet: */
+	ext2_inodetable_t * inodes = (ext2_inodetable_t*)buff;
+	memcpy(inodet, (uint8_t*)((uint32_t)inodes + offset_in_block * fs->inode_size), fs->inode_size);
+	free(buff);
+}
+
+static ext2_inodetable_t * read_inode(ext2_fs_t * fs, uint32_t inode) {
+	ext2_inodetable_t * inodet = (ext2_inodetable_t*)malloc(fs->inode_size);
+	refresh_inode(fs, inodet, inode);
+	return inodet;
 }
 
 /**
@@ -215,12 +242,12 @@ static uint32_t ext2_make_rootfile(ext2_fs_t * fs, ext2_inodetable_t * inode, FI
 
 	/* File flags: */
 	file_node->flags = 0;
-	if((inode->mode & EXT2_S_IFREG) == EXT2_S_IFREG) {
+	if ((inode->mode & EXT2_S_IFREG) == EXT2_S_IFREG) {
 		kprintf("\n\t> ERROR: Root appears to be a normal file. Aborting");
 		return 0;
 	}
 	if ((inode->mode & EXT2_S_IFDIR) == EXT2_S_IFDIR) {
-		/* It's a directory */
+		/* It's a directory, which is valid */
 	} else {
 		kprintf("\n\t> ERROR: Root doesn't appear to be a directory. Aborting");
 		return 0;
@@ -271,7 +298,7 @@ static FILE * mount_ext2(FILE * blockdev) {
 		kprintf("\n\t> ERROR: NOT a filesystem! (magic did not match, got 0x%x)", SB->magic);
 		return 0;
 	} else {
-		kprintf("(VALID EXT2)");
+		kprintf("(VALID EXT2 DETECTED)");
 	}
 
 	fs->inode_size = SB->inode_size;

@@ -353,14 +353,16 @@ static char ata_device_detect(ata_dev_t * dev) {
 	if((cl == 0x00 && ch == 0x00) || (cl == 0x3C && ch == 0xC3)) {
 		/* Found Parallel ATA device, or emulated SATA */
 
-		/* Create VFS node and mount it */
-		char devname[64];
-		sprintf((char*)&devname, "/dev/hd%c", ata_drive_char);
-		vfs_mount(devname, ata_device_create(dev));
-		ata_drive_char++;
-
 		/* Initialize ata device */
-		return ata_device_init(dev);
+		char ret = ata_device_init(dev);
+		if(!ret) {
+			/* Create VFS node and mount it */
+			char devname[64];
+			sprintf((char*)&devname, "/dev/hd%c", ata_drive_char);
+			vfs_mount(devname, ata_device_create(dev));
+			ata_drive_char++;
+		}
+		return ret;
 	}
 	return 1;
 }

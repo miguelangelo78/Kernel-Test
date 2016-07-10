@@ -180,7 +180,7 @@ namespace Kernel {
 
 		/* Mount EXT2 filesystem: */
 		kputs("> Mounting EXT2 filesystem into / - ");
-		if(!vfs_mount_type((char*)"ext2", (char*)"/dev/hda", (char*)"/")) { DEBUGOK(); }
+		if(!vfs_mount_type((char*)"ext2", (char*)"/dev/hda", (char*)"/")) { kprintf("\t>> "); DEBUGOK(); }
 		else { DEBUGBAD(); }
 
 		/* Initialize multitasking: */

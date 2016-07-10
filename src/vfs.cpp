@@ -162,7 +162,7 @@ int vfs_mount_type(char * type, char * arg, char * mountpoint) {
 	vfs_mount(mountpoint, n);
 
 	kprintf("\t");
-	kprintfc(COLOR_INFO, "> Mounted filesystem '%s', blockdev '%s' to '%s'", type, arg, mountpoint);
+	kprintfc(COLOR_INFO, "> Mounted filesystem '%s', blockdev '%s' to '%s'\n", type, arg, mountpoint);
 	return 0;
 }
 EXPORT_SYMBOL(vfs_mount_type);
