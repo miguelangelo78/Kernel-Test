@@ -297,7 +297,7 @@ static void ata_soft_reset(ata_dev_t * dev) {
 }
 
 static char ata_device_init(ata_dev_t * dev) {
-	kprintf("\t\t> Initializing IDE device on bus %d", dev->io_base);
+	kprintf("\n\t> Initializing IDE device on bus %d", dev->io_base);
 
 	outb(dev->io_base + 1, 1);
 	outb(dev->control, 0);
@@ -337,7 +337,7 @@ static char ata_device_init(ata_dev_t * dev) {
 	return 0;
 }
 
-static char ata_device_detect(ata_dev_t * dev) {
+static char ata_device_detect(ata_dev_t * dev, char * dev_type) {
 	ata_soft_reset(dev);
 	ata_io_wait(dev);
 	outb(dev->io_base + ATA_REG_HDDEVSEL, 0xA0 | dev->slave << 4);
@@ -347,7 +347,7 @@ static char ata_device_detect(ata_dev_t * dev) {
 	unsigned char cl = inb(dev->io_base + ATA_REG_LBA1);
 	unsigned char ch = inb(dev->io_base + ATA_REG_LBA2);
 
-	kprintf("\n\t> Device detected - 0x%2x 0x%2x", cl, ch);
+	kprintf("\n\t> Device detected - 0x%2x 0x%2x (%s)", cl, ch, dev_type);
 	if(cl == 0xFF && ch == 0xFF) return 1;
 
 	if((cl == 0x00 && ch == 0x00) || (cl == 0x3C && ch == 0xC3)) {
@@ -371,10 +371,10 @@ static char ata_device_detect(ata_dev_t * dev) {
 /************* ATA Initializers and IOCTL *************/
 static int ata_init(void) {
 	kprintf("\n\t>> ATA:");
-	if(!ata_device_detect(&ata_primary_master))   kprintf("\n\t\t- !Mounted!");
-	if(!ata_device_detect(&ata_primary_slave))    kprintf("\n\t\t- !Mounted!");
-	if(!ata_device_detect(&ata_secondary_master)) kprintf("\n\t\t- !Mounted!");
-	if(!ata_device_detect(&ata_secondary_slave))  kprintf("\n\t\t- !Mounted!");
+	if(!ata_device_detect(&ata_primary_master, "Primary Master"))     kprintf("\t\t- !Mounted!");
+	if(!ata_device_detect(&ata_primary_slave, "Primary Slave"))       kprintf("\t\t- !Mounted!");
+	if(!ata_device_detect(&ata_secondary_master, "Secondary Master")) kprintf("\t\t- !Mounted!");
+	if(!ata_device_detect(&ata_secondary_slave, "Secondary Slave"))   kprintf("\t\t- !Mounted!");
 	kprintf("\n");
 	return 0;
 }
