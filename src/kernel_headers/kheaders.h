@@ -30,9 +30,9 @@
 #define sctop() SYC("mod_term_scrolltop")
 
 #define malloc(bytecount) FCASTF(SYF("malloc"), void *, uintptr_t)(bytecount)
-#define realloc(ptr, bytecount) FCASTF(SYF("malloc"), void *, void*, uintptr_t)(ptr, bytecount)
-#define calloc(nmemb, bytecount) FCASTF(SYF("malloc"), void *, uintptr_t, uintptr_t)(nmemb, bytecount)
-#define valloc(bytecount) FCASTF(SYF("malloc"), void *, uintptr_t)(bytecount)
+#define realloc(ptr, bytecount) FCASTF(SYF("realloc"), void *, void*, uintptr_t)(ptr, bytecount)
+#define calloc(nmemb, bytecount) FCASTF(SYF("calloc"), void *, uintptr_t, uintptr_t)(nmemb, bytecount)
+#define valloc(bytecount) FCASTF(SYF("valloc"), void *, uintptr_t)(bytecount)
 
 #define free(ptr) FCASTF(SYF("free"), void, void *)(ptr);
 

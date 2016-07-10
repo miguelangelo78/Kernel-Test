@@ -45,7 +45,7 @@
 /**********************************/
 /******* Super block struct *******/
 /**********************************/
-typedef struct ext2_superblock {
+struct ext2_superblock {
 	uint32_t inodes_count;
 	uint32_t blocks_count;
 	uint32_t r_blocks_count;
@@ -111,10 +111,12 @@ typedef struct ext2_superblock {
 	uint32_t default_mount_options;
 	uint32_t first_meta_bg;
 	uint8_t _unused[760];
-} __packed ext2_superblock_t;
+} __packed;
+
+typedef struct ext2_superblock ext2_superblock_t;
 
 /******** Block group descriptor ********/
-typedef struct ext2_bgdescriptor {
+struct ext2_bgdescriptor {
 	uint32_t block_bitmap;
 	uint32_t inode_bitmap; /* block no. of inode bitmap */
 	uint32_t inode_table;
@@ -123,13 +125,15 @@ typedef struct ext2_bgdescriptor {
 	uint16_t used_dirs_count;
 	uint16_t pad;
 	uint8_t reserved[12];
-} __packed ext2_bgdescriptor_t;
+} __packed;
+
+typedef struct ext2_bgdescriptor ext2_bgdescriptor_t;
 
 /********
  * !!INFO!! This is not actually the inode table.
  * It represents an inode in an inode table on disk.
  * ********/
-typedef struct ext2_inodetable {
+struct ext2_inodetable {
 	uint16_t mode;
 	uint16_t uid;
 	uint32_t size; /* file length in byte. */
@@ -148,16 +152,20 @@ typedef struct ext2_inodetable {
 	uint32_t dir_acl;
 	uint32_t faddr;
 	uint8_t osd2[12];
-} __packed ext2_inodetable_t;
+} __packed;
+
+typedef struct ext2_inodetable ext2_inodetable_t;
 
 /******** Represents directory entry on disk. ********/
-typedef struct ext2_dir {
+struct ext2_dir {
 	uint32_t inode;
 	uint16_t rec_len;
 	uint8_t name_len;
 	uint8_t file_type;
 	char * name; /* Actually a set of characters, at most 255 bytes */
-} __packed ext2_dir_t;
+} __packed;
+
+typedef struct ext2_dir ext2_dir_t;
 
 typedef struct {
 	uint32_t block_no;
