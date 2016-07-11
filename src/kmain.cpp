@@ -199,42 +199,22 @@ namespace Kernel {
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
 		kputs(
-			"1- Make drivers and modules: "
-			"\n\t1.1. EXT2 filesystem"
-			"\n\t1.2. Pipe (normal, slave and master)"
-			"\n\t1.3. Finish up the other modules (use VFS on them)"
-			"\n\t1.4. ELF exec prog"
-			"\n\t1.5. PCI"
-			"\n\t1.6. Mouse"
-			"\n\t1.7. Speaker"
-			"\n\t1.8. Audio"
-			"\n\t1.9. Procfs (process filesystem)"
-			"\n\t1.10. Devices (null, zero, random)"
-			"\n2- Shared Memory"
-			"\n3- VM8086 mode"
+			"1- Finish up tasking/processes"
+			"\n2- Make drivers and modules: "
+			"\n\t2.1. Pipe (normal, slave and master)"
+			"\n\t2.2. Finish up the other modules (use VFS on them, e.g.: cmos, pit, keyboard, serial)"
+			"\n\t2.3. ELF exec prog (system() and exec())"
+			"\n\t2.4. PCI"
+			"\n\t2.5. Mouse"
+			"\n\t2.6. Speaker"
+			"\n\t2.7. Audio / Sound"
+			"\n\t2.8. Net / rtl8139"
+			"\n\t2.9. USB"
+			"\n\t2.10. Procfs (process filesystem)"
+			"\n\t2.11. Devices (null, zero, random, etc...)"
+			"\n3- Shared Memory"
+			"\n4- VM8086 mode"
 		);
-
-		/* Test EXT2: */
-		kprintfc(COLOR_GOOD, "\n\n- Root contents:\n");
-		FILE * f = kopen("/", 0);
-			if(f) {
-			int i = 0;
-			struct dirent * dir = fs_readdir(f, i);
-			while(dir) {
-				kprintf("%d> %s\n", i + 1, dir->name);
-				dir = fs_readdir(f, ++i);
-			}
-			fclose(f);
-		}
-
-		f = kopen("/example.txt", 0);
-		if(f) {
-			uint8_t * buff = (uint8_t*)malloc(f->size);
-			fread(f, 0, f->size, buff);
-			kprintf("> example.txt contents: '%s'", buff);
-			free(buff);
-			fclose(f);
-		}
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
