@@ -28,6 +28,7 @@ Terminal::Terminal() {
 	term_buffer = 0;
 	line_lastchar = 0;
 	line_lastchar_size = 0;
+	cursor_enabled = 1;
 }
 
 void Terminal::init(int gfx_mode) {
@@ -44,6 +45,7 @@ void Terminal::init(int gfx_mode) {
 		line_lastchar_size = FONT_CHARS_PERCOLUMN;
 		line_lastchar = (int*)malloc(sizeof(int) * line_lastchar_size);
 	}
+	cursor_enabled = 1;
 	cursor_x = cursor_y = 0;
 	hide_textmode_cursor();
 	clear();
@@ -61,6 +63,7 @@ void Terminal::hide_textmode_cursor() {
 }
 
 void Terminal::draw_cursor(char redraw, uint32_t bgcolor) {
+	if(!cursor_enabled) return;
 	if(gfx_mode) { /* Graphics mode */
 		if(redraw) { /* Remove cursor from newlines */
 			gfx_char(' ', cursor_x*FONT_W_PADDING, (cursor_y-1)*FONT_H_PADDING, bgcolor, bgcolor, 0);
@@ -218,6 +221,30 @@ void Terminal::putc(const char chr) {
 	putc(chr, gfx_mode ? FONT_DEFAULT_COLOR : COLOR(VIDBlack, VIDLightGray));
 }
 
+void Terminal::putc_at(int x, int y, const char chr, uint32_t color) {
+	Point oldp = go_to(x,y);
+	cursor_enabled = 0;
+	putc(chr, color);
+	cursor_enabled = 1;
+	go_to(oldp.X, oldp.Y);
+}
+
+void Terminal::putc_at(int x, int y, const char chr, uint32_t color, uint32_t bgcolor) {
+	Point oldp = go_to(x,y);
+	cursor_enabled = 0;
+	putc(chr, color, bgcolor);
+	cursor_enabled = 1;
+	go_to(oldp.X, oldp.Y);
+}
+
+void Terminal::putc_at(int x, int y, const char chr) {
+	Point oldp = go_to(x,y);
+	cursor_enabled = 0;
+	putc(chr);
+	cursor_enabled = 1;
+	go_to(oldp.X, oldp.Y);
+}
+
 void Terminal::puts(const char * str, uint32_t color) {
 	while (*str) putc(*str++, color);
 }
@@ -228,6 +255,30 @@ void Terminal::puts(const char * str, uint32_t color, uint32_t bgcolor) {
 
 void Terminal::puts(const char * str) {
 	while (*str) putc(*str++, gfx_mode ? FONT_DEFAULT_COLOR : COLOR(VIDBlack, VIDLightGray));
+}
+
+void Terminal::puts_at(const char * str, int x, int y) {
+	Point oldp = go_to(x,y);
+	cursor_enabled = 0;
+	puts(str);
+	cursor_enabled = 1;
+	go_to(oldp.X, oldp.Y);
+}
+
+void Terminal::puts_at(const char * str, int x, int y, uint32_t color) {
+	Point oldp = go_to(x,y);
+	cursor_enabled = 0;
+	puts(str, color);
+	cursor_enabled = 1;
+	go_to(oldp.X, oldp.Y);
+}
+
+void Terminal::puts_at(const char * str, int x, int y, uint32_t color, uint32_t bgcolor) {
+	Point oldp = go_to(x,y);
+	cursor_enabled = 0;
+	puts(str, color, bgcolor);
+	cursor_enabled = 1;
+	go_to(oldp.X, oldp.Y);
 }
 
 void Terminal::scroll_copy_line(char * buff, int line_dst, int line_src) {
@@ -364,4 +415,38 @@ void Terminal::printf(uint32_t color, const char *fmt, va_list args) {
 void Terminal::printf(const char *fmt, va_list args, char ign) {
 	vasprintf(printf_buff, fmt, args);
 	puts(printf_buff, gfx_mode ? FONT_DEFAULT_COLOR : COLOR(VIDBlack, VIDLightGray));
+}
+
+void Terminal::printf_at(int x, int y, uint32_t color, const char *fmt, ...) {
+	Point oldp = go_to(x,y);
+	cursor_enabled = 0;
+	printf(fmt);
+	cursor_enabled = 1;
+	go_to(oldp.X, oldp.Y);
+}
+
+void Terminal::printf_at(int x, int y, uint32_t color, const char *fmt, va_list args) {
+	Point oldp = go_to(x,y);
+	vasprintf(printf_buff, fmt, args);
+	cursor_enabled = 0;
+	puts(printf_buff, color);
+	cursor_enabled = 1;
+	go_to(oldp.X, oldp.Y);
+}
+
+void Terminal::printf_at(int x, int y, const char *fmt, ...) {
+	Point oldp = go_to(x,y);
+	cursor_enabled = 0;
+	term_printf(fmt, gfx_mode ? FONT_DEFAULT_COLOR : COLOR(VIDBlack, VIDLightGray));
+	cursor_enabled = 1;
+	go_to(oldp.X, oldp.Y);
+}
+
+void Terminal::printf_at(int x, int y, const char *fmt, va_list args, char ign) {
+	Point oldp = go_to(x,y);
+	vasprintf(printf_buff, fmt, args);
+	cursor_enabled = 0;
+	puts(printf_buff, gfx_mode ? FONT_DEFAULT_COLOR : COLOR(VIDBlack, VIDLightGray));
+	cursor_enabled = 1;
+	go_to(oldp.X, oldp.Y);
 }
