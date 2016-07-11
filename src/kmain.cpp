@@ -214,6 +214,28 @@ namespace Kernel {
 			"\n3- VM8086 mode"
 		);
 
+		/* Test EXT2: */
+		kprintfc(COLOR_GOOD, "\n\n- Root contents:\n");
+		FILE * f = kopen("/", 0);
+			if(f) {
+			int i = 0;
+			struct dirent * dir = fs_readdir(f, i);
+			while(dir) {
+				kprintf("%d> %s\n", i + 1, dir->name);
+				dir = fs_readdir(f, ++i);
+			}
+			fclose(f);
+		}
+
+		f = kopen("/example.txt", 0);
+		if(f) {
+			uint8_t * buff = (uint8_t*)malloc(f->size);
+			fread(f, 0, f->size, buff);
+			kprintf("> example.txt contents: '%s'", buff);
+			free(buff);
+			fclose(f);
+		}
+
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
 

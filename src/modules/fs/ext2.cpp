@@ -184,6 +184,8 @@ static FILE * ext2_finddir(FILE * node, char * name) {
 	memset(outnode, 0, sizeof(FILE));
 	inode = read_inode(fs, direntry->inode);
 
+	node_from_file(fs, inode, direntry, outnode);
+
 	free(direntry);
 	free(inode);
 	free(block);
@@ -1094,7 +1096,7 @@ static unsigned int allocate_block(ext2_fs_t * fs) {
 static unsigned int inode_read_block(ext2_fs_t * fs, ext2_inodetable_t * inode, unsigned int block, uint8_t * buff) {
 	if(block >= inode->blocks / (fs->block_size / 512)) {
 		memset(buff, 0, fs->block_size);
-		kprintf("\n\tERROR: Tried to read an invalid block. Asked for %d but inode only has %d!", block, inode->blocks / (fs->block_size / 512));
+		/* ERROR: Tried to read an invalid block. */
 		return 0;
 	}
 	unsigned int real_block = get_block_number(fs, inode, block);
