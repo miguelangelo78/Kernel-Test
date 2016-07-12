@@ -111,6 +111,11 @@ namespace Kernel {
 		/* Initialize cmdline very early, because the cmdline might contain commands which indicate how to initialize the system */
 		if (mboot_ptr->cmdline)	args_parse((char*)mboot_ptr->cmdline);
 
+		/* Two main channels are being used for debugging:
+		 * 1- Serial
+		 * 2- VGA
+		 * They are exceptions and that's why they're declared statically
+		 * Also, I might add GDB handling functionality to the kernel */
 		int video_mode = args_present("vga") ? atoi(args_value("vga")) : 0;
 		video_init(video_mode);
 		term.init(video_mode);
