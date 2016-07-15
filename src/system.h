@@ -191,6 +191,7 @@ namespace Kernel {
 			void heap_install(void);
 
 			/* Page allocators/deallocators: */
+			void alloc_page(page_t * page, char is_kernel, char is_writeable, uintptr_t map_to_virtual);
 			void alloc_page(char is_kernel, char is_writeable, uintptr_t physical_address, uintptr_t map_to_virtual);
 			void alloc_page(char is_kernel, char is_writeable, uintptr_t physical_address);
 			void alloc_page(char is_kernel, char is_writeable);

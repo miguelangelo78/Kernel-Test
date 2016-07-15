@@ -11,7 +11,7 @@ directory index    page table index  offset into page
 #define KERNEL_HEAP_END  0x20000000
 #define KERNEL_HEAP_SIZE KERNEL_HEAP_END - KERNEL_HEAP_INIT
 
-#define STACK_SIZE 20 /* Block count, that is, page (4kb) */
+#define STACK_SIZE 2 /* Block count, that is, page (4kb) */
 
 #define PAGES_PER_TABLE 1024
 #define TABLES_PER_DIR 1024
@@ -54,7 +54,7 @@ typedef struct page_table {
 /* Directory definition: */
 typedef struct page_directory {
 	page_table_entry table_entries[TABLES_PER_DIR];
-	page_table_t tables[TABLES_PER_DIR]; /* Array of page tables, covers entire memory space */
+	page_table_t   * tables[TABLES_PER_DIR]; /* Array of page tables, covers entire memory space */
 } paging_directory_t;
 
 namespace Kernel {
@@ -63,7 +63,9 @@ namespace Kernel {
 			extern bool check_paging(void);
 			extern paging_directory_t * clone_directory(paging_directory_t*);
 			extern void release_directory(paging_directory_t*);
+			extern void release_directory_for_exec(paging_directory_t * dir);
 			extern page_table_t * clone_table(page_table_t * src, uintptr_t * physAddr);
+			extern "C" { void copy_page_physical(uint32_t, uint32_t); }
 			extern void switch_directory(paging_directory_t * dir);
 			extern void enable_paging(void);
 			extern void disable_paging(void);
