@@ -4,6 +4,18 @@
 
 .set MAGIC, 0xDECADE21
 
+.global return_to_userspace
+.type return_to_userspace, @function
+
+return_to_userspace:
+    pop %gs
+    pop %fs
+    pop %es
+    pop %ds
+    popa
+    add $8, %esp
+    iret
+
 usermode_enter_asm:
     pushl %ebp
     mov %esp, %ebp

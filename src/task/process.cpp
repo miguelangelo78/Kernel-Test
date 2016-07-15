@@ -268,7 +268,6 @@ void task_free(task_t * task, int retval) {
 		free(task->fds->entries);
 		free(task->fds);
 		free((void *)(task->image.stack - TASK_STACK_SIZE));
-		free(task->regs);
 		free(task->syscall_regs);
 	}
 }
@@ -371,7 +370,6 @@ uint32_t task_append_fd(task_t * task, FILE * node) {
 	return task->fds->length - 1;
 }
 
-
 /*
  * dup2() -> Move the file pointed to by `s(ou)rc(e)` into
  *           the slot pointed to be `dest(ination)`.
@@ -393,32 +391,12 @@ uint32_t process_move_fd(task_t * task, int src, int dest) {
 }
 /*********************************/
 
-/**********************/
-/***** x86 Stack: *****/
-/**********************/
-void x86_set_stack(uint32_t * stack_ptr, task_t * task) {
-	/* TODO: Improve this code */
-	PUSH(task->regs->esp, uintptr_t, (uintptr_t)&task_return_grave);
-	return;
-
-	/* Parse it and configure it: */
-	Kernel::CPU::x86_stack_t * stack = (Kernel::CPU::x86_stack_t*)stack_ptr;
-	stack->regs2.ebp = (uint32_t)(stack_ptr + 28);
-	stack->old_ebp = (uint32_t)(stack_ptr + 32);
-	stack->old_addr = (unsigned)task_return_grave;
-	stack->ds = X86_SEGMENT_USER_DATA;
-	stack->cs = X86_SEGMENT_USER_CODE;
-	stack->eip = task->regs->eip;
-	stack->eflags.interrupt = 1;
-	stack->eflags.iopl = 3;
-	stack->esp = task->regs->esp;
-	stack->ss = X86_SEGMENT_USER_DATA;
-	stack->regs2.eax = (uint32_t)task_return_grave; /* Return address of a task */
+void task_allocate_stack(task_t * task, uintptr_t stack_size) {
+	task->thread.esp = (uint32_t) kvmalloc(stack_size) + stack_size;
 }
 
-void task_allocate_stack(task_t * task, uintptr_t stack_size) {
-	task->regs->esp = (uint32_t) malloc(stack_size) + stack_size;
-	task->image.stack = task->regs->esp;
+void task_allocate_image_stack(task_t * task, uintptr_t stack_size) {
+	task->image.stack = (uint32_t) kvmalloc(stack_size) + stack_size;
 }
 /**********************/
 
@@ -426,25 +404,8 @@ void task_allocate_stack(task_t * task, uintptr_t stack_size) {
 /****************** Task creation ******************/
 /***************************************************/
 
-void set_task_environment(task_t * task, entry_t entry, uint32_t eflags, uint32_t pagedir) {
-	if(!entry) {
-		/* Setting root's environment: */
-		asm volatile("mov %%esp, %0" : "=r" (task->regs->esp)); /* Save ESP */
-	} else {
-		/* Setting normal environment: */
-		/* Prepare X86 stack: */
-		x86_set_stack((uint32_t*)(task->regs->esp), task);
-	}
-
-	task->regs->eax = task->regs->ebx = task->regs->ecx =
-			task->regs->edx = task->regs->esi = task->regs->edi = 0;
-	task->regs->eflags    = eflags;
-	task->regs->cr3       = pagedir;
-	task->image.entry     = (uintptr_t)entry;
-	task->regs->eip       = (uint32_t) entry;
-	task->thread.eip      = (uintptr_t)entry;
-	task->thread.page_dir = (paging_directory_t*)pagedir;
-	task->thread.esp      = task->regs->esp;
+void set_task_environment(task_t * task, paging_directory_t * pagedir) {
+	task->thread.page_dir = pagedir;
 }
 
 task_t * spawn_rootproc(void) {
@@ -452,7 +413,6 @@ task_t * spawn_rootproc(void) {
 
 	task_t * root = new task_t;
 	memset(root, 0, sizeof(task_t));
-	root->regs = new regs_t;
 
 	tree_set_root(task_tree, (void*)root);
 	root->tree_entry = task_tree->root;
@@ -506,7 +466,8 @@ task_t * spawn_rootproc(void) {
 	root->ttl_fscale            = MAX_TTL;
 	root->ttl_pwm_mode          = 1;
 
-	set_task_environment(root, 0, Kernel::CPU::read_reg(Kernel::CPU::eflags), (uint32_t)Kernel::Memory::Man::curr_dir->table_entries);
+	/* Set paging directory: */
+	set_task_environment(root, Kernel::Memory::Man::curr_dir);
 
 	root->desc = strdup("[kinit]");
 
@@ -514,14 +475,13 @@ task_t * spawn_rootproc(void) {
 	return root;
 }
 
-task_t * spawn_proc(task_t * parent, char addtotree, entry_t entry, uint32_t eflags, uint32_t pagedir) {
+task_t * spawn_proc(task_t * parent, char addtotree, paging_directory_t * pagedir) {
 	if(!is_tasking_initialized) return 0;
 
 	IRQ_OFF();
 
 	task_t * task = new task_t;
 	memset(task, 0, sizeof(task_t));
-	task->regs = new regs_t;
 	task->syscall_regs = new regs_t;
 
 	task->pid = get_next_pid(0);
@@ -538,7 +498,7 @@ task_t * spawn_proc(task_t * parent, char addtotree, entry_t entry, uint32_t efl
 	task->ttl_pwm_mode = 1;
 
 	if(pagedir) {
-		set_task_environment(task, entry, eflags, pagedir);
+		set_task_environment(task, pagedir);
 	} else {
 		task->thread.esp = 0;
 		task->thread.ebp = 0;
@@ -550,7 +510,7 @@ task_t * spawn_proc(task_t * parent, char addtotree, entry_t entry, uint32_t efl
 	task->image.heap = parent->image.heap;
 	task->image.heap_actual = parent->image.heap_actual;
 	task->image.size = parent->image.size;
-	task_allocate_stack(task, TASK_STACK_SIZE);
+	task_allocate_image_stack(task, TASK_STACK_SIZE);
 	task->image.user_stack = parent->image.user_stack;
 	task->image.shm_heap = SHM_START;
 
@@ -596,26 +556,160 @@ task_t * spawn_proc(task_t * parent, char addtotree, entry_t entry, uint32_t efl
 }
 
 task_t * spawn_childproc(task_t * parent) {
-	return spawn_proc(parent, 1, 0, 0, 0);
+	return spawn_proc(parent, 1, 0);
 }
 /***************************************************/
 
 /***************************************************/
 /******* Task creation bootstrap functions *********/
 /***************************************************/
+
+extern "C" { void return_to_userspace(void); }
+
+/*
+ * Fork. This is supposed to be called by the user in usermode!
+ *
+ * @return To the parent: PID of the child; to the child: 0
+ */
 uint32_t fork(void) {
+	IRQ_OFF();
 
-	return 0;
+	current_task->syscall_regs->eax = 0;
+
+	/* Cast from volatile type: */
+	task_t * parent = (task_t*)current_task;
+	/* Clone paging directory: */
+	paging_directory_t * dirclone = clone_directory(curr_dir);
+	/* Spawn child from parent: */
+	task_t * new_task = spawn_childproc(parent);
+	/* Set just the directory: */
+	new_task->thread.page_dir = (paging_directory_t*)dirclone;
+
+	/* Store syscall registers: */
+	regs_t r;
+	memcpy(&r, current_task->syscall_regs, sizeof(regs_t));
+	new_task->syscall_regs = &r;
+
+	/* Push normal registers: */
+	uintptr_t esp = new_task->image.stack;
+	uintptr_t ebp = esp;
+	new_task->syscall_regs->eax = 0;
+	esp -= sizeof(regs_t);
+	memcpy((regs_t *) esp, &r, sizeof(regs_t));
+
+	new_task->thread.esp = esp;
+	new_task->thread.ebp = ebp;
+
+	new_task->is_tasklet = parent->is_tasklet;
+
+	/* Jump location: */
+	new_task->thread.eip = (uintptr_t)&return_to_userspace;
+
+	/* And make it run: */
+	make_task_ready(new_task);
+
+	IRQ_RES();
+	return new_task->pid;
 }
 
+/*
+ * clone the current thread and create a new one in the same
+ * memory space with the given pointer as its new stack.
+ */
 uint32_t task_clone(uintptr_t new_stack, uintptr_t thread_function, uintptr_t arg) {
+	IRQ_OFF();
+	current_task->syscall_regs->eax = 0;
+	/* Cast from volatile type: */
+	task_t * parent = (task_t*)current_task;
+	/* Clone paging directory: */
+	paging_directory_t * dirclone = clone_directory(curr_dir);
+	/* Spawn child from parent: */
+	task_t * new_task = spawn_childproc(parent);
+	/* Set just the directory: */
+	new_task->thread.page_dir = dirclone;
 
-	return 0;
+	/* Store syscall registers: */
+	regs_t r;
+	memcpy(&r, current_task->syscall_regs, sizeof(regs_t));
+	new_task->syscall_regs = &r;
+
+	uintptr_t esp = new_task->image.stack;
+	uintptr_t ebp = esp;
+
+	if(current_task->group)
+		new_task->group = current_task->group;
+	else
+		new_task->group = current_task->pid;
+
+	new_task->syscall_regs->ebp = new_stack;
+	new_task->syscall_regs->eip = thread_function;
+
+	PUSH(new_stack, uintptr_t, arg);
+	PUSH(new_stack, uintptr_t, THREAD_RETURN);
+
+	new_task->syscall_regs->esp = new_stack;
+	new_task->syscall_regs->useresp = new_stack;
+
+	/* Push registers: */
+	esp -= sizeof(regs_t);
+	memcpy((regs_t *) esp, &r, sizeof(regs_t));
+
+	new_task->thread.esp = esp;
+	new_task->thread.ebp = ebp;
+
+	new_task->is_tasklet = parent->is_tasklet;
+
+	free(new_task->fds);
+	new_task->fds = current_task->fds;
+	new_task->fds->refs++;
+
+	new_task->thread.eip = (uintptr_t)&return_to_userspace;
+
+	make_task_ready(new_task);
+
+	IRQ_RES();
+	return new_task->pid;
 }
 
-int task_create_tasklet(void) {
+int task_create_tasklet(tasklet_t tasklet, char * name, void * argp) {
+	IRQ_OFF();
+	if (current_task->syscall_regs)
+		current_task->syscall_regs->eax = 0;
 
-	return 0;
+	paging_directory_t * dir = kernel_directory;
+	task_t * new_task = spawn_childproc((task_t*)current_task);
+	new_task->thread.page_dir = dir;
+
+	/* Store syscall registers: */
+	if(current_task->syscall_regs) {
+		regs_t r;
+		memcpy(&r, current_task->syscall_regs, sizeof(regs_t));
+		new_task->syscall_regs = &r;
+	}
+
+	uintptr_t esp = new_task->image.stack;
+	uintptr_t ebp = esp;
+
+	if(current_task->syscall_regs)
+		new_task->syscall_regs->eax = 0;
+
+	new_task->is_tasklet = 1;
+	new_task->name = name;
+
+	PUSH(esp, uintptr_t, (uintptr_t)name);
+	PUSH(esp, uintptr_t, (uintptr_t)argp);
+	PUSH(esp, uintptr_t, (uintptr_t)&task_return_grave);
+
+	new_task->thread.esp = esp;
+	new_task->thread.ebp = ebp;
+
+	new_task->thread.eip = (uintptr_t)tasklet;
+
+	/* All done: */
+	make_task_ready(new_task);
+
+	IRQ_RES();
+	return new_task->pid;
 }
 /***************************************************/
 

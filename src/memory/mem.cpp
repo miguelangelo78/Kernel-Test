@@ -38,7 +38,7 @@ bool is_paging_enabled = 0;
 static spin_lock_t frame_alloc_lock = { 0 };
 
 uintptr_t find_new_page(void); /* Function Prototype */
-void page_fault(struct regs *r); /* Function Prototype */
+void page_fault(regs_t * r); /* Function Prototype */
 uintptr_t map_to_physical(uintptr_t virtual_addr); /* Function Prototype */
 
 void kheap_starts(uintptr_t start_addr) {
@@ -90,10 +90,6 @@ uintptr_t kvmalloc_p(size_t size, uintptr_t *phys) {
 	return kmalloc(size, 1, phys);
 }
 
-void create_page(page_t * page, char is_kernel, char is_writeable) {
-
-}
-
 paging_directory_t * clone_directory(paging_directory_t * src) {
 	paging_directory_t * new_dir = (paging_directory_t*)kvmalloc(sizeof(paging_directory_t));
 	memset(new_dir, 0, sizeof(paging_directory_t));
@@ -102,7 +98,7 @@ paging_directory_t * clone_directory(paging_directory_t * src) {
 		if((uintptr_t)&kernel_directory->tables[i] == (uintptr_t)&src->tables[i]) {
 			new_dir->tables[i] = src->tables[i];
 			new_dir->table_entries[i] = src->table_entries[i];
-		} else if (i * PAGE_SIZE * PAGES_PER_TABLE < SHM_START) {
+		} else if (ALIGNP(i) * PAGES_PER_TABLE < SHM_START) {
 			/* User tables must be cloned: */
 			uintptr_t table_phys_addr;
 			new_dir->tables[i] = clone_table(src->tables[i], &table_phys_addr);
@@ -139,11 +135,39 @@ page_table_t * clone_table(page_table_t * src, uintptr_t * physAddr) {
 }
 
 void release_directory(paging_directory_t * dir) {
-
+	for(uint32_t i = 0; i < TABLES_PER_DIR; i++) {
+		if(!dir->tables[i] || (uintptr_t)dir->tables[i] == (uintptr_t)0xFFFFFFFF)
+			continue;
+		if(kernel_directory->tables[i] != dir->tables[i]) {
+			if(ALIGNP(i) * PAGES_PER_TABLE < SHM_START) {
+				for(uint32_t j = 0; j < PAGES_PER_TABLE; j++)
+					if(dir->tables[i]->pages[j].present)
+						dealloc_page(&dir->tables[i]->pages[j]);
+			}
+			free(dir->tables[i]);
+			dir->tables[i] = 0;
+		}
+	}
+	free(dir);
+	dir = 0;
 }
 
 void release_directory_for_exec(paging_directory_t * dir) {
+	for(uint32_t i = 0; i < TABLES_PER_DIR; i++) {
+		if(!dir->tables[i] || (uintptr_t)dir->tables[i] == (uintptr_t)0xFFFFFFFF)
+			continue;
+		if(kernel_directory->tables[i] != dir->tables[i]) {
+			if(ALIGNP(i) * PAGES_PER_TABLE < USER_STACK_BOTTOM) {
+				for(uint32_t j = 0; j < PAGES_PER_TABLE; j++)
+					if(dir->tables[i]->pages[j].present)
+						dealloc_page(&dir->tables[i]->pages[j]);
 
+				memset(&dir->table_entries[i], 0, sizeof(page_table_entry));
+				free(dir->tables[i]);
+				dir->tables[i] = 0;
+			}
+		}
+	}
 }
 
 bool check_paging(void) {
@@ -267,6 +291,12 @@ char alloc_pages(char is_kernel, char is_writeable, uintptr_t physical_address_s
 	return 1;
 }
 
+void dealloc_page(page_t * page) {
+	page->present = 0;
+	page->user    = 0;
+	page->rw      = 0;
+}
+
 void dealloc_page(uintptr_t physical_address) {
 	PAGE(curr_dir, physical_address)->present = 0;
 	last_known_newpage = ALIGNP(physical_address);
@@ -352,8 +382,17 @@ void * sbrk(uintptr_t increment) {
 	return address;
 }
 
-void page_fault(struct regs *r) {
-	Kernel::Error::panic("Page fault");
+void page_fault(regs_t * r) {
+	uint32_t faulting_address;
+	asm volatile("mov %%cr2, %0" : "=r"(faulting_address));
+
+	if(r->eip == THREAD_RETURN) {
+		return;
+	}
+
+	char msg [50];
+	sprintf(msg, "Page fault at 0x%x", faulting_address);
+	Kernel::Error::panic(msg);
 }
 
 }

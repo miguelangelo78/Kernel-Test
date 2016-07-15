@@ -85,13 +85,13 @@ void switch_task(status_t new_process_state) {
 	/* Save registers first: */
 	uintptr_t eip = Kernel::CPU::read_eip();
 	if(eip == 0x10000) return;
-	current_task->regs->eip = eip;
-	asm volatile("mov %%esp, %0" : "=r" (current_task->regs->esp)); /* Save ESP */
-	asm volatile("mov %%ebp, %0" : "=r" (current_task->regs->ebp)); /* Save EBP */
+	current_task->thread.eip = eip;
+	asm volatile("mov %%esp, %0" : "=r" (current_task->thread.esp)); /* Save ESP */
+	asm volatile("mov %%ebp, %0" : "=r" (current_task->thread.ebp)); /* Save EBP */
 
 	/* Update current task state to new state: */
 	current_task->status = new_process_state;
-	CPU::TSS::tss_set_kernel_stack(current_task->regs->esp);
+	CPU::TSS::tss_set_kernel_stack(current_task->thread.esp);
 
 	/* Reinsert current task into task queue: */
 	make_task_ready((task_t*)current_task);
@@ -124,7 +124,7 @@ void switch_task(status_t new_process_state) {
 		"mov $0x10000, %%eax\n" /* read_eip() will return 0x10000 */
 		"sti\n" /* Enable interrupts again */
 		"jmp *%%ebx" /* Jump! */
-		: : "r" (current_task->regs->eip), "r" (current_task->regs->esp), "r" (current_task->regs->ebp), "r" (current_task->regs->cr3)
+		: : "r" (current_task->thread.eip), "r" (current_task->thread.esp), "r" (current_task->thread.ebp), "r" (current_task->thread.page_dir)
 		: "%ebx", "%esp", "%eax"
 	);
 }
@@ -177,6 +177,11 @@ void task_return_grave(int retval) {
 	task_exit(retval); /* Commit suicide, or rather, become a zombie */
 	for(;;); /* Never return. Remember that this 'for' won't be actually running, we just don't want to run 'ret' */
 	KERNEL_FULL_STOP(); /* Just because */
+}
+
+void kexit(int retval) {
+	task_return_grave(retval);
+	for(;;);
 }
 /**************************/
 
@@ -262,27 +267,23 @@ void task_set_ttl_mode(int pid, char pwm_or_pulse_mode) {
 /****** Tasking initializers ******/
 /**********************************/
 int ctr1 = 0, ctr2 = 0;
-static void task1(void) {
+static void task1(void * data, char * name) {
 	for(;;) {
 		IRQ_OFF();
-		Point p = Kernel::term.go_to(50, 0);
-		Kernel::term.printf("TASK1 (pulse) %d      ", ctr1++);
-		Kernel::term.go_to(p.X, p.Y);
+		Kernel::term.printf_at(20,0,"TASK1 (pulse) %d      ", ctr1++);
+		IRQ_RES();
+		if(ctr1>10000) break;
+	}
+	kexit(10);
+}
+
+static void task2(void * data, char * name) {
+	for(;;) {
+		IRQ_OFF();
+		Kernel::term.printf_at(50,1,"TASK2 (pwm) %d      ", ctr2++);
 		IRQ_RES();
 	}
 }
-
-static void task2(void) {
-	for(;;) {
-		IRQ_OFF();
-		Point p = Kernel::term.go_to(50, 1);
-		Kernel::term.printf("TASK2 (pwm) %d      ", ctr2++);
-		Kernel::term.go_to(p.X, p.Y);
-		IRQ_RES();
-	}
-}
-
-extern void task_allocate_stack(task_t * task, uintptr_t stack_size);
 
 void tasking_install(void) {
 	IRQ_OFF();
@@ -305,15 +306,8 @@ void tasking_install(void) {
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */
-	task_t * t1 = spawn_childproc(main_task);
-	task_allocate_stack(t1, 0x8000);
-	set_task_environment(t1, task1, main_task->regs->eflags, main_task->regs->cr3);
-	make_task_ready(t1);
-
-	task_t * t2 = spawn_childproc(main_task);
-	task_allocate_stack(t2, 0x8000);
-	set_task_environment(t2, task2, main_task->regs->eflags, main_task->regs->cr3);
-	make_task_ready(t2);
+	task_create_tasklet(task1, "t1", 0);
+	task_create_tasklet(task2, "t2", 0);
 }
 /**********************************/
 

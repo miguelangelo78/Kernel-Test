@@ -197,6 +197,7 @@ namespace Kernel {
 			void alloc_page(char is_kernel, char is_writeable);
 			void alloc_pages(char is_kernel, char is_writeable, uintptr_t physical_address_start, uintptr_t physical_address_end);
 			char alloc_pages(char is_kernel, char is_writeable, uintptr_t physical_address_start, uintptr_t physical_address_end, uintptr_t virtual_addr_start,  uintptr_t virtual_addr_end);
+			void dealloc_page(page_t * page);
 			void dealloc_page(uintptr_t physical_address);
 
 			extern paging_directory_t * kernel_directory;
@@ -223,14 +224,19 @@ namespace Kernel {
 		#define TASK_STACK_SIZE (PAGE_SIZE * 2)
 		#define USER_ROOT_UID ((user_t)0)
 
+		#define THREAD_RETURN 0xFFFFB00F
+
 		typedef signed int    pid_t;
 		typedef unsigned int  user_t;
 		typedef unsigned char status_t;
 
-		typedef void (*entry_t)(void);
+		typedef void (*tasklet_t)(void *, char *);
 
 		typedef struct {
-			uint32_t eax, ebx, ecx, edx, esi, edi, esp, ebp, eip, eflags, cr3;
+			unsigned int gs, fs, es, ds;
+			unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+			unsigned int int_no, err_code;
+			unsigned int eip, cs, eflags, useresp, ss;
 		} regs_t;
 
 		enum task_state {
@@ -296,7 +302,6 @@ namespace Kernel {
 			char ** cmdline;
 
 			/* Context: */
-			regs_t * regs;
 			regs_t * syscall_regs;
 			image_t image;
 
@@ -340,8 +345,6 @@ namespace Kernel {
 
 			/* Process type: */
 			uint8_t is_tasklet;
-
-			struct task * next;
 		} task_t;
 
 		typedef struct sleeper {
@@ -363,17 +366,18 @@ namespace Kernel {
 		void task_set_ttl_mode(task_t * task, char pwm_or_pulse_mode);
 		void task_set_ttl_mode(int pid, char pwm_or_pulse_mode);
 		void task_exit(int pid);
+		void kexit(int retval);
 		void task_free(task_t * task_to_free, int retval);
 
-		void set_task_environment(task_t * task, entry_t entry, uint32_t eflags, uint32_t pagedir);
+		void set_task_environment(task_t * task, paging_directory_t * pagedir);
 
 		task_t * spawn_rootproc(void);
 		task_t * spawn_childproc(task_t * parent);
-		task_t * spawn_proc(task_t * parent, char addtotree, entry_t entry, uint32_t eflags, uint32_t pagedir);
+		task_t * spawn_proc(task_t * parent, char addtotree, paging_directory_t * pagedir);
 
 		uint32_t fork(void);
 		uint32_t task_clone(uintptr_t new_stack, uintptr_t thread_function, uintptr_t arg);
-		int task_create_tasklet(void);
+		int task_create_tasklet(tasklet_t tasklet, char * name, void * argp);
 
 		task_t * current_task_get(void);
 		uint32_t current_task_getpid(void);

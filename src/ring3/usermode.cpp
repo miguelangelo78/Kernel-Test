@@ -17,7 +17,7 @@ void usermode_enter(uintptr_t location, int argc, char ** argv, uintptr_t stack)
 	if(location) {
 		/* Prepare user mode (e.g.: stack and jump location): */
 		IRQ_OFF();
-		CPU::TSS::tss_set_kernel_stack(Task::current_task->regs->esp);
+		CPU::TSS::tss_set_kernel_stack(Task::current_task->image.stack);
 
 		PUSH(stack, uintptr_t, (uintptr_t)argv);
 		PUSH(stack, int, argc);
