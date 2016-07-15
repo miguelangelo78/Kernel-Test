@@ -22,7 +22,10 @@ namespace Task {
 char is_tasking = 0;
 char is_tasking_initialized = 0;
 volatile task_t * current_task;
+EXPORT_SYMBOL(current_task);
 task_t * main_task;
+typedef void (*switch_fpu_t)(void);
+switch_fpu_t switch_fpu;
 /************************************************/
 
 /************************************************************/
@@ -90,11 +93,15 @@ void switch_task(status_t new_process_state) {
 	asm volatile("mov %%ebp, %0" : "=r" (current_task->thread.ebp)); /* Save EBP */
 
 	/* Update current task state to new state: */
+	current_task->running = 0;
 	current_task->status = new_process_state;
 	CPU::TSS::tss_set_kernel_stack(current_task->thread.esp);
+	switch_fpu();
+	switch_directory(curr_dir);
 
 	/* Reinsert current task into task queue: */
-	make_task_ready((task_t*)current_task);
+	if(new_process_state)
+		make_task_ready((task_t*)current_task);
 
 	/* Fetch next task: */
 	while(1) {
@@ -111,6 +118,14 @@ void switch_task(status_t new_process_state) {
 			return;
 		}
 	}
+
+	if(current_task->started) {
+		// TODO: Signals
+	} else {
+		current_task->started = 1;
+	}
+
+	current_task->running = 1;
 
 	/* Acknowledge PIT interrupt: */
 	Kernel::CPU::IRQ::irq_ack(Kernel::CPU::IRQ::IRQ_PIT);
@@ -294,6 +309,7 @@ void tasking_install(void) {
 	/* Initialize module pointers: */
 	timer_ticks    = (unsigned long*)symbol_find("timer_ticks");
 	timer_subticks = (unsigned long*)symbol_find("timer_subticks");
+	switch_fpu = (switch_fpu_t)symbol_find("switch_fpu");
 
 	initialize_process_tree();
 
@@ -306,8 +322,10 @@ void tasking_install(void) {
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */
+#if 0
 	task_create_tasklet(task1, "t1", 0);
 	task_create_tasklet(task2, "t2", 0);
+#endif
 }
 /**********************************/
 

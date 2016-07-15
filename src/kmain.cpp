@@ -204,21 +204,22 @@ namespace Kernel {
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);
 		kputs(
-			"1- Finish up tasking/processes"
-			"\n2- Make drivers and modules: "
-			"\n\t2.1. Pipe (normal, slave and master)"
-			"\n\t2.2. Finish up the other modules (use VFS on them, e.g.: cmos, pit, keyboard, serial)"
-			"\n\t2.3. ELF exec prog (system() and exec())"
-			"\n\t2.4. PCI"
-			"\n\t2.5. Mouse"
-			"\n\t2.6. Speaker"
-			"\n\t2.7. Audio / Sound"
-			"\n\t2.8. Net / rtl8139"
-			"\n\t2.9. USB"
-			"\n\t2.10. Procfs (process filesystem)"
-			"\n\t2.11. Devices (null, zero, random, etc...)"
-			"\n3- Shared Memory"
-			"\n4- VM8086 mode"
+			"\n1- Make drivers and modules: "
+			"\n\t1.1. Pipe (normal, slave and master)"
+			"\n\t1.2. Finish up the other modules (use VFS on them, e.g.: cmos, pit, keyboard, serial)"
+			"\n\t1.3. ELF exec prog (system() and exec())"
+			"\n\t1.4. PCI"
+			"\n\t1.5. Mouse"
+			"\n\t1.6. Speaker"
+			"\n\t1.7. Audio / Sound"
+			"\n\t1.8. Net / rtl8139"
+			"\n\t1.9. USB"
+			"\n\t1.10. Procfs (process filesystem)"
+			"\n\t1.11. Devices (null, zero, random, etc...)"
+			"\n2- Test Fork and Clone"
+			"\n3- Improve Panic message handling"
+			"\n4- Shared Memory"
+			"\n5- VM8086 mode"
 		);
 
 		/* All done! */
@@ -227,17 +228,9 @@ namespace Kernel {
 		kputsc("\nReady", COLOR_GOOD);
 		is_kinit = 1;
 
-		for(;;) {
+		for(;;)
 			if(serial.is_ready()) /* Echo back: */
 				kprintf("%c", serial.read_async());
-
-			/* Show now: */
-			IRQ_OFF();
-			uint32_t now;
-			MOD_IOCTLD("cmos_driver", now, 4);
-			term.printf_at(65, 24, "Now: %d", now);
-			IRQ_RES();
-		}
 		return 0;
 	}
 
