@@ -10,21 +10,55 @@
 #include <libc/ringbuffer.h>
 #include "pipe.h"
 
-#define UNIX_PIPE_BUFFER_SIZE 512
-
 static uint32_t read_unixpipe(FILE * node, uint32_t offset, uint32_t size, uint8_t * buffer) {
-	return 0;
+	unix_pipe_t * self = (unix_pipe_t *)node->device;
+	size_t read = 0;
+
+	while (read < size) {
+		if (self->write_closed && !ring_buffer_unread(self->buffer))
+			return read;
+		size_t r = ring_buffer_read(self->buffer, 1, buffer + read);
+		if (r && *((char *)(buffer + read)) == '\n')
+			return read + r;
+		read += r;
+	}
+	return read;
 }
 
 static uint32_t write_unixpipe(FILE * node, uint32_t offset, uint32_t size, uint8_t * buffer) {
-	return 0;
+	unix_pipe_t * self = (unix_pipe_t*)node->device;
+	size_t written = 0;
+
+	while (written < size) {
+		if (self->read_closed) {
+			/* SIGPIPE to current process */
+			/* TODO: SIGNALS
+			signal_t * sig = malloc(sizeof(signal_t));
+			sig->handler = current_process->signals.functions[SIGPIPE];
+			sig->signum  = SIGPIPE;
+			handle_signal((process_t *)current_process, sig);*/
+
+			return written;
+		}
+		written += ring_buffer_write(self->buffer, 1, buffer + written);
+	}
+
+	return written;
 }
 
 static uint32_t close_read_pipe(FILE * node) {
+	unix_pipe_t * self = (unix_pipe_t*)node->device;
+	self->read_closed = 1;
+	if (!self->write_closed)
+		ring_buffer_interrupt(self->buffer);
 	return 0;
 }
 
 static uint32_t close_write_pipe(FILE * node) {
+	unix_pipe_t * self = (unix_pipe_t*)node->device;
+	self->write_closed = 1;
+	if (!self->read_closed)
+		ring_buffer_interrupt(self->buffer);
 	return 0;
 }
 
@@ -54,7 +88,7 @@ static int make_unix_pipe_(FILE ** pipes) {
 	internals->write_end = pipes[1];
 	internals->read_closed = 0;
 	internals->write_closed = 0;
-	// TODO: internals->buffer = ring_buffer_create(size);
+	internals->buffer = ring_buffer_create(size);
 
 	pipes[0]->device = internals;
 	pipes[1]->device = internals;
@@ -66,6 +100,7 @@ static int make_unix_pipe_(FILE ** pipes) {
 /**** Module functions (init, finit, ioctl): ****/
 /************************************************/
 static int unix_pipe_mod_init(void) {
+	/* Nothing to run */
 	return 0;
 }
 

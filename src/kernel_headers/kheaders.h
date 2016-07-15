@@ -52,6 +52,12 @@
 
 #define sprintf(buf, fmt, ...) FCASTF(SYF("sprintf"), int, char *, char *, ...)(buf, fmt, __VA_ARGS__)
 
+#define ring_buffer_unread(ring_buffer) FCASTF(SYF("ring_buffer_unread"), size_t, ring_buffer_t *)(ring_buffer)
+#define ring_buffer_read(ring_buffer, size, buffer) FCASTF(SYF("ring_buffer_read"), size_t, ring_buffer_t *, size_t, uint8_t*)(ring_buffer, size, buffer)
+#define ring_buffer_write(ring_buffer, size, buffer) FCASTF(SYF("ring_buffer_write"), size_t, ring_buffer_t *, size_t, uint8_t*)(ring_buffer, size, buffer)
+#define ring_buffer_interrupt(ring_buffer) FCASTF(SYF("ring_buffer_interrupt"), void, ring_buffer_t *)(ring_buffer)
+#define ring_buffer_create(size) FCASTF(SYF("ring_buffer_create"), ring_buffer_t *, size_t)(size)
+
 #define IRQ_OFF() SYC("int_disable")
 #define IRQ_RES() SYC("int_resume")
 #define IRQ_ON()  SYC("int_enable")

@@ -10,8 +10,11 @@
 
 #include <stdint.h>
 #include <libc/list.h>
+#include <libc/ringbuffer.h>
 #include <fs.h>
 #include <module.h>
+
+#define UNIX_PIPE_BUFFER_SIZE 512
 
 typedef struct _pipe_device {
 	uint8_t * buffer;

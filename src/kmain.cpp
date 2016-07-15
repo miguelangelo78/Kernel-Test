@@ -218,9 +218,8 @@ namespace Kernel {
 			"\n\t1.10. Devices (null, zero, random, etc...)"
 			"\n2- Test Fork and Clone"
 			"\n3- Improve Panic message handling"
-			"\n4- Code up ringbuffer library and finish unixpipe"
-			"\n5- Shared Memory"
-			"\n6- VM8086 mode"
+			"\n4- Shared Memory"
+			"\n5- VM8086 mode"
 		);
 
 		/* All done! */
