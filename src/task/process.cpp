@@ -93,6 +93,7 @@ int wakeup_queue(list_t * queue) {
 	}
 	return awoken_processes;
 }
+EXPORT_SYMBOL(wakeup_queue);
 
 int wakeup_queue_interrupted(list_t * queue) {
 	int awoken_processes = 0;
@@ -208,6 +209,7 @@ int sleep_on(list_t * queue) {
 	switch_task(0);
 	return current_task->sleep_interrupted;
 }
+EXPORT_SYMBOL(sleep_on);
 
 void sleep_until(task_t * task, unsigned long seconds, unsigned long subseconds) {
 	if(current_task->sleep_node.owner)

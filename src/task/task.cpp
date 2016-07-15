@@ -316,7 +316,8 @@ void tasking_install(void) {
 
 	/* Initialize the very first task, which is the main thread that was already running: */
 	current_task = main_task = spawn_rootproc();
-
+	/* Fetch keyboard file descriptor and insert into the current task (without using the VFS): */
+	MOD_IOCTLDT("keyboard_driver", FILE *, current_task->fds->entries[0], 0);
 	tasking_enable(1); /* Allow tasking to work */
 	is_tasking_initialized = 1;
 

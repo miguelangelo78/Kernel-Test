@@ -128,7 +128,6 @@ extern int vfs_mount_type(char * type, char * arg, char * mountpoint);
 extern void vfs_lock(FILE * node);
 
 extern void map_vfs_directory(char * c);
-extern int make_unix_pipe(FILE ** pipes);
 
 
 /*****************************************/

@@ -21,6 +21,9 @@ enum MODULE_SCHEDULE_MODE {
 
 #define MOD_IOCTL(modname, ...) do{ uintptr_t ioctl_packet[] = {__VA_ARGS__}; module_ioctl(modname, ioctl_packet); } while(0)
 #define MOD_IOCTLD(modname, retvar, ...) do{ uintptr_t ioctl_packet[] = {__VA_ARGS__}; retvar = module_ioctl(modname, ioctl_packet); } while(0)
+#define MOD_IOCTLDT(modname, type, retvar, ...) do{ uintptr_t ioctl_packet[] = {__VA_ARGS__}; retvar = (type)module_ioctl(modname, ioctl_packet); } while(0)
+
+#define SWITCH_IOCTL(ioctl_packet) switch(((uintptr_t*)ioctl_packet)[0])
 
 #define MODULE_DEF(...) GET_MACRO(__VA_ARGS__, MODDEF_6, MODDEF_5, MODDEF_4, MODDEF_3)(__VA_ARGS__)
 

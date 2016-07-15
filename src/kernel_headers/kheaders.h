@@ -36,6 +36,8 @@
 
 #define free(ptr) FCASTF(SYF("free"), void, void *)(ptr);
 
+#define list_create() FCASTF(SYF("list_create"), list_t *, void)()
+
 #define hashmap_create(count) FCASTF(SYF("hashmap_create"), hashmap_t *, int)(count)
 #define hashmap_set(map, key, value) FCASTF(SYF("hashmap_set"), void *, hashmap_t *, void *, void *)(map, key, value)
 #define hashmap_remove(map, key) FCASTF(SYF("hashmap_remove"), void *, hashmap_t*, void*)(map, key)
@@ -48,7 +50,7 @@
 #define memset(dest, c, n) FCASTF(SYF("memset"), void *, void *, int, size_t)(dest, c, n)
 #define memcpy(dest, src, n) FCASTF(SYF("memcpy"), void *, void *, void *, size_t)(dest, src, n)
 
-#define sprintf(buf, fmt, ...) FCASTF(SYF("sprintf"), int, char *, char *, ...)(buf, fmt, __VA_ARGS__);
+#define sprintf(buf, fmt, ...) FCASTF(SYF("sprintf"), int, char *, char *, ...)(buf, fmt, __VA_ARGS__)
 
 #define IRQ_OFF() SYC("int_disable")
 #define IRQ_RES() SYC("int_resume")
@@ -82,6 +84,10 @@
 #define fs_unlink(filename) FCASTF(SYF("fs_unlink"), int, char *)(filename)
 #define fs_symlink(target, filename) FCASTF(SYF("fs_symlink"), int, char *, char *)(target, filename)
 #define fs_readlink(node, buff, size) FCASTF(SYF("fs_readlink"), int, FILE *, char *, size_t)(node, buff, size)
+
+/* Tasking library functions: */
+#define wakeup_queue(queue) FCASTF(SYF("wakeup_queue"), int, list_t *)(queue)
+#define sleep_on(queue) FCASTF(SYF("sleep_on"), int, list_t *)(queue)
 
 #endif
 

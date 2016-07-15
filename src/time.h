@@ -71,4 +71,12 @@ static inline uint32_t time_secs_of_month(int months, int year) {
 	return days * 86400;
 }
 
+#include <module.h>
+
+inline uint32_t now() {
+	uint32_t _now;
+	MOD_IOCTLD("cmos_driver", _now, 4);
+	return _now;
+}
+
 #endif /* SRC_TIME_H_ */

@@ -1,5 +1,6 @@
 #include <libc/list.h>
 #include <system.h>
+#include <module.h>
 
 void list_destroy(list_t * list) {
 	/* Free all of the contents of a list */
@@ -131,6 +132,7 @@ list_t * list_create(void) {
 	out->length = 0;
 	return out;
 }
+EXPORT_SYMBOL(list_create);
 
 node_t * list_find(list_t * list, void * value) {
 	foreach(item, list)

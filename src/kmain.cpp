@@ -1,11 +1,12 @@
-#include <system.h>
 #include <libc.h>
 #include <module.h>
+#include <system.h>
 #include <stdint.h>
 #include <log.h>
 #include <args.h>
 #include <fs.h>
 #include <version/version.h>
+#include <time.h>
 
 namespace Kernel {
 	namespace KInit {
@@ -228,15 +229,28 @@ namespace Kernel {
 		kputsc("\nReady", COLOR_GOOD);
 		is_kinit = 1;
 
+		FILE * kbd_file = kopen("/dev/kbd", O_RDONLY);
+		uint8_t * kbd_buff;
+		if(kbd_file) kbd_buff = (uint8_t*)malloc(128);
+
 		for(;;) {
-			if(serial.is_ready()) /* Echo back: */
+			/* Echo serial comm back: */
+			if(serial.is_ready())
 				kprintf("%c", serial.read_async());
 
-			/* Show now: */
+			/* Echo keyboard back: */
+			if(kbd_file) {
+				int size;
+				MOD_IOCTLD("pipe_driver", size, 1, (uintptr_t)kbd_file);
+				if(size) {
+					fread(kbd_file, 0, size, kbd_buff);
+					kprintf("%c", kbd_buff[0]);
+				}
+			}
+
+			/* Show now(): */
 			IRQ_OFF();
-			uint32_t now;
-			MOD_IOCTLD("cmos_driver", now, 4);
-			term.printf_at(65, 24, "Now: %d", now);
+			term.printf_at(65, 24, "Now: %d", now());
 			IRQ_RES();
 		}
 		return 0;
