@@ -217,9 +217,12 @@ namespace Kernel {
 			"\n\t1.9. Procfs (process filesystem)"
 			"\n\t1.10. Devices (null, zero, random, etc...)"
 			"\n2- Test Fork and Clone"
-			"\n3- Improve Panic message handling"
-			"\n4- Shared Memory"
-			"\n5- VM8086 mode"
+			"\n3- Test Usermode"
+			"\n4- Improve Panic message handling"
+			"\n5- Shared Memory"
+			"\n6- VM8086 mode"
+			"\n7- Improve symbol table (use hashing functions on it)"
+			"\n8- Run all class constructors/deconstructors"
 		);
 
 		/* All done! */
