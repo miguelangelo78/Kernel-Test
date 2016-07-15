@@ -166,6 +166,9 @@ static void relative_time(uint32_t seconds, uint32_t subseconds, uint32_t * out_
 
 static int pit_init(void) {
 	hashmap_get = (hashmap_get_t)SYF((char*)"hashmap_get");
+	symbol_add("timer_ticks", (unsigned long int)&ticks);
+	symbol_add("timer_subticks", (unsigned long int)&subticks);
+
 	/* Each service has a name, and we use this to iterate the hashmap: */
 	services_names = (char**)malloc(PIT_CALLBACK_SERVICE_MAX * sizeof(char**));
 	for(int i = 0;i < PIT_CALLBACK_SERVICE_MAX; i++)

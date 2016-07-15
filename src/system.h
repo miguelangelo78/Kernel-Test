@@ -226,6 +226,8 @@ namespace Kernel {
 		typedef unsigned int  user_t;
 		typedef unsigned char status_t;
 
+		typedef void (*entry_t)(void);
+
 		typedef struct {
 			uint32_t eax, ebx, ecx, edx, esi, edi, esp, ebp, eip, eflags, cr3;
 		} regs_t;
@@ -359,14 +361,14 @@ namespace Kernel {
 		void task_set_ttl_fscale(int pid, int fscale);
 		void task_set_ttl_mode(task_t * task, char pwm_or_pulse_mode);
 		void task_set_ttl_mode(int pid, char pwm_or_pulse_mode);
-		void task_kill(int pid);
-		void task_free(task_t * task_to_free);
+		void task_exit(int pid);
+		void task_free(task_t * task_to_free, int retval);
 
-		void set_task_environment(task_t * task, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
+		void set_task_environment(task_t * task, entry_t entry, uint32_t eflags, uint32_t pagedir);
 
 		task_t * spawn_rootproc(void);
 		task_t * spawn_childproc(task_t * parent);
-		task_t * spawn_proc(task_t * parent, char addtotree, void (*entry)(void), uint32_t eflags, uint32_t pagedir);
+		task_t * spawn_proc(task_t * parent, char addtotree, entry_t entry, uint32_t eflags, uint32_t pagedir);
 
 		uint32_t fork(void);
 		uint32_t task_clone(uintptr_t new_stack, uintptr_t thread_function, uintptr_t arg);
@@ -375,6 +377,17 @@ namespace Kernel {
 		task_t * current_task_get(void);
 		uint32_t current_task_getpid(void);
 		task_t * task_from_pid(pid_t pid);
+		task_t * task_get_parent(task_t * task);
+
+		void make_task_ready(task_t * task);
+		int wakeup_queue(list_t * queue);
+		int wakeup_queue_interrupted(list_t * queue);
+		void wakeup_sleepers(unsigned long seconds, unsigned long subseconds);
+		int sleep_on(list_t * queue);
+		void sleep_until(task_t * task, unsigned long seconds, unsigned long subseconds);
+
+		uint32_t task_append_fd(task_t * task, FILE * node);
+		uint32_t process_move_fd(task_t * task, int src, int dest);
 	}
 #endif
 

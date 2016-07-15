@@ -29,8 +29,8 @@ task_t * main_task;
 /******* Tasking/Process prototype functions / externs ******/
 /************************************************************/
 extern task_t * fetch_next_task(void);
-extern void task_removefromtree(pid_t pid);
-extern void initialize_process_tree(task_t * main_task);
+extern void task_removefromtree(task_t * task);
+extern void initialize_process_tree();
 /************************************************************/
 
 /*************************************/
@@ -93,6 +93,9 @@ void switch_task(status_t new_process_state) {
 	current_task->status = new_process_state;
 	CPU::TSS::tss_set_kernel_stack(current_task->regs->esp);
 
+	/* Reinsert current task into task queue: */
+	make_task_ready((task_t*)current_task);
+
 	/* Fetch next task: */
 	while(1) {
 		task_t * next_task = fetch_next_task();
@@ -127,7 +130,11 @@ void switch_task(status_t new_process_state) {
 }
 
 /* PIT Callback: */
+unsigned long * timer_ticks;
+unsigned long * timer_subticks;
+
 void pit_switch_task(void) {
+	wakeup_sleepers(*timer_ticks, *timer_subticks);
 	switch_task(TASKST_READY);
 }
 /**********************************/
@@ -137,37 +144,39 @@ void pit_switch_task(void) {
 /**************************/
 char irq_already_off = 0;
 
-void task_free(task_t * task_to_free) {
-	free(task_to_free->regs);
-	free(task_to_free->syscall_regs);
-	free((void*)task_to_free->regs->esp);
-	free(task_to_free);
+/* Task reap: Remove task from the tree,
+ * which INCLUDES freeing the task itself */
+void task_reap(task_t * task) {
+	free(task->name);
+	task_removefromtree(task);
 }
 
-void task_kill(int pid) {
-	if(!pid) return; /* Do not let the main task kill itself */
+/* Task exit: Cleanup all allocated resources by the task,
+ * but DO NOT free the task itself */
+void task_exit(int retval) {
+	if(!current_task->pid)
+		return; /* Do not let the main task kill itself */
 	if(!irq_already_off)
 		IRQ_OFF();
 
-	kprintf("\nKILLED PID: %d\n", pid);
+	/* Cleanup the task: */
+	task_free((task_t*)current_task, retval);
 
-	/* Remove the task from the list, then cleanup the rest (remove process from tree, deallocate task's stack and more) */
-	task_t * task_to_kill = task_from_pid(pid); /* Store it first so we can clean up everything */
-	task_removefromtree(pid);
-
-	/* Cleanup everything else: */
-	task_free(task_to_kill);
+	task_t * parent = task_get_parent((task_t*)current_task);
+	if(parent)
+		wakeup_queue(parent->wait_queue);
 
 	irq_already_off = 0;
 	IRQ_RES(); /* Resume switching */
 }
 
 /* Every task that returns will end up here: */
-void task_return_grave(void) {
+void task_return_grave(int retval) {
 	IRQ_OFF(); /* Prevent switch context as soon as possible, so we don't lose 'current_task's address */
 	irq_already_off = 1; /* This prevents IRQ_OFF to run twice */
-	task_kill(current_task->pid); /* Commit suicide */
+	task_exit(retval); /* Commit suicide, or rather, become a zombie */
 	for(;;); /* Never return. Remember that this 'for' won't be actually running, we just don't want to run 'ret' */
+	KERNEL_FULL_STOP(); /* Just because */
 }
 /**************************/
 
@@ -273,16 +282,22 @@ static void task2(void) {
 	}
 }
 
+extern void task_allocate_stack(task_t * task, uintptr_t stack_size);
+
 void tasking_install(void) {
 	IRQ_OFF();
 
 	/* Install the pit callback, which is acting as a callback service: */
 	MOD_IOCTL("pit_driver", 1, (uintptr_t)"pit_switch_task", (uintptr_t)pit_switch_task);
 
+	/* Initialize module pointers: */
+	timer_ticks    = (unsigned long*)symbol_find("timer_ticks");
+	timer_subticks = (unsigned long*)symbol_find("timer_subticks");
+
+	initialize_process_tree();
+
 	/* Initialize the very first task, which is the main thread that was already running: */
 	current_task = main_task = spawn_rootproc();
-
-	initialize_process_tree(main_task);
 
 	tasking_enable(1); /* Allow tasking to work */
 	is_tasking_initialized = 1;
@@ -290,11 +305,15 @@ void tasking_install(void) {
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */
-	//task_t * t1 = spawn_childproc(main_task);
-	//task_allocate_stack(t1, 0x8000);
-	//set_task_environment(t1, task1, main_task->regs->eflags, main_task->regs->cr3);
+	task_t * t1 = spawn_childproc(main_task);
+	task_allocate_stack(t1, 0x8000);
+	set_task_environment(t1, task1, main_task->regs->eflags, main_task->regs->cr3);
+	make_task_ready(t1);
 
-	//task_t * t2 = spawn_childproc(main_task);
+	task_t * t2 = spawn_childproc(main_task);
+	task_allocate_stack(t2, 0x8000);
+	set_task_environment(t2, task2, main_task->regs->eflags, main_task->regs->cr3);
+	make_task_ready(t2);
 }
 /**********************************/
 

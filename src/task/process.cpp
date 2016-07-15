@@ -8,6 +8,7 @@
 #include <system.h>
 #include <module.h>
 #include <libc/tree.h>
+#include <errno.h>
 
 namespace Kernel {
 namespace Task {
@@ -15,35 +16,277 @@ namespace Task {
 /****************************************************************************/
 /************ Tasking/Process prototype functions / externs *****************/
 /****************************************************************************/
-extern void task_return_grave(void);
+extern void task_return_grave(int retval);
 extern char is_tasking_initialized;
+extern void task_reap(task_t * task);
 /****************************************************************************/
 
 /**********************************************************/
 /************ Tasking / Process Variables *****************/
 /**********************************************************/
 uint16_t next_pid = 1;
-tree_t * tasktree;
-list_t * tasklist;
-list_t * taskqueue;
+tree_t * task_tree;
+list_t * task_list;
+list_t * task_queue;
+list_t * sleep_queue;
 
 /* Locks: */
 static spin_lock_t tree_lock = { 0 };
-static spin_lock_t process_queue_lock = { 0 };
+static spin_lock_t task_queue_lock = { 0 };
 static spin_lock_t wait_lock_tmp = { 0 };
 static spin_lock_t sleep_lock = { 0 };
 /**********************************************************/
 
+/**************************************/
+/***** Task queueing and sleeping *****/
+/**************************************/
+
+int task_is_ready(task_t * task) {
+	return task->sched_node.owner != 0;
+}
+
+/* Check if there's a task to dequeue from the queue: */
+uint8_t task_available(void) {
+	return task_queue->head != 0;
+}
+
+/* Fetch and dequeue task: */
+task_t * fetch_next_task(void) {
+	if(!task_available())
+		return main_task;
+	return (task_t*)list_dequeue(task_queue)->value;
+}
+
+/* Insert task back into the queue: */
+void make_task_ready(task_t * task) {
+	if(task->sleep_node.owner != 0) {
+		if (task->sleep_node.owner == sleep_queue) {
+			IRQ_OFF();
+			spin_lock(sleep_lock);
+			list_delete(sleep_queue, task->timed_sleep_node);
+			spin_unlock(sleep_lock);
+			IRQ_RES();
+			task->sleep_node.owner = 0;
+			free(task->timed_sleep_node->value);
+		} else {
+			task->sleep_interrupted = 1;
+			spin_lock(wait_lock_tmp);
+			list_delete((list_t*)task->sleep_node.owner, &task->sleep_node);
+			spin_unlock(wait_lock_tmp);
+		}
+	}
+
+	spin_lock(task_queue_lock);
+	list_append(task_queue, &task->sched_node);
+	spin_unlock(task_queue_lock);
+}
+
+int wakeup_queue(list_t * queue) {
+	int awoken_processes = 0;
+	while (queue->length > 0) {
+		spin_lock(wait_lock_tmp);
+		node_t * node = list_pop(queue);
+		spin_unlock(wait_lock_tmp);
+		if (!((task_t *)node->value)->finished)
+			make_task_ready((task_t*)node->value);
+		awoken_processes++;
+	}
+	return awoken_processes;
+}
+
+int wakeup_queue_interrupted(list_t * queue) {
+	int awoken_processes = 0;
+	while (queue->length > 0) {
+		spin_lock(wait_lock_tmp);
+		node_t * node = list_pop(queue);
+		spin_unlock(wait_lock_tmp);
+		if (!((task_t *)node->value)->finished) {
+			task_t * task = (task_t*)node->value;
+			task->sleep_interrupted = 1;
+			make_task_ready(task);
+		}
+		awoken_processes++;
+	}
+	return awoken_processes;
+}
+
+void wakeup_sleepers(unsigned long seconds, unsigned long subseconds) {
+	IRQ_OFF();
+	spin_lock(sleep_lock);
+	if (sleep_queue->length) {
+		sleeper_t * proc = ((sleeper_t *)sleep_queue->head->value);
+		while (proc && (proc->end_tick < seconds || (proc->end_tick == seconds && proc->end_subtick <= subseconds))) {
+			task_t * task = proc->task;
+			task->sleep_node.owner = 0;
+			task->timed_sleep_node = 0;
+			if (!task_is_ready(task))
+				make_task_ready(task);
+			free(proc);
+			free(list_dequeue(sleep_queue));
+			if (sleep_queue->length)
+				proc = ((sleeper_t *)sleep_queue->head->value);
+			else
+				break;
+		}
+	}
+	spin_unlock(sleep_lock);
+	IRQ_RES();
+}
+
+static int wait_candidate(task_t * parent, int pid, int options, task_t * task) {
+	(void)options; /* there is only one option that affects candidacy, and we don't support it yet */
+
+	if (!task) return 0;
+
+	if (pid < -1) {
+		if (task->group == -pid || task->pid == -pid) return 1;
+	} else if (pid == 0) {
+		/* Matches our group ID */
+		if (task->group == parent->pid) return 1;
+	} else if (pid > 0) {
+		/* Specific pid */
+		if (task->pid == pid) return 1;
+	} else {
+		return 1;
+	}
+	return 0;
+}
+
+int waitpid(int pid, int * status, int options) {
+	task_t * task = (task_t*)current_task;
+	if (task->group)
+		task = task_from_pid(task->group);
+
+	do {
+		task_t * candidate = 0;
+		int has_children = 0;
+
+		/* First, find out if there is anyone to reap */
+		foreach(node, task->tree_entry->children) {
+			if (!node->value)
+				continue;
+			task_t * child = (task_t*)((tree_node_t *)node->value)->value;
+			if (wait_candidate(task, pid, options, child)) {
+				has_children = 1;
+				if (child->finished) {
+					candidate = child;
+					break;
+				}
+			}
+		}
+
+		if (!has_children) {
+			/* No valid children matching this description */
+			return -ECHILD;
+		}
+
+		if (candidate) {
+			if (status)
+				*status = candidate->status;
+			int pid = candidate->pid;
+			task_reap(candidate);
+			return pid;
+		} else {
+			if (options & 1)
+				return 0;
+			/* Wait */
+			if (sleep_on(task->wait_queue) != 0)
+				return -EINTR;
+		}
+	} while (1);
+}
+
+int sleep_on(list_t * queue) {
+	if(current_task->sleep_node.owner) {
+		switch_task(0);
+		return 0;
+	}
+	current_task->sleep_interrupted = 0;
+	spin_lock(wait_lock_tmp);
+	list_append(queue, (node_t*)&current_task->sleep_node);
+	spin_unlock(wait_lock_tmp);
+	switch_task(0);
+	return current_task->sleep_interrupted;
+}
+
+void sleep_until(task_t * task, unsigned long seconds, unsigned long subseconds) {
+	if(current_task->sleep_node.owner)
+		return; /* Can't sleep. Already sleeping */
+
+	task->sleep_node.owner = sleep_queue;
+
+	IRQ_OFF();
+	spin_lock(sleep_lock);
+
+	node_t * before;
+	foreach(node, sleep_queue) {
+		sleeper_t * candidate = ((sleeper_t *)node->value);
+		if (candidate->end_tick > seconds || (candidate->end_tick == seconds && candidate->end_subtick > subseconds))
+			break;
+		before = node;
+	}
+
+	sleeper_t * proc = (sleeper_t*)new sleeper_t;
+	proc->task = task;
+	proc->end_tick = seconds;
+	proc->end_subtick = subseconds;
+	task->timed_sleep_node = list_insert_after(sleep_queue, before, proc);
+
+	spin_unlock(sleep_lock);
+	IRQ_RES();
+}
+/**************************************/
+
 /*************************************************************/
 /*************** Task tree getters and setters ***************/
 /*************************************************************/
-int fetch_index = 0;
-int tasklist_size = 0;
 
-void task_removefromtree(pid_t pid) {
-	/* Remove the task from the list, then cleanup the rest (remove process from tree, deallocate task's stack and more) */
-	list_remove(tasklist, pid);
-	tasklist_size--;
+/* Clean up task: */
+void task_free(task_t * task, int retval) {
+	task->status = retval;
+	task->finished = 1;
+
+	list_free(task->wait_queue);
+	free(task->wait_queue);
+	list_free(task->signal_queue);
+	free(task->signal_queue);
+
+	free(task->work_dirpath);
+
+	// TODO: Release shared memory
+	free(task->shm_mappings);
+
+	if(task->signal_kstack)
+		free(task->signal_kstack);
+
+	if(--task->fds->refs == 0) {
+		release_directory(task->thread.page_dir);
+		for(uint32_t i = 0; i < task->fds->length; i++) {
+			fclose(task->fds->entries[i]);
+			task->fds->entries[i] = 0;
+		}
+		free(task->fds->entries);
+		free(task->fds);
+		free((void *)(task->image.stack - TASK_STACK_SIZE));
+		free(task->regs);
+		free(task->syscall_regs);
+	}
+}
+
+/* Remove the task from the list and tree: */
+void task_removefromtree(task_t * task) {
+	if(!task->tree_entry) return;
+	tree_node_t * tree_entry = task->tree_entry;
+
+	if(task_tree->root == tree_entry)
+		return; /* We shall not allow the root task to be removed */
+
+	/* Remove it: */
+	spin_lock(tree_lock);
+	tree_remove_reparent_root(task_tree, tree_entry);
+	list_delete(task_list, list_find(task_list, task));
+	spin_unlock(tree_lock);
+	free(task);
 }
 
 void task_addtotree(task_t * parent_task, task_t * new_task) {
@@ -51,25 +294,38 @@ void task_addtotree(task_t * parent_task, task_t * new_task) {
 	tree_node_t * tree_entry = tree_node_create(new_task);
 	new_task->tree_entry = tree_entry;
 
+	/* Insert it: */
 	spin_lock(tree_lock);
-
-	tree_node_insert_child_node(tasktree, parent_task->tree_entry, tree_entry);
-	/* Insert into switch queue: */
-	list_insert(tasklist, new_task);
-	tasklist_size++;
-
+	tree_node_insert_child_node(task_tree, parent_task->tree_entry, tree_entry);
+	list_insert(task_list, new_task);
 	spin_unlock(tree_lock);
 }
 
-task_t * fetch_next_task(void) {
-	if(fetch_index > tasklist_size)
-		fetch_index = 0;
-	return (task_t*)list_get(tasklist, fetch_index++)->value;
+uint8_t task_compare_lambdafunc(void * task_v, void * pid_v) {
+	pid_t pid = (*(pid_t *)pid_v);
+	task_t * task = (task_t*)task_v;
+	return (uint8_t)(task->pid == pid);
 }
 
 task_t * task_from_pid(pid_t pid) {
 	if(pid < 0) return 0;
-	return (task_t*)list_get(tasklist, pid)->value;
+
+	spin_lock(tree_lock);
+	tree_node_t * tree_entry = tree_find(task_tree, &pid, task_compare_lambdafunc);
+	spin_unlock(tree_lock);
+	if(tree_entry)
+		return (task_t*)tree_entry->value;
+	return 0;
+}
+
+task_t * task_get_parent(task_t * task) {
+	task_t * ret = 0;
+	spin_lock(tree_lock);
+	tree_node_t * tree_entry = task->tree_entry;
+	if(tree_entry->parent)
+		ret = (task_t*)tree_entry->parent->value;
+	spin_unlock(tree_lock);
+	return ret;
 }
 
 uint32_t current_task_getpid(void) {
@@ -86,10 +342,65 @@ pid_t get_next_pid(char restart_pid) {
 }
 /*************************************************************/
 
+/*********************************/
+/***** Task file descriptors *****/
+/*********************************/
+
+/*
+ * Append a file descriptor to a process.
+ *
+ * @param proc Process to append to
+ * @param node The VFS node
+ * @return The actual fd, for use in userspace
+ */
+uint32_t task_append_fd(task_t * task, FILE * node) {
+	/* Fill gaps */
+	for (unsigned int i = 0; i < task->fds->length; ++i) {
+		if (!task->fds->entries[i]) {
+			task->fds->entries[i] = node;
+			return i;
+		}
+	}
+	/* No gaps, expand */
+	if (task->fds->length == task->fds->capacity) {
+		task->fds->capacity *= 2;
+		task->fds->entries = (FILE **)realloc(task->fds->entries, sizeof(FILE *) * task->fds->capacity);
+	}
+	task->fds->entries[task->fds->length] = node;
+	task->fds->length++;
+	return task->fds->length - 1;
+}
+
+
+/*
+ * dup2() -> Move the file pointed to by `s(ou)rc(e)` into
+ *           the slot pointed to be `dest(ination)`.
+ *
+ * @param proc  Process to do this for
+ * @param src   Source file descriptor
+ * @param dest  Destination file descriptor
+ * @return The destination file descriptor, -1 on failure
+ */
+uint32_t process_move_fd(task_t * task, int src, int dest) {
+	if ((size_t)src > task->fds->length || (size_t)dest > task->fds->length)
+		return -1;
+	if (task->fds->entries[dest] != task->fds->entries[src]) {
+		fclose(task->fds->entries[dest]);
+		task->fds->entries[dest] = task->fds->entries[src];
+		fopen(task->fds->entries[dest], 0);
+	}
+	return dest;
+}
+/*********************************/
+
 /**********************/
 /***** x86 Stack: *****/
 /**********************/
 void x86_set_stack(uint32_t * stack_ptr, task_t * task) {
+	/* TODO: Improve this code */
+	PUSH(task->regs->esp, uintptr_t, (uintptr_t)&task_return_grave);
+	return;
+
 	/* Parse it and configure it: */
 	Kernel::CPU::x86_stack_t * stack = (Kernel::CPU::x86_stack_t*)stack_ptr;
 	stack->regs2.ebp = (uint32_t)(stack_ptr + 28);
@@ -104,17 +415,18 @@ void x86_set_stack(uint32_t * stack_ptr, task_t * task) {
 	stack->ss = X86_SEGMENT_USER_DATA;
 	stack->regs2.eax = (uint32_t)task_return_grave; /* Return address of a task */
 }
+
+void task_allocate_stack(task_t * task, uintptr_t stack_size) {
+	task->regs->esp = (uint32_t) malloc(stack_size) + stack_size;
+	task->image.stack = task->regs->esp;
+}
 /**********************/
 
 /***************************************************/
 /****************** Task creation ******************/
 /***************************************************/
-void task_allocate_stack(task_t * task, uintptr_t stack_size) {
-	task->regs->esp = (uint32_t) malloc(stack_size) + stack_size;
-	task->image.stack = task->regs->esp;
-}
 
-void set_task_environment(task_t * task, void (*entry)(void), uint32_t eflags, uint32_t pagedir) {
+void set_task_environment(task_t * task, entry_t entry, uint32_t eflags, uint32_t pagedir) {
 	if(!entry) {
 		/* Setting root's environment: */
 		asm volatile("mov %%esp, %0" : "=r" (task->regs->esp)); /* Save ESP */
@@ -142,9 +454,9 @@ task_t * spawn_rootproc(void) {
 	memset(root, 0, sizeof(task_t));
 	root->regs = new regs_t;
 
-	tree_set_root(tasktree, (void*)root);
-	root->tree_entry = tasktree->root;
-	list_insert(tasklist, (void*)root);
+	tree_set_root(task_tree, (void*)root);
+	root->tree_entry = task_tree->root;
+	list_insert(task_list, (void*)root);
 
 	root->pid               = get_next_pid(1);
 	root->group             = 0;
@@ -202,7 +514,7 @@ task_t * spawn_rootproc(void) {
 	return root;
 }
 
-task_t * spawn_proc(task_t * parent, char addtotree, void (*entry)(void), uint32_t eflags, uint32_t pagedir) {
+task_t * spawn_proc(task_t * parent, char addtotree, entry_t entry, uint32_t eflags, uint32_t pagedir) {
 	if(!is_tasking_initialized) return 0;
 
 	IRQ_OFF();
@@ -261,9 +573,9 @@ task_t * spawn_proc(task_t * parent, char addtotree, void (*entry)(void), uint32
 	task->started = 0;
 	task->running = 0;
 	memset(task->signals.functions, 0, sizeof(uintptr_t) * NUMSIGNALS);
-	task->wait_queue = list_create();
-	task->shm_mappings = list_create();
-	task->signal_queue = list_create();
+	task->wait_queue    = list_create();
+	task->shm_mappings  = list_create();
+	task->signal_queue  = list_create();
 	task->signal_kstack = 0;
 
 	task->sched_node.prev = 0;
@@ -307,16 +619,15 @@ int task_create_tasklet(void) {
 }
 /***************************************************/
 
-
 /**********************************/
 /****** Process initializers ******/
 /**********************************/
-void initialize_process_tree(task_t * main_task) {
+void initialize_process_tree() {
 	/* Initialize task list and tree: */
-	tasklist = list_create();
-	tasktree = tree_create();
-	tree_set_root(tasktree, main_task);
-	list_insert(tasklist, main_task);
+	task_tree   = tree_create();
+	task_list   = list_create();
+	task_queue  = list_create();
+	sleep_queue = list_create();
 }
 /**********************************/
 
