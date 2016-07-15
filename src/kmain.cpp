@@ -228,9 +228,17 @@ namespace Kernel {
 		kputsc("\nReady", COLOR_GOOD);
 		is_kinit = 1;
 
-		for(;;)
+		for(;;) {
 			if(serial.is_ready()) /* Echo back: */
 				kprintf("%c", serial.read_async());
+
+			/* Show now: */
+			IRQ_OFF();
+			uint32_t now;
+			MOD_IOCTLD("cmos_driver", now, 4);
+			term.printf_at(65, 24, "Now: %d", now);
+			IRQ_RES();
+		}
 		return 0;
 	}
 

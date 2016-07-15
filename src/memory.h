@@ -11,7 +11,7 @@ directory index    page table index  offset into page
 #define KERNEL_HEAP_END  0x20000000
 #define KERNEL_HEAP_SIZE KERNEL_HEAP_END - KERNEL_HEAP_INIT
 
-#define STACK_SIZE 2 /* Block count, that is, page (4kb) */
+#define STACK_SIZE 40 /* Block count, that is, page (4kb) */
 
 #define PAGES_PER_TABLE 1024
 #define TABLES_PER_DIR 1024

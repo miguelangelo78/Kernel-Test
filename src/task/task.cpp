@@ -95,9 +95,7 @@ void switch_task(status_t new_process_state) {
 	/* Update current task state to new state: */
 	current_task->running = 0;
 	current_task->status = new_process_state;
-	CPU::TSS::tss_set_kernel_stack(current_task->thread.esp);
 	switch_fpu();
-	switch_directory(curr_dir);
 
 	/* Reinsert current task into task queue: */
 	if(new_process_state)
@@ -126,6 +124,9 @@ void switch_task(status_t new_process_state) {
 	}
 
 	current_task->running = 1;
+	curr_dir = current_task->thread.page_dir;
+	switch_directory(curr_dir);
+	CPU::TSS::tss_set_kernel_stack(current_task->thread.esp);
 
 	/* Acknowledge PIT interrupt: */
 	Kernel::CPU::IRQ::irq_ack(Kernel::CPU::IRQ::IRQ_PIT);

@@ -308,6 +308,7 @@ char * Terminal::scroll_copy_line(int line) {
 }
 
 char Terminal::scroll(char direction, int scrollcount) {
+	if(!cursor_enabled) return 0;
 	for(int i = 0; i < scrollcount; i++) {
 		if(direction) { /* Scroll down */
 			spill_buff(direction);
