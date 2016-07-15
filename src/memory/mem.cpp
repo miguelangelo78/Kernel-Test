@@ -295,10 +295,10 @@ void mem_test(char before_paging) {
 }
 
 void paging_install(uint32_t memsize) {
-	mem_test(1);
-
 	/* Install page fault handler: */
 	Kernel::CPU::ISR::isr_install_handler(Kernel::CPU::IDT::IDT_IVT::ISR_PAGEFAULT, (Kernel::CPU::ISR::isr_handler_t)page_fault);
+
+	mem_test(1);
 
 	/* Initialize paging directory: */
 	kernel_directory = (paging_directory_t*)kvmalloc(sizeof(paging_directory_t));
@@ -312,7 +312,7 @@ void paging_install(uint32_t memsize) {
 
 	kprintf("(Pages: %d Tables: %d) ", page_count, table_count);
 
-	/* Allocate entire kernel (from address 0 to frame_ptr): */
+	/* Allocate the kernel itself (from address 0 to frame_ptr): */
 	for (uintptr_t i = 0; i <= frame_ptr; i += PAGE_SIZE)
 		alloc_page(1, 1);
 	
