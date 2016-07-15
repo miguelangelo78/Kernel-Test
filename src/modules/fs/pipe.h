@@ -26,9 +26,25 @@ typedef struct _pipe_device {
 	int dead;
 } pipe_device_t;
 
+typedef struct unix_pipe {
+	FILE * read_end;
+	FILE * write_end;
+
+	volatile int read_closed;
+	volatile int write_closed;
+
+	ring_buffer_t * buffer;
+} unix_pipe_t;
+
 inline FILE * make_pipe(size_t size) {
 	FILE * ret;
 	MOD_IOCTLDT("pipe_driver", FILE*, ret, 0, (uintptr_t)size);
+	return ret;
+}
+
+inline int make_unix_pipe(FILE ** pipes) {
+	int ret;
+	MOD_IOCTLD("pipe_driver", ret, 0, (uintptr_t)pipes);
 	return ret;
 }
 

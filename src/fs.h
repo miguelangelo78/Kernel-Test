@@ -129,7 +129,6 @@ extern void vfs_lock(FILE * node);
 
 extern void map_vfs_directory(char * c);
 
-
 /*****************************************/
 /************* VFS Functions *************/
 /*****************************************/
