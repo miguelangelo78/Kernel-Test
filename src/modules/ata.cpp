@@ -371,10 +371,10 @@ static char ata_device_detect(ata_dev_t * dev, char * dev_type) {
 /************* ATA Initializers and IOCTL *************/
 static int ata_init(void) {
 	kprintf("\n\t>> ATA:");
-	if(!ata_device_detect(&ata_primary_master, "Primary Master"))     kprintf("\t\t- !Mounted!");
-	if(!ata_device_detect(&ata_primary_slave, "Primary Slave"))       kprintf("\t\t- !Mounted!");
+	if(!ata_device_detect(&ata_primary_master,   "Primary Master"))   kprintf("\t\t- !Mounted!");
+	if(!ata_device_detect(&ata_primary_slave,    "Primary Slave"))    kprintf("\t\t- !Mounted!");
 	if(!ata_device_detect(&ata_secondary_master, "Secondary Master")) kprintf("\t\t- !Mounted!");
-	if(!ata_device_detect(&ata_secondary_slave, "Secondary Slave"))   kprintf("\t\t- !Mounted!");
+	if(!ata_device_detect(&ata_secondary_slave,  "Secondary Slave"))  kprintf("\t\t- !Mounted!");
 	kprintf("\n");
 	return 0;
 }

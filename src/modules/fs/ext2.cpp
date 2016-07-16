@@ -86,6 +86,7 @@ static uint32_t write_inode_buffer(ext2_fs_t * fs, ext2_inodetable_t * inode, ui
 static unsigned int allocate_inode(ext2_fs_t * fs);
 static int create_entry(FILE * parent, char * name, uint32_t inode);
 
+static char is_using_cache = 0;
 
 /*********************************************/
 /***** EXT2 FILESYSTEM HANDLER FUNCTIONS *****/
@@ -221,8 +222,8 @@ static void ext2_create(FILE * parent, char * name, uint16_t permission) {
 	inode->size = 0; /* empty */
 
 	/* Assign it to root */
-	inode->uid = 0; // TODO: current_process->user; /* user */
-	inode->gid = 0; // TODO: current_process->user;
+	inode->uid = ((task_t*)symbol_find("current_task"))->user;
+	inode->gid = ((task_t*)symbol_find("current_task"))->user;
 
 	/* Misc */
 	inode->faddr = 0;
@@ -247,6 +248,7 @@ static void ext2_create(FILE * parent, char * name, uint16_t permission) {
 	create_entry(parent, name, inode_no);
 
 	free(inode);
+
 	ext2_sync(fs);
 }
 
@@ -279,8 +281,8 @@ static void ext2_mkdir(FILE * parent, char * name, uint16_t permission) {
 	inode->size = 0; /* empty */
 
 	/* Assign it to root */
-	inode->uid = 0; // TODO: current_process->user; /* user */
-	inode->gid = 0; // TODO: current_process->user;
+	inode->uid = ((task_t*)symbol_find("current_task"))->user; /* user */
+	inode->gid = ((task_t*)symbol_find("current_task"))->user;
 
 	/* misc */
 	inode->faddr = 0;
@@ -490,8 +492,8 @@ static void ext2_symlink(FILE * parent, char * target, char * name) {
 	inode->size = 0; /* empty */
 
 	/* Assign it to current user */
-	inode->uid = 0; // TODO: current_process->user;
-	inode->gid = 0; // TODO: current_process->user;
+	inode->uid = ((task_t*)symbol_find("current_task"))->user;
+	inode->gid = ((task_t*)symbol_find("current_task"))->user;
 
 	/* misc */
 	inode->faddr = 0;
@@ -1011,6 +1013,7 @@ static ext2_dir_t * ext2_direntry(ext2_fs_t * fs, ext2_inodetable_t * inode, uin
 }
 
 static unsigned int ext2_sync(ext2_fs_t * fs) {
+	if(!is_using_cache) return 0;
 	spin_lock(fs->lock);
 	/* Flush each cache entry: */
 	for(unsigned int i = 0; i < fs->cache_entries; i++)
@@ -1196,7 +1199,7 @@ static int write_block(ext2_fs_t * fs, unsigned int block_no, uint8_t *buff) {
 	/* Else: Find the entry in the cache: */
 	int oldest = -1;
 	unsigned int oldest_age = UINT32_MAX;
-	for(unsigned int i = 0; i <fs->cache_entries; i++) {
+	for(unsigned int i = 0; i < fs->cache_entries; i++) {
 		if(DC[i].block_no == block_no) {
 			/* We found it. Update the cache entry */
 			DC[i].last_use = get_cache_time(fs);
@@ -1399,11 +1402,12 @@ static FILE * mount_ext2(FILE * blockdev) {
 	fs->inodes_per_group = SB->inodes_count / fs->block_group_count;
 
 #if USE_CACHE == 1
+	is_using_cache = 1;
 	/* Allocating cache: */
 	DC = (ext2_disk_cache_entry_t*)malloc(sizeof(ext2_disk_cache_entry_t));
 
 	uint32_t cache_size = fs->block_size * fs->cache_entries;
-	kprintf("\n\t> Allocating Disk Cache (Size: %d MB/ %d KB / %d)\n", (cache_size / 1000) / 1000, cache_size / 1000, cache_size);
+	kprintf("\n\t> Allocating Disk Cache (Size: %d MB / %d KB / %d)\n", (cache_size / 1000) / 1000, cache_size / 1000, cache_size);
 	fs->cache_data = (uint8_t*)malloc(cache_size);
 	memset(fs->cache_data, 0, cache_size);
 	for(uint32_t i = 0; i < fs->cache_entries; i++) {

@@ -231,8 +231,36 @@ namespace Kernel {
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
 
 		kputsc("\nReady", COLOR_GOOD);
-		is_kinit = 1;
+		is_kinit = 1; /* At this point, the Kernel is oficially initialized */
 
+		/***************************************************/
+		/***************************************************/
+		/************ TEST EVERYTHING DOWN HERE ************/
+		/***************************************************/
+		/***************************************************/
+
+		/*********** Test ATA + EXT2 + ELF (exec): ***********/
+		FILE * prog = kopen("/runme.o", O_RDONLY);
+		if(prog) {
+			uint8_t * buff = (uint8_t*)malloc(prog->size);
+			fread(prog, 0, prog->size, buff);
+			/* Try to run it: */
+
+
+			free(buff);
+			fclose(prog);
+		}
+
+		/* Create file: */
+		fs_create_file("/new.txt", O_RDWR | O_CREAT);
+		FILE * new_file = kopen("/new.txt", O_RDWR);
+		uint8_t * b = (uint8_t*)malloc(10);
+		strcpy((char*)b,"testme");
+		fwrite(new_file, 0, 10, b);
+		free(b);
+		fclose(new_file);
+
+		/*********** Test drivers: ***********/
 		FILE * kbd_file = kopen("/dev/kbd", O_RDONLY);
 		uint8_t * kbd_buff;
 		if(kbd_file) kbd_buff = (uint8_t*)malloc(128);
