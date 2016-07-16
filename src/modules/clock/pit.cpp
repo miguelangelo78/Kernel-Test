@@ -164,6 +164,41 @@ static void relative_time(uint32_t seconds, uint32_t subseconds, uint32_t * out_
 	}
 }
 
+/********************************* CMOS DRIVER VFS FILE *********************************/
+static int pit_file_ioctl(FILE * fnode, int request, void * argp); /* Prototype */
+
+static uint32_t pit_open(FILE * node, unsigned int flags) {
+	return 0;
+}
+
+static uint32_t pit_close(FILE * node) {
+	return 0;
+}
+
+static FILE * pit_make_file(void) {
+	FILE * fnode = (FILE*)malloc(sizeof(FILE));
+	memset(fnode, 0, sizeof(FILE));
+
+	fnode->device = 0;
+	fnode->uid = 0;
+	fnode->gid = 0;
+	sprintf(fnode->name, "%s", "[cmos]");
+	fnode->read = fnode->write = 0;
+	fnode->readdir = 0;
+	fnode->finddir = 0;
+	fnode->get_size = 0;
+	fnode->open = pit_open;
+	fnode->close = pit_close;
+	fnode->ioctl = pit_file_ioctl;
+	fnode->flags = FS_BLOCKDEV;
+
+	fnode->atime = now();
+	fnode->mtime = fnode->atime;
+	fnode->ctime = fnode->atime;
+
+	return fnode;
+}
+
 static int pit_init(void) {
 	hashmap_get = (hashmap_get_t)SYF((char*)"hashmap_get");
 	symbol_add("timer_ticks", (unsigned long int)&ticks);
@@ -176,6 +211,9 @@ static int pit_init(void) {
 	pit_cbacks = hashmap_create(PIT_CALLBACK_SERVICE_MAX);
 	pit_sethz(PIT_DEFAULT_HZ);
 	SYA(irq_install_handler, Kernel::CPU::IRQ::IRQ_PIT, pit_handler);
+
+	/* Mount CMOS driver into VFS: */
+	vfs_mount("/dev/timer", pit_make_file());
 	return 0;
 }
 
@@ -183,23 +221,30 @@ static int pit_finit(void) {
 	return 1;
 }
 
-static uintptr_t pit_ioctl(void * data) {
-	uintptr_t *d = (uintptr_t*)data;
-	switch(d[0]) {
+/* File ioctl (accessed by the VFS): */
+static int pit_file_ioctl(FILE * fnode, int request, void * argp) {
+	uintptr_t *d = (uintptr_t*)argp;
+	switch(request) {
 	case 1:
-		pit_install_cback((char*)d[1], d[2]);
+		pit_install_cback((char*)d[0], d[1]);
 		break;
 	case 2:
-		pit_uninstall_cback((char*)d[1]);
+		pit_uninstall_cback((char*)d[0]);
 		break;
 	case 3:
 		return pit_get_ticks();
 	case 4:
 		return pit_get_subticks();
 	case 5:
-		return (pit_servicing = (char)d[1]);
+		return (pit_servicing = (char)d[0]);
 	}
 	return 0;
+}
+
+/* Module ioctl (accessed by the symbol table): */
+static uintptr_t pit_ioctl(void * data) {
+	int * ptr = (int*)data;
+	return pit_file_ioctl(0, ptr[0], (void*)(ptr + 1));
 }
 
 MODULE_DEF(pit_driver, pit_init, pit_finit, MODT_CLOCK, "Miguel S.", pit_ioctl);

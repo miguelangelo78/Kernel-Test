@@ -10,21 +10,35 @@
 #include <va_list.h>
 #include <libc.h>
 #include <system.h>
+#include "modules/fs/pipe.h"
 
 using namespace Kernel::IO;
 
-Serial::Serial(void) { port = 0; }
+Serial::Serial(void) { port = 0; serial_pipe = 0; comport = 0; }
 
 int serial_cback_ctr = 0;
 
 int serial_cback(Kernel::CPU::regs_t * regs) {
 	if(serial_cback_ctr >= SERIAL_CBACK_BUFFER_SIZE) Kernel::serial.pop(); /* Buffer is full */
-	Kernel::serial.serial_cback_buffer[serial_cback_ctr++] = Kernel::serial.read(); /* Store character */
+	char ch = Kernel::serial.read(); /* Store character */
+	/* Read again just for acknowledgment purposes: */
+	Kernel::serial.read_async();
+	Kernel::serial.serial_cback_buffer[serial_cback_ctr++] = ch;
+
+	if(Kernel::serial.serial_pipe) {
+		/* Push character into pipe buffer: */
+		uint8_t b[1];
+		b[0] = ch;
+		fwrite(Kernel::serial.serial_pipe, 0, 1, b);
+	}
 	return 0;
 }
 
 void Serial::init(uint16_t port) {
 	size_t irq_num = 0;
+
+	comport = port;
+	serial_pipe = 0;
 
 	memset(serial_cback_buffer, 0, SERIAL_CBACK_BUFFER_SIZE);
 
@@ -48,6 +62,28 @@ void Serial::init(uint16_t port) {
 		Kernel::CPU::IRQ::irq_install_handler(irq_num, serial_cback);
 	}
 	read_async();
+}
+
+void Serial::init_late(uint16_t port) {
+	if(serial_pipe) return; /* Thanks but we're already initialized */
+	if(port != this->comport) { /* We're trying to open with a different port here. Handle this */ }
+
+	/* Create serial pipe and then start reading from it instead of reading normally through the buffers */
+	serial_pipe = make_pipe(SERIAL_READ_BUFF_SIZE);
+	serial_pipe->flags = FS_CHARDEV;
+
+	int port_num = 0;
+	switch(port) {
+	case COM1: port_num = 1; break;
+	case COM2: port_num = 2; break;
+	case COM3: port_num = 3; break;
+	case COM4: port_num = 4; break;
+	}
+	char * comname = (char*)malloc(12);
+	sprintf(comname, "/dev/com%d", port_num);
+
+	/* Mount the serial com port: */
+	vfs_mount(comname, serial_pipe);
 }
 
 void Serial::write(char byte) {

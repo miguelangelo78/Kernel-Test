@@ -184,6 +184,9 @@ namespace Kernel {
 		/* Load CORE modules ONLY: */
 		kputs("> Loading up modules - "); Module::modules_load(); DEBUGOK();
 
+		/* Run late serial port initializer so that is uses the VFS as a way to access the COM port */
+		kputs("> Reinitializing Serial port for use with the VFS - "); serial.init_late(COM1); kprintf("\t>> "); DEBUGOK();
+
 		/* Mount EXT2 filesystem: */
 		kputs("> Mounting EXT2 filesystem into / - ");
 		if(!vfs_mount_type((char*)"ext2", (char*)"/dev/hda", (char*)"/")) { kprintf("\t>> "); DEBUGOK(); }
@@ -206,16 +209,15 @@ namespace Kernel {
 		kputsc("\nTODO:\n", COLOR_WARNING);
 		kputs(
 			"\n1- Make drivers and modules: "
-			"\n\t1.1. Finish up the other modules (use VFS on them, e.g.: cmos, pit, serial)"
-			"\n\t1.2. ELF exec prog (system() and exec())"
-			"\n\t1.3. PCI"
-			"\n\t1.4. Mouse"
-			"\n\t1.5. Speaker"
-			"\n\t1.6. Audio / Sound"
-			"\n\t1.7. Net / rtl8139"
-			"\n\t1.8. USB"
-			"\n\t1.9. Procfs (process filesystem)"
-			"\n\t1.10. Devices (null, zero, random, etc...)"
+			"\n\t1.1. ELF exec prog (system() and exec())"
+			"\n\t1.2. PCI"
+			"\n\t1.3. Mouse"
+			"\n\t1.4. Speaker"
+			"\n\t1.5. Audio / Sound"
+			"\n\t1.6. Net / rtl8139"
+			"\n\t1.7. USB"
+			"\n\t1.8. Procfs (process filesystem)"
+			"\n\t1.9. Devices (null, zero, random, etc...)"
 			"\n2- Test Fork and Clone"
 			"\n3- Test Usermode"
 			"\n4- Improve Panic message handling"
@@ -235,10 +237,29 @@ namespace Kernel {
 		uint8_t * kbd_buff;
 		if(kbd_file) kbd_buff = (uint8_t*)malloc(128);
 
+		FILE * cmos_file   = kopen("/dev/cmos",  O_RDONLY);
+		FILE * pit_file    = kopen("/dev/timer", O_RDONLY);
+		FILE * serial_file = kopen("/dev/com1",  O_RDONLY);
+		uint8_t * serial_buff;
+		if(serial_buff) serial_buff = (uint8_t*)malloc(SERIAL_CBACK_BUFFER_SIZE);
+
 		for(;;) {
 			/* Echo serial comm back: */
-			if(serial.is_ready())
+			if(serial.is_ready() && serial_file) {
+#if 0
+				/* The normal way to access the serial COM: */
 				kprintf("%c", serial.read_async());
+#else
+				/* Using the VFS: */
+				int size;
+				MOD_IOCTLD("pipe_driver", size, 1, (uintptr_t)serial_file);
+				if(size) {
+					fread(serial_file, 0, size, serial_buff);
+					kprintf("%c", serial_buff[0]);
+					serial.flush();
+				}
+#endif
+			}
 
 			/* Echo keyboard back: */
 			if(kbd_file) {
@@ -251,9 +272,18 @@ namespace Kernel {
 			}
 
 			/* Show now(): */
-			IRQ_OFF();
-			term.printf_at(65, 24, "Now: %d", now());
-			IRQ_RES();
+			if(cmos_file) {
+				IRQ_OFF();
+				term.printf_at(65, 24, "Now: %d", fs_ioctl(cmos_file, 4, 0));
+				IRQ_RES();
+			}
+
+			/* Show pit's ticks and subticks: */
+			if(pit_file) {
+				IRQ_OFF();
+				term.printf_at(55, 23, "Ticks: %d Subticks: %d", fs_ioctl(pit_file, 3, 0), fs_ioctl(pit_file, 4, 0));
+				IRQ_RES();
+			}
 		}
 		return 0;
 	}

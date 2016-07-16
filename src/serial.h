@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <arch/x86/cpu.h>
+#include <fs.h>
 
 /* See reference: http://wiki.osdev.org/Serial_Ports */
 
@@ -27,6 +28,7 @@ public:
 
 	Serial();
 	void init(uint16_t port);
+	void init_late(uint16_t port);
 
 	void write(char byte);
 	void puts(char * str);
@@ -42,7 +44,9 @@ public:
 
 	char is_ready(void);
 
+	FILE * serial_pipe; /* This pipe will only be initialized once we loaded modules and the pipe module */
 private:
+	uint16_t comport; /* The actual address of the com port */
 	uint16_t port;
 	char is_tx_empty(void);
 	char is_rx_empty(void);

@@ -128,6 +128,41 @@ static void rtc_set_frequency(char rate) {
 	rtc_enable_irq();
 }
 
+/********************************* CMOS DRIVER VFS FILE *********************************/
+static int cmos_file_ioctl(FILE * fnode, int request, void * argp); /* Prototype */
+
+static uint32_t cmos_open(FILE * node, unsigned int flags) {
+	return 0;
+}
+
+static uint32_t cmos_close(FILE * node) {
+	return 0;
+}
+
+static FILE * cmos_make_file(void) {
+	FILE * fnode = (FILE*)malloc(sizeof(FILE));
+	memset(fnode, 0, sizeof(FILE));
+
+	fnode->device = 0;
+	fnode->uid = 0;
+	fnode->gid = 0;
+	sprintf(fnode->name, "%s", "[cmos]");
+	fnode->read = fnode->write = 0;
+	fnode->readdir = 0;
+	fnode->finddir = 0;
+	fnode->get_size = 0;
+	fnode->open = cmos_open;
+	fnode->close = cmos_close;
+	fnode->ioctl = cmos_file_ioctl;
+	fnode->flags = FS_BLOCKDEV;
+
+	fnode->atime = now();
+	fnode->mtime = fnode->atime;
+	fnode->ctime = fnode->atime;
+
+	return fnode;
+}
+
 /********************************* INITIALIZATION AND IOCTL *********************************/
 static int cmos_init(void) {
 	hashmap_get_i = (hashmap_get_i_t)SYF((char*)"hashmap_get_i");
@@ -135,6 +170,9 @@ static int cmos_init(void) {
 	SYA(irq_install_handler, Kernel::CPU::IRQ::IRQ_CMOS, rtc_handler);
 	rtc_set_frequency(0);
 	boot_time = rtc_get_time_secs();
+
+	/* Mount CMOS driver into VFS: */
+	vfs_mount("/dev/cmos", cmos_make_file());
 	return 0;
 }
 
@@ -142,14 +180,15 @@ static int cmos_finit(void) {
 	return 0;
 }
 
-static uintptr_t cmos_ioctl(void * data) {
-	uintptr_t *d = (uintptr_t*)data;
-	switch(d[0]) {
+/* File ioctl (accessed by the VFS): */
+static int cmos_file_ioctl(FILE * fnode, int request, void * argp) {
+	uintptr_t *d = (uintptr_t*)argp;
+	switch(request) {
 	case 1:
-		rtc_install_cback((char*)d[1], d[2]);
+		rtc_install_cback((char*)d[0], d[1]);
 		break;
 	case 2:
-		rtc_uninstall_cback((char*)d[1]);
+		rtc_uninstall_cback((char*)d[0]);
 		break;
 	case 3:
 		return (uintptr_t)rtc_get_time();
@@ -159,6 +198,12 @@ static uintptr_t cmos_ioctl(void * data) {
 		return boot_time;
 	}
 	return 0;
+}
+
+/* Module ioctl (accessed by the symbol table): */
+static uintptr_t cmos_ioctl(void * data) {
+	int * ptr = (int*)data;
+	return cmos_file_ioctl(0, ptr[0], (void*)(ptr + 1));
 }
 
 MODULE_DEF(cmos_driver, cmos_init, cmos_finit, MODT_CLOCK, "Miguel S.", cmos_ioctl);
