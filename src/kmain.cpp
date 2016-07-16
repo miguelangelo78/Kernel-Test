@@ -241,7 +241,7 @@ namespace Kernel {
 		FILE * pit_file    = kopen("/dev/timer", O_RDONLY);
 		FILE * serial_file = kopen("/dev/com1",  O_RDONLY);
 		uint8_t * serial_buff;
-		if(serial_buff) serial_buff = (uint8_t*)malloc(SERIAL_CBACK_BUFFER_SIZE);
+		if(serial_file) serial_buff = (uint8_t*)malloc(SERIAL_CBACK_BUFFER_SIZE);
 
 		for(;;) {
 			/* Echo serial comm back: */
