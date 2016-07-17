@@ -154,6 +154,7 @@ modent_t * elf_find_mod(elf32_ehdr * header) {
 	return mod;
 }
 
+/* Load ELF file that is an executable and was linked: */
 char elf_load_exec(elf32_ehdr * elf_header) {
 	if(!elf32_is_elf((uint8_t*)elf_header)) return 0;
 	if(elf_header->e_type == ET_REL) return elf_relocate(elf_header);
@@ -164,6 +165,9 @@ char elf_load_exec(elf32_ehdr * elf_header) {
 #define DO_386_32(S, A)	((S) + (A))
 #define DO_386_PC32(S, A, P) ((S) + (A) - (P))
 
+/* Load ELF file that was compiled with the flag -c.
+ * It wasn't linked and in order to make it 'runnable',
+ * it must be relocated: */
 char elf_relocate(elf32_ehdr * elf_header) {
 	if(!elf32_is_elf((uint8_t*)elf_header)) return 0;
 	if(elf_header->e_type == ET_EXEC) return elf_load_exec(elf_header);
@@ -198,6 +202,21 @@ char elf_relocate(elf32_ehdr * elf_header) {
 		}
 	}
 	return 1;
+}
+
+/* Load any ELF file. The function will
+ * try to do its best: */
+char elf_load(void * file) {
+	if(!file) return 0;
+	char retval;
+	elf32_ehdr * hdr = (elf32_ehdr*)file;
+	if((retval = elf32_is_supported(hdr))) return retval;
+
+	switch(hdr->e_type) {
+	case ET_EXEC: return elf_load_exec(hdr);
+	case ET_REL : return elf_relocate(hdr);
+	}
+	return -1;
 }
 
 char * elf_parse(uint8_t * blob, int blobsize) {

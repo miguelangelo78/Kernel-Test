@@ -283,6 +283,7 @@ namespace ELF_SYM_REL {
 
 /******************** ELF DEFINITION (END) ********************/
 
+/* Check the Elf Magic number: */
 inline char elf32_is_elf(uint8_t * file_blob) {
 	char signbuff[5];
 	memcpy(signbuff, file_blob, 4);
@@ -290,9 +291,33 @@ inline char elf32_is_elf(uint8_t * file_blob) {
 	return (!strcmp(signbuff + 1, ELF_SIGN) && signbuff[0] == ELFMAG0);
 }
 
+enum ELF32_VALIDCODE {
+	ELF32_VALID    =  0,
+	ELF32_BADMAG   = -2,
+	ELF32_BADCLASS = -3,
+	ELF32_BADLSB   = -4,
+	ELF32_BADMACH  = -5,
+	ELF32_BADVER   = -6,
+	ELF32_BADTYPE  = -7
+};
+
+/* Check if the ELF file is supported
+ * Returns: 0 WHEN VALID, anything else when INVALID.
+ * Please pay real attention to the retval */
+inline char elf32_is_supported(elf32_ehdr * hdr) {
+	if(!elf32_is_elf((uint8_t*)hdr)) return ELF32_BADMAG; /* Not an ELF file */
+	if(hdr->e_ident[EI_CLASS] != ELFCLASS32) return ELF32_BADCLASS; /* Invalid ELF file class */
+	if(hdr->e_ident[EI_DATA] != ELFDATA2LSB) return ELF32_BADLSB; /* Byte order is not supported */
+	if(hdr->e_machine != EM_386) return ELF32_BADMACH; /* Machine target not supported */
+	if(hdr->e_ident[EI_VERSION] != EV_CURRENT) return ELF32_BADVER; /* Unsupported file version */
+	if(hdr->e_type != ET_REL && hdr->e_type != ET_EXEC) return ELF32_BADTYPE; /* Not a relocatable/executable file */
+	return ELF32_VALID;
+}
+
 extern char * elf_parse(uint8_t * blob, int blobsize);
 extern char elf_relocate(elf32_ehdr * elf_header);
 extern char elf_load_exec(elf32_ehdr * elf_header);
+extern char elf_load(void * file);
 extern modent_t * elf_find_mod(elf32_ehdr * header);
 
 #endif /* SRC_ELF_H_ */

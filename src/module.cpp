@@ -206,8 +206,8 @@ void modules_load(void) {
 			continue;
 		}
 
-		/* Prepare elf file first: */
-		if(elf_relocate((elf32_ehdr*)modblob)) {
+		/* Prepare ELF file first: */
+		if(elf_load(modblob)) {
 			/* Load up module and run its init function! */
 			modent_t * modentry = (modent_t *)elf_find_mod((elf32_ehdr*)modblob);
 			if(modentry == (modent_t*)MOD_UNKNOWN) {
