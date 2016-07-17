@@ -54,6 +54,8 @@ enum LOG_CHANNELS {
 	#define DEBUGNO() kputsc(" NO \n", COLOR_BAD);
 #endif
 
+#define debug_buffer(size, buff) do { for(int i = 0; i < size; i++) kprintf("%d ", buff[i]); } while(0);
+
 extern char logging;
 inline void redirect_log(char logchannel) {
 	logging = logchannel & 0x3;

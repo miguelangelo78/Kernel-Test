@@ -248,7 +248,6 @@ static void ext2_create(FILE * parent, char * name, uint16_t permission) {
 	create_entry(parent, name, inode_no);
 
 	free(inode);
-
 	ext2_sync(fs);
 }
 
@@ -661,7 +660,7 @@ static int create_entry(FILE * parent, char * name, uint32_t inode) {
 	ext2_inodetable * pinode = read_inode(fs, parent->inode);
 
 	if (((pinode->mode & EXT2_S_IFDIR) == 0) || (name == NULL)) {
-		kprintf("\n\t> ERROR: Attempted to allocate an inode in a parant that was not a directory");
+		kprintf("\n\t> ERROR: Attempted to allocate an inode in a parent that was not a directory");
 		return E_BADPARENT;
 	}
 
@@ -721,6 +720,7 @@ static int create_entry(FILE * parent, char * name, uint32_t inode) {
 	d_ent->name_len   = strlen(name);
 	d_ent->file_type  = 0; /* This is unused */
 	memcpy(d_ent->name, name, strlen(name));
+
 	inode_write_block(fs, pinode, parent->inode, block_nr, block);
 
 	free(block);
@@ -1112,8 +1112,8 @@ static unsigned int inode_read_block(ext2_fs_t * fs, ext2_inodetable_t * inode, 
  */
 static unsigned int inode_write_block(ext2_fs_t * fs, ext2_inodetable_t * inode, unsigned int inode_no, unsigned int block, uint8_t * buff) {
 	if(block >= inode->blocks / (fs->block_size / 512)) {
-		kprintf("\n\tERROR: Attempting to write beyond the existing allocated blocks for this inode");
-		kprintf(" (Inode %d, Block %d)", inode_no, block);
+		//kprintf("\n\tERROR: Attempting to write beyond the existing allocated blocks for this inode");
+		//kprintf(" (Inode %d, Block %d)", inode_no, block);
 	}
 
 	char * empty = 0;

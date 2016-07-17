@@ -479,6 +479,8 @@ struct parent_path_packet get_parent(char * path) {
 		f_path--;
 	}
 
+	if(*f_path == '/') f_path++;
+
 	parent = kopen(parent_path, 0);
 	free(parent_path);
 

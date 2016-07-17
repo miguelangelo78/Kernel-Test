@@ -280,6 +280,7 @@ inline void * operator new[](__SIZE_TYPE__ n) {
 #endif
 
 #endif
+
 using namespace Kernel::Error;
 using namespace Kernel::KInit;
 using namespace Kernel::VM8086;
