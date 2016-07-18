@@ -203,6 +203,9 @@ namespace Kernel {
 			void dealloc_page(page_t * page);
 			void dealloc_page(uintptr_t physical_address);
 
+			void invalidate_tables_at(uintptr_t addr);
+			void invalidate_page_tables(void);
+
 			extern paging_directory_t * kernel_directory;
 			extern paging_directory_t * curr_dir;
 

@@ -158,7 +158,8 @@ modent_t * elf_find_mod(elf32_ehdr * header) {
 char elf_load_exec(elf32_ehdr * elf_header) {
 	if(!elf32_is_elf((uint8_t*)elf_header)) return 0;
 	if(elf_header->e_type == ET_REL) return elf_relocate(elf_header);
-	/* TODO: Implement this */
+
+
 	return 0;
 }
 
@@ -219,7 +220,49 @@ char elf_load(void * file) {
 	return -1;
 }
 
-char * elf_parse(uint8_t * blob, int blobsize) {
+typedef int (*call_t)(int, char**);
+call_t c = 0;
 
+char * elf_parse(uint8_t * blob, int blobsize) {
+	elf32_ehdr * hdr = (elf32_ehdr*)blob;
+
+	elf32_phdr * ph = (elf32_phdr*)(blob + hdr->e_phoff);
+	for(int i = 0; i <hdr->e_phnum;i++,ph++) {
+		switch(ph->p_type) {
+		case 0: break;
+		case 1:
+		//	alloc_page(1,1,ph->p_vaddr,ph->p_vaddr);
+			//kprintf("\nmemcpy to 0x%x from 0x%x size: %d\n", ph->p_vaddr, blob + ph->p_offset, ph->p_filesz);
+
+			//memcpy((void*)ph->p_vaddr,(void*)(blob + ph->p_offset), ph->p_filesz);
+			break;
+		}
+	}
+
+	uint8_t * n = 0;
+	for(uintptr_t i = 0; i < (uintptr_t)hdr->e_shentsize * hdr->e_shnum; i += hdr->e_shentsize) {
+		elf32_shdr * shdr = (elf32_shdr*)((uintptr_t)hdr + (hdr->e_shoff + i));
+		if(shdr->sh_addr) {
+			//for (uintptr_t i = 0; i < shdr->sh_size + 0x2000; i += 0x1000) {
+				//alloc_page(1, 1, shdr->sh_addr + i,shdr->sh_addr + i);
+			//	invalidate_tables_at(shdr->sh_addr + i);
+			//}
+			if(shdr->sh_type == SHT_NOBITS) {
+				//memset((void *)(shdr->sh_addr), 0x0, shdr->sh_size);
+			} else {
+				//kprintf("\nmemcpy to 0x%x from 0x%x size: %d\n", shdr->sh_addr, (uintptr_t)hdr + shdr->sh_offset, shdr->sh_size);
+
+				n = (uint8_t*)malloc(shdr->sh_size);
+				memcpy(n, (void*)((uintptr_t)hdr + shdr->sh_offset), shdr->sh_size);
+				break;
+			}
+		}
+	}
+
+
+	c = (call_t)n;
+	kprintf("\nEntry: 0x%x\n", c);
+	c(0,0);
+	kprintf("RETURNED");
 	return 0;
 }

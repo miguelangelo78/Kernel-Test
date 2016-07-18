@@ -7,6 +7,7 @@
 #include <fs.h>
 #include <version/version.h>
 #include <time.h>
+#include <elf.h>
 
 namespace Kernel {
 	namespace KInit {
@@ -245,31 +246,9 @@ namespace Kernel {
 			uint8_t * buff = (uint8_t*)malloc(prog->size);
 			fread(prog, 0, prog->size, buff);
 			/* Try to run it: */
-
-
+			elf_parse(buff, prog->size);
 			free(buff);
 			fclose(prog);
-		}
-
-		/* Create file: */
-		fs_create_file("/new.txt", O_WRONLY | O_CREAT | O_TRUNC);
-		FILE * new_file = kopen("/new.txt", O_RDWR);
-		if(new_file) {
-			uint8_t * b_ = (uint8_t*)malloc(10);
-			sprintf((char*)b_,"hello!\0");
-			fwrite(new_file, 0, 10, b_);
-			free(b_);
-			fclose(new_file);
-		}
-
-		/* Read it back: */
-		FILE * old_file = kopen("/new.txt", O_RDONLY);
-		if(old_file) {
-			uint8_t * b_ = (uint8_t*)malloc(old_file->size);
-			fread(old_file, 0, old_file->size, b_);
-			kprintf("\nSize: %d Contents: '%s'\n", old_file->size);
-			free(b_);
-			fclose(new_file);
 		}
 
 		/*********** Test drivers: ***********/
