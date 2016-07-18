@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gkd>
+    <vmType>qemu</vmType>
+    <vm>C:\Program Files (x86)\qemu\qemu-system-x86_64.exe</vm>
+    <vmArguments>-cdrom ..\..\iso\KernelSharp.iso -hda ..\iso\hda.img -serial COM1 -m 128 -s -S -vnc :9 -chardev socket,id=qmp,host=0.0.0.0,port=4444,server,nowait -mon chardev=qmp,mode=control </vmArguments>
+    <gkd_server_port>1234</gkd_server_port>
+    <vncPort>5909</vncPort>
+    <ndisasm>ndisasm</ndisasm>
+    <qmpHost>localhost</qmpHost>
+    <qmpPort>4444</qmpPort>
+</gkd>

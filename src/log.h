@@ -55,7 +55,7 @@ enum LOG_CHANNELS {
 #endif
 
 #define debug_buffer(buff, size) \
-	do { kprintf(" @ 0x%x (%d) >>\n", buff, size); \
+	do { kprintf("\n @ 0x%x (%d) >>\n", buff, size); \
 		 for(int i = 0; i < size; i++) kprintf("%d ", ((uint8_t*)(buff))[i]); \
 		 kprintf("\n <<");\
 	} while(0);

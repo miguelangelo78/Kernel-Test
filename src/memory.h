@@ -44,7 +44,7 @@ typedef struct page_directory_table {
 	unsigned int page_size:1; /* 0: 4kb page sizes 1: 4mb page sizes */
 	unsigned int available:4; /* available for use */
 	unsigned int table_address:20; /* address of the page directory table */
-} __packed page_table_entry;
+} __packed page_table_entry_t;
 
 /* Many pages definition (as a table) */
 typedef struct page_table {
@@ -53,7 +53,7 @@ typedef struct page_table {
 
 /* Directory definition: */
 typedef struct page_directory {
-	page_table_entry table_entries[TABLES_PER_DIR];
+	page_table_entry_t table_entries[TABLES_PER_DIR];
 	page_table_t   * tables[TABLES_PER_DIR]; /* Array of page tables, covers entire memory space */
 } paging_directory_t;
 
