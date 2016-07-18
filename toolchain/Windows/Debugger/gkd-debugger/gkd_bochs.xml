@@ -2,7 +2,7 @@
 <gkd>
     <vmType>bochs</vmType>
     <vm>C:\Program Files (x86)\Bochs-2.6.8\bochsdbg.exe</vm>
-    <vmArguments>-f ..\..\VMachs\Bochs\kerneltest.bxrc -q</vmArguments>
+    <vmArguments>-f ..\..\..\VMachs\Bochs\kerneltest.bxrc -q</vmArguments>
     <vncPort>5900</vncPort>
     <ndisasm>ndisasm</ndisasm>
 </gkd>
