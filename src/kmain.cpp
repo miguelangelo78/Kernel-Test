@@ -277,7 +277,7 @@ namespace Kernel {
 
 					if(kbd_buff[0] == 'r') {
 						/*********** Test ELF exec: ***********/
-						system("/runme.o", 0, 0);
+						system("/runme.o", 0, 0, 0x123456); /* The entry point was chosen randomly for testing purposes */
 					}
 				}
 			}

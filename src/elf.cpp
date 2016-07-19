@@ -271,7 +271,7 @@ int exec_elf(char * elfpath, int argc, char ** argv, char ** env, char execution
 			/* Decide where to load this section to: */
 			uintptr_t * load_dest;
 			if(relocate_entry)
-				load_dest = (uintptr_t*)relocate_entry; /* TODO: This address is wrong, there's an offset missing */
+				load_dest = (uintptr_t*)relocate_entry + (shdr->sh_addr - hdr->e_entry);
 			else
 				load_dest = (uintptr_t*)shdr->sh_addr;
 
@@ -284,17 +284,16 @@ int exec_elf(char * elfpath, int argc, char ** argv, char ** env, char execution
 				current_task->image.size = (uintptr_t)load_dest + shdr->sh_size - current_task->image.entry;
 
 			/* Allocate the pages for the ELF file first: */
+			realloc_table(execution_mode == EXECM_USER ? 0 : 1, 1, (uintptr_t)load_dest);
 			for (uintptr_t i = 0; i < shdr->sh_size + 0x2000; i += PAGE_SIZE) {
 				alloc_page(execution_mode == EXECM_USER ? 0 : 1, 1, (uintptr_t)load_dest + i);
 				invalidate_tables_at((uintptr_t)load_dest + i);
 			}
 
-			if(shdr->sh_type == SHT_NOBITS) { /* Zero out the BSS section: */
+			if(shdr->sh_type == SHT_NOBITS) /* Zero out the BSS section: */
 				memset((void *)(shdr->sh_addr), 0x0, shdr->sh_size);
-			} else { /* Load the section into the selected destination: */
-				kprintf("\nmemcpy from 0x%x to 0x%x size: %d\n", (uintptr_t)hdr + shdr->sh_offset, load_dest, shdr->sh_size);
+			else /* Load the section into the selected destination: */
 				memcpy(load_dest, (void*)((uintptr_t)hdr + shdr->sh_offset), shdr->sh_size);
-			}
 		}
 	}
 

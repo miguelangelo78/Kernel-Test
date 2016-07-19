@@ -231,6 +231,13 @@ uintptr_t find_new_page(void) {
 
 /* Allocates a previously allocated table entry (does not run kvmalloc_p): */
 void realloc_table(int is_kernel, int is_writeable, uintptr_t physical_address) {
+	/* Check if the table was even allocated in the first place: */
+	if(!curr_dir->tables[INDEX_FROM_BIT((physical_address)/PAGE_SIZE, PAGES_PER_TABLE)]) {
+		/* Oops, it was never allocated before! */
+		alloc_table(is_kernel, is_writeable, physical_address);
+		return;
+	}
+	/* It was allocated. It is safe to access it: */
 	page_table_entry_t * table = TABLE_ENTRY(curr_dir, physical_address);
 	table->rw = is_writeable ? 1 : 0; /* RW */
 	table->user = is_kernel ? 0 : 1; /* User */
@@ -344,10 +351,13 @@ void paging_install(uint32_t memsize) {
 
 	/* Initialize paging directory: */
 	kernel_directory = (paging_directory_t*)kvmalloc(sizeof(paging_directory_t));
-	memset(&curr_dir->table_entries, 0, sizeof(page_table_entry_t) * table_count);
-
 	/* Point current directory to kernel_directory: */
 	curr_dir = kernel_directory;
+
+	/* Zero all the table pointers and memory spaces: */
+	memset(&curr_dir->table_entries, 0, sizeof(page_table_entry_t) * table_count);
+	for(int i = 0; i < TABLES_PER_DIR; i++)
+		curr_dir->tables[i] = 0;
 
 	page_count = memsize / 4;
 	table_count = page_count / TABLES_PER_DIR + 1;
