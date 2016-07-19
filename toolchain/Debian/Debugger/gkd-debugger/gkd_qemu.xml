@@ -2,7 +2,7 @@
 <gkd>
     <vmType>qemu</vmType>
     <vm>qemu-system-x86_64</vm>
-    <vmArguments>-m 128 -s -S -vnc :9 -chardev socket,id=qmp,host=0.0.0.0,port=4444,server,nowait -mon chardev=qmp,mode=control</vmArguments>
+    <vmArguments>-m 256 -s -S -vnc :9 -chardev socket,id=qmp,host=0.0.0.0,port=4444,server,nowait -mon chardev=qmp,mode=control</vmArguments>
     <gkd_server_port>1234</gkd_server_port>
     <ndisasm>ndisasm</ndisasm>
     <qmpHost>localhost</qmpHost>
