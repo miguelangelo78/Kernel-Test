@@ -11,10 +11,10 @@
   <fontFamily>Dialog</fontFamily>
   <x>0</x>
   <y>0</y>
-  <width>1378</width>
-  <height>744</height>
-  <divX>497</divX>
-  <divY>252</divY>
+  <width>1377</width>
+  <height>735</height>
+  <divX>732</divX>
+  <divY>299</divY>
   <jmpSplitPanel__divY>600</jmpSplitPanel__divY>
   <osDebugSplitPane__DividerLocation>150</osDebugSplitPane__DividerLocation>
   <profileMemoryFromAddress/>

@@ -321,44 +321,8 @@ void mem_test(char before_paging) {
 		/* Test memory before paging: */
 
 	} else {
-		return;
 		/* Test memory after paging: */
-		//alloc_page(1,1,0x8048054);
-		// xxx
 
-		uintptr_t phys = 0x8048054;
-		uint32_t table_index = INDEX_FROM_BIT((phys) / PAGE_SIZE, PAGES_PER_TABLE);
-		uint32_t page_index = OFFSET_FROM_BIT((phys) / PAGE_SIZE, PAGES_PER_TABLE);
-
-		page_table_entry_t * tentry = &curr_dir->table_entries[table_index];
-		uintptr_t phys_addr_table;
-		curr_dir->tables[table_index] = (page_table_t*)kvmalloc_p(sizeof(page_table_t), &phys_addr_table);
-		memset(curr_dir->tables[table_index], 0, sizeof(page_table_t));
-		tentry->table_address = phys_addr_table >> 12;
-		tentry->rw = 1;
-		tentry->user = 0;
-		tentry->present = 1;
-		tentry->page_size = 0;
-
-		page_table_t * t = curr_dir->tables[table_index];
-		page_t * page = &t->pages[page_index];
-		page->phys_addr = phys >> 12;
-		page->rw = 1;
-		page->user = 0;
-		page->present = 1;
-
-		invalidate_tables_at(phys);
-
-		/* Show results: */
-		char * a = (char*)phys;
-		//sprintf(a, "Test me: %d!", OFFSET_FROM_BIT((phys)/PAGE_SIZE, PAGES_PER_TABLE));
-		char * mem = (char*)0xb8000;
-		int len = strlen(a);
-		for(int i = 0;i < len; i++) {
-			*mem = a[i];
-			mem += 2;
-		}
-		for(;;);
 	}
 }
 

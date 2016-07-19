@@ -56,7 +56,7 @@
     <updateFastStepCommand_ldt>false</updateFastStepCommand_ldt>
     <updateFastStepCommand_memory>true</updateFastStepCommand_memory>
     <updateFastStepCommand_register>true</updateFastStepCommand_register>
-    <width>1382</width>
-    <x>-8</x>
-    <y>-8</y>
+    <width>1378</width>
+    <x>0</x>
+    <y>0</y>
   </Setting>
