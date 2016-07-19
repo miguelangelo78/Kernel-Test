@@ -210,17 +210,15 @@ namespace Kernel {
 		kputsc("\nTODO:\n", COLOR_WARNING);
 		kputs(
 			"\n1- Make drivers and modules: "
-			"\n\t1.1. ELF exec prog (system() and exec())"
-			"\n\t1.2. PCI"
-			"\n\t1.3. Mouse"
-			"\n\t1.4. Speaker"
-			"\n\t1.5. Audio / Sound"
-			"\n\t1.6. Net / rtl8139"
-			"\n\t1.7. USB"
-			"\n\t1.8. Procfs (process filesystem)"
-			"\n\t1.9. Devices (null, zero, random, etc...)"
+			"\n\t1.1. PCI"
+			"\n\t1.2. Mouse"
+			"\n\t1.3. Speaker"
+			"\n\t1.4. Audio / Sound"
+			"\n\t1.5. Net / rtl8139"
+			"\n\t1.6. USB"
+			"\n\t1.7. Procfs (process filesystem)"
+			"\n\t1.8. Devices (null, zero, random, etc...)"
 			"\n2- Test Fork and Clone"
-			"\n3- Test Usermode"
 			"\n4- Improve Panic message handling"
 			"\n5- Shared Memory"
 			"\n6- VM8086 mode"
@@ -239,17 +237,6 @@ namespace Kernel {
 		/************ TEST EVERYTHING DOWN HERE ************/
 		/***************************************************/
 		/***************************************************/
-
-		/*********** Test ATA + EXT2 + ELF (exec): ***********/
-		FILE * prog = kopen("/runme.o", O_RDONLY);
-		if(prog) {
-			uint8_t * buff = (uint8_t*)malloc(prog->size);
-			fread(prog, 0, prog->size, buff);
-			/* Try to run it: */
-			elf_parse(buff, prog->size);
-			free(buff);
-			fclose(prog);
-		}
 
 		/*********** Test drivers: ***********/
 		FILE * kbd_file = kopen("/dev/kbd", O_RDONLY);
@@ -287,6 +274,11 @@ namespace Kernel {
 				if(size) {
 					fread(kbd_file, 0, size, kbd_buff);
 					kprintf("%c", kbd_buff[0]);
+
+					if(kbd_buff[0] == 'r') {
+						/*********** Test ELF exec: ***********/
+						system("/runme.o", 0, 0);
+					}
 				}
 			}
 

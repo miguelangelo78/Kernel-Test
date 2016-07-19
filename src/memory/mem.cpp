@@ -367,6 +367,7 @@ void paging_install(uint32_t memsize) {
 		alloc_page(1, 1, i);
 
 	/* VGA Text mode (user mode): */
+	realloc_table(0, 1, 0xB8000);
 	for (uintptr_t i = 0xB8000; i <= 0xBF000; i += PAGE_SIZE)
 		alloc_page(0, 1, i);
 

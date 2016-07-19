@@ -221,36 +221,173 @@ char elf_load(void * file) {
 }
 
 char * elf_parse(uint8_t * blob, int blobsize) {
+
+	return 0;
+}
+
+/*************************************/
+/****** ELF Execution Functions ******/
+/*************************************/
+
+/* General purpose function for launching ELF files: */
+int exec_elf(char * elfpath, int argc, char ** argv, char ** env, char execution_mode, uintptr_t relocate_entry) {
+	/* Open ELF file: */
+	FILE * elf_file = kopen(elfpath, O_RDONLY);
+	if(!elf_file) return EXECR_NOSUCHELF;
+
+	/* Read program into buffer: */
+	uint8_t * blob = (uint8_t*)malloc(elf_file->size);
+	/* Read first 4 bytes first: */
+	fread(elf_file, 0, 4, blob);
+	/* Check if it's an ELF: */
+	if(!elf32_is_elf(blob)) { fclose(elf_file); return EXECR_NOTANELF; }
+	/* It is, now read the rest of the ELF file: */
+	fread(elf_file, 0, elf_file->size, blob);
+	/* Gather the file informations before closing it: */
+	user_t elf_file_uid = elf_file->uid;
+	uint32_t elf_file_mask = elf_file->mask;
+	/* Now close the ELF file: */
+	fclose(elf_file);
+
+	/* Cast into ELF header and parse it: */
 	elf32_ehdr * hdr = (elf32_ehdr*)blob;
 
+	/* Check if ELF is Supported: */
+	if(elf32_is_supported(hdr)) return EXECR_BADELF;
+
+	/* The ELF file is completely safe to run.
+	 * Make all the necessary preparations for the execution: */
+	if(execution_mode == EXECM_USER) {
+		release_directory_for_exec(curr_dir);
+		invalidate_page_tables();
+	}
+	/* Set up current_task's image: */
+	current_task->image.entry = 0xFFFFFFFF;
+
+	/* Load Sections into memory: */
 	for(uintptr_t i = 0; i < (uintptr_t)hdr->e_shentsize * hdr->e_shnum; i += hdr->e_shentsize) {
 		elf32_shdr * shdr = (elf32_shdr*)((uintptr_t)hdr + (hdr->e_shoff + i));
 		if(shdr->sh_addr) {
-			for (uintptr_t i = 0; i < shdr->sh_size + 0x2000; i += 0x1000) {
-				alloc_page(0, 1, shdr->sh_addr + i, shdr->sh_addr + i);
-				invalidate_tables_at(shdr->sh_addr + i);
+			/* Decide where to load this section to: */
+			uintptr_t * load_dest;
+			if(relocate_entry)
+				load_dest = (uintptr_t*)relocate_entry; /* TODO: This address is wrong, there's an offset missing */
+			else
+				load_dest = (uintptr_t*)shdr->sh_addr;
+
+			/* Set up current_task's image: */
+			if (shdr->sh_addr < current_task->image.entry)
+				/* If this is the lowest entry point, store it for memory reasons */
+				current_task->image.entry = shdr->sh_addr;
+			if (shdr->sh_addr + shdr->sh_size - current_task->image.entry > current_task->image.size)
+				/* We also store the total size of the memory region used by the application */
+				current_task->image.size = shdr->sh_addr + shdr->sh_size - current_task->image.entry;
+
+			/* Allocate the pages for the ELF file first: */
+			for (uintptr_t i = 0; i < shdr->sh_size + 0x2000; i += PAGE_SIZE) {
+				alloc_page(execution_mode == EXECM_USER ? 0 : 1, 1, (uintptr_t)load_dest + i);
+				invalidate_tables_at((uintptr_t)load_dest + i);
 			}
-			if(shdr->sh_type == SHT_NOBITS) {
+
+			if(shdr->sh_type == SHT_NOBITS) { /* Zero out the BSS section: */
 				memset((void *)(shdr->sh_addr), 0x0, shdr->sh_size);
-			} else {
-				//kprintf("\nmemcpy to 0x%x from 0x%x size: %d\n", shdr->sh_addr, (uintptr_t)hdr + shdr->sh_offset, shdr->sh_size);
-				memcpy((void*)shdr->sh_addr, (void*)((uintptr_t)hdr + shdr->sh_offset), shdr->sh_size);
+			} else { /* Load the section into the selected destination: */
+				kprintf("\nmemcpy from 0x%x to 0x%x size: %d\n", (uintptr_t)hdr + shdr->sh_offset, load_dest, shdr->sh_size);
+				memcpy(load_dest, (void*)((uintptr_t)hdr + shdr->sh_offset), shdr->sh_size);
 			}
 		}
 	}
 
-	for (uintptr_t stack_pointer = USER_STACK_BOTTOM; stack_pointer <= USER_STACK_TOP; stack_pointer += 0x1000) {
-		alloc_page(0, 1, stack_pointer);
-		invalidate_tables_at(stack_pointer);
-	}
+	uintptr_t entrypoint = relocate_entry ? relocate_entry : hdr->e_entry;
 
-	realloc_table(0, 1, 0xb8000);
-	for (uintptr_t i = 0xB8000; i <= 0xBF000; i += PAGE_SIZE) {
-		alloc_page(0, 1, i);
-		invalidate_tables_at(i);
-	}
+	/* Finally, free the blob that we allocated for storing the ELF file: */
+	free(blob);
 
-	Kernel::Syscall::usermode_enter(hdr->e_entry, 0, 0, USER_STACK_TOP);
-	kprintf("RETURNED");
-	return 0;
+	if(execution_mode == EXECM_USER) { /* If we are launching this ELF as User, we need to allocate the stack */
+		/* Allocate the stack for the ELF file: */
+		for (uintptr_t stack_pointer = USER_STACK_BOTTOM; stack_pointer <= USER_STACK_TOP; stack_pointer += PAGE_SIZE) {
+			alloc_page(0, 1, stack_pointer);
+			invalidate_tables_at(stack_pointer);
+		}
+
+		/* Allocate the heap and set the environment for the ELF file: */
+		/* TODO */
+
+		if(elf_file_mask & 0x800)
+			current_task->user = elf_file_uid;
+		current_task->image.entry = entrypoint;
+	}
+	/* Otherwise, if we're launching it as the Kernel, we already have a stack available for us.
+	 * The same goes for the heap */
+
+	/* Now launch the file: */
+	switch(execution_mode) {
+	case EXECM_KERNEL: { /* Execute the ELF file as if it was a function (still in ring 0 / kernel mode) */
+			typedef int (*elf_mainfunc_t)(int, char**);
+			elf_mainfunc_t elf_mainfunc = (elf_mainfunc_t)entrypoint;
+			int ret = elf_mainfunc(argc, argv);
+			/* We will return here */
+			return ret;
+		}
+		break;
+	case EXECM_KERNEL_TASKLET: { /* Execute the ELF file as if it was a function but in a separate thread (still in ring 0 / kernel mode) */
+			task_create_tasklet((tasklet_t)entrypoint, elfpath, 0);
+			/* We will ** NOT ** return here after this function call.
+			 * If the tasklet returns, the EIP will jump to the function 'task_return_grave' */
+			return EXECR_BADRET;
+		}
+		break;
+	case EXECM_USER: /* Execute the ELF file as a user. This will make the Kernel Jump into usermode / ring3 */
+		Kernel::Syscall::usermode_enter(entrypoint, argc, argv, USER_STACK_TOP);
+		/* We will ** NOT ** return here after this function call */
+		return EXECR_BADRET;
+	}
+	/* If we reach this then we didn't run anything, which is weird */
+	return EXECR_UNKNOWNRET;
 }
+
+/* Run exec_elf() in usermode but choose where to load the ELF file: */
+int system(char * path, int argc, char ** argv, uintptr_t relocate_entry) {
+	/* Make a copy of argv first: */
+	char ** argv_ = argv_copy(argc, argv);
+	/* Set empty environment array: */
+	char * env[] = {0};
+	/* Prepare directory: */
+	set_task_environment((task_t*)current_task, clone_directory(curr_dir));
+	switch_directory(curr_dir);
+	/* Execute it: */
+	if(exec_elf(path, argc, argv_, env, EXECM_USER, relocate_entry) == EXECR_NOSUCHELF) {
+		argv_free(argc, argv_);
+		return EXECR_NOSUCHELF;
+	}
+	kexit(EXECR_BADRET);
+	return EXECR_BADRET;
+}
+
+/* Run exec_elf() in usermode: */
+int system(char * path, int argc, char ** argv) {
+	return system(path, argc, argv, 0);
+}
+
+/* Run exec_elf() in kernel mode but in the same process / task */
+int ksystem(char * path, int argc, char ** argv) {
+	return exec_elf(path, argc, argv, 0, EXECM_KERNEL, 0);
+}
+
+/* Run exec_elf() in kernel mode but in the same process / task
+ * but choose where to load the ELF file:  */
+int ksystem(char * path, int argc, char ** argv, uintptr_t relocate_entry) {
+	return exec_elf(path, argc, argv, 0, EXECM_KERNEL, relocate_entry);
+}
+
+/* Run exec_elf() in kernel mode but in a new process / task: */
+int ktsystem(char * path, int argc, char ** argv) {
+	return exec_elf(path, argc, argv, 0, EXECM_KERNEL_TASKLET, 0);
+}
+
+/* Run exec_elf() in kernel mode but in a new process / task
+ * but choose where to load the ELF file: */
+int ktsystem(char * path, int argc, char ** argv, uintptr_t relocate_entry) {
+	return exec_elf(path, argc, argv, 0, EXECM_KERNEL_TASKLET, relocate_entry);
+}
+

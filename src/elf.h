@@ -291,6 +291,25 @@ inline char elf32_is_elf(uint8_t * file_blob) {
 	return (!strcmp(signbuff + 1, ELF_SIGN) && signbuff[0] == ELFMAG0);
 }
 
+/* This enum tells the exec_elf function how
+ * to run the ELF file: */
+enum EXEC_MODE {
+	EXECM_KERNEL,
+	EXECM_KERNEL_TASKLET,
+	EXECM_USER
+};
+
+/* What kind of return values we can
+ * expect from the exec_elf() function: */
+enum EXEC_RET {
+	EXECR_OK, /* Nothing to declare */
+	EXECR_NOSUCHELF  = -5, /* The file was not found */
+	EXECR_NOTANELF   = -4, /* A file was found, but it's simply not an elf executable */
+	EXECR_BADELF     = -3, /* It's an elf file, but not supported */
+	EXECR_BADRET     = -1, /* Bad return, caused if the user returns from ring3 (unlikely) */
+	EXECR_UNKNOWNRET = -2/* When nothing was run on the exec function */
+};
+
 enum ELF32_VALIDCODE {
 	ELF32_VALID    =  0,
 	ELF32_BADMAG   = -2,
@@ -314,10 +333,35 @@ inline char elf32_is_supported(elf32_ehdr * hdr) {
 	return ELF32_VALID;
 }
 
+inline char ** argv_copy(int argc, char ** src_argv) {
+	char ** new_argv = (char**)malloc(sizeof(char*) * (argc + 1));
+	for(int i = 0; i < argc; i++) {
+		size_t strl = strlen(src_argv[i]);
+		new_argv[i] = (char*)malloc(strl + 1);
+		memcpy(new_argv[i], src_argv[i], strl);
+	}
+	new_argv[argc] = 0;
+	return new_argv;
+}
+
+inline void argv_free(int argc, char ** argv) {
+	for(int i = 0; i < argc + 1; i++)
+		free(argv[i]);
+	free(argv);
+}
+
 extern char * elf_parse(uint8_t * blob, int blobsize);
 extern char elf_relocate(elf32_ehdr * elf_header);
 extern char elf_load_exec(elf32_ehdr * elf_header);
 extern char elf_load(void * file);
 extern modent_t * elf_find_mod(elf32_ehdr * header);
+
+extern int exec_elf(char * elfpath, int argc, char ** argv, char ** env, char execution_mode, uintptr_t relocate_entry);
+extern int system(char * path, int argc, char ** argv);
+extern int system(char * path, int argc, char ** argv, uintptr_t relocate_entry);
+extern int ksystem(char * path, int argc, char ** argv);
+extern int ksystem(char * path, int argc, char ** argv, uintptr_t relocate_entry);
+extern int ktsystem(char * path, int argc, char ** argv);
+extern int ktsystem(char * path, int argc, char ** argv, uintptr_t relocate_entry);
 
 #endif /* SRC_ELF_H_ */
