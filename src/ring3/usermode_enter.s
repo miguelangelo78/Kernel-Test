@@ -36,7 +36,7 @@ usermode_enter_asm:
     /* Store stack address in %eax */
     mov %esp, %eax
 
-    /* Data segmenet with bottom 2 bits set for ring3 */
+    /* Data segment with bottom 2 bits set for ring3 */
     pushl $0x23
 
     /* Push the stack address */

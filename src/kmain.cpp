@@ -204,7 +204,7 @@ namespace Kernel {
 
 		/* TODO: Finish the usermode code. We will require drivers and more infrastructure,
 		 * such as EXT2, VFS, ATA, ELF, etc, so that we can actually jump into user code  */
-		kputs("> Entering usermode (ring 3) - "); CPU::usermode_enter(0, 0, 0, USER_STACK_TOP); DEBUGOK();
+		kputs("> Entering usermode (ring 3) - "); Syscall::usermode_enter(0, 0, 0, USER_STACK_TOP); DEBUGOK();
 
 		/* TODO List: */
 		kputsc("\nTODO:\n", COLOR_WARNING);

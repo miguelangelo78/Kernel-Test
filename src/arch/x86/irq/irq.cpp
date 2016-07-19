@@ -121,6 +121,7 @@ namespace IRQ {
 		if (irq_num >= 8) IO::outb(PIC2_CMD, PIC_EOI);
 		IO::outb(PIC1_CMD, PIC_EOI);
 	}
+	EXPORT_SYMBOL(irq_ack);
 
 	/* Implementation and initialization functions: */
 	#define irq_is_valid(int_no) ((int_no) >= IRQ_OFFSET && (int_no) <= IRQ_OFFSET + (IRQ_COUNT - 1)) /* IRQ_COUNT - 1 because it starts from 0 */

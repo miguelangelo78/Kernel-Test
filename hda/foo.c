@@ -21,5 +21,6 @@ int main(int argc, char ** argv) {
 		*c = msg[i];
 		c += 2;
 	}
+	for(;;);
 	return 0;
 }

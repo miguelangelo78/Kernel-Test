@@ -126,7 +126,7 @@ void switch_task(status_t new_process_state) {
 	current_task->running = 1;
 	curr_dir = current_task->thread.page_dir;
 	switch_directory(curr_dir);
-	CPU::TSS::tss_set_kernel_stack(current_task->thread.esp);
+	CPU::TSS::tss_set_kernel_stack(current_task->image.stack);
 
 	/* Acknowledge PIT interrupt: */
 	Kernel::CPU::IRQ::irq_ack(Kernel::CPU::IRQ::IRQ_PIT);

@@ -220,9 +220,6 @@ char elf_load(void * file) {
 	return -1;
 }
 
-typedef int (*call_t)(int, char**);
-call_t c = 0;
-
 char * elf_parse(uint8_t * blob, int blobsize) {
 	elf32_ehdr * hdr = (elf32_ehdr*)blob;
 
@@ -230,7 +227,7 @@ char * elf_parse(uint8_t * blob, int blobsize) {
 		elf32_shdr * shdr = (elf32_shdr*)((uintptr_t)hdr + (hdr->e_shoff + i));
 		if(shdr->sh_addr) {
 			for (uintptr_t i = 0; i < shdr->sh_size + 0x2000; i += 0x1000) {
-				alloc_page(1, 1, shdr->sh_addr + i,shdr->sh_addr + i);
+				alloc_page(0, 1, shdr->sh_addr + i, shdr->sh_addr + i);
 				invalidate_tables_at(shdr->sh_addr + i);
 			}
 			if(shdr->sh_type == SHT_NOBITS) {
@@ -242,10 +239,18 @@ char * elf_parse(uint8_t * blob, int blobsize) {
 		}
 	}
 
+	for (uintptr_t stack_pointer = USER_STACK_BOTTOM; stack_pointer <= USER_STACK_TOP; stack_pointer += 0x1000) {
+		alloc_page(0, 1, stack_pointer);
+		invalidate_tables_at(stack_pointer);
+	}
 
-	c = (call_t)hdr->e_entry;
-	kprintf("\nEntry: 0x%x\n", c);
-	c(0,0);
+	realloc_table(0, 1, 0xb8000);
+	for (uintptr_t i = 0xB8000; i <= 0xBF000; i += PAGE_SIZE) {
+		alloc_page(0, 1, i);
+		invalidate_tables_at(i);
+	}
+
+	Kernel::Syscall::usermode_enter(hdr->e_entry, 0, 0, USER_STACK_TOP);
 	kprintf("RETURNED");
 	return 0;
 }

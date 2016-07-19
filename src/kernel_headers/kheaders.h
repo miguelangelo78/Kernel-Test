@@ -21,6 +21,8 @@
 #define syscall_run_s(syscall_name) FCASTF(SYF("syscall_run_s"), void, char*)(syscall_name)
 #define syscall_run_ss(syscall_name) FCASTF(SYF("syscall_run_s"), void, char*)(# syscall_name)
 
+#define irq_ack(irq_num) FCASTF(SYF("irq_ack"), void, size_t)(irq_num)
+
 #define is_kernel_init() FCASTF(SYF("is_kernel_init"), char, void)()
 
 #define kprintf(fmt, ...) symbol_call_args_("mod_kprintf", PP_NARG(__VA_ARGS__) + 1, (char*)fmt, ##__VA_ARGS__)

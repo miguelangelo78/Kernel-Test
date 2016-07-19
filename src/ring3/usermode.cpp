@@ -10,7 +10,7 @@
 extern "C" { void usermode_enter_asm(uintptr_t location, uintptr_t stack); }
 
 namespace Kernel {
-namespace CPU {
+namespace Syscall {
 
 void usermode_enter(uintptr_t location, int argc, char ** argv, uintptr_t stack) {
 	kprintf("(jump addr: 0x%x stack: 0x%x)", location, stack);

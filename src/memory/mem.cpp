@@ -229,6 +229,16 @@ uintptr_t find_new_page(void) {
 	return 0;
 }
 
+/* Allocates a previously allocated table entry (does not run kvmalloc_p): */
+void realloc_table(int is_kernel, int is_writeable, uintptr_t physical_address) {
+	page_table_entry_t * table = TABLE_ENTRY(curr_dir, physical_address);
+	table->rw = is_writeable ? 1 : 0; /* RW */
+	table->user = is_kernel ? 0 : 1; /* User */
+	table->present = 1; /* Table is present */
+	table->page_size = 0; /* 4KB page size */
+}
+
+/* Allocates a fresh table (that was never allocated before): */
 void alloc_table(int is_kernel, int is_writeable, uintptr_t physical_address) {
 	page_table_entry_t * table = TABLE_ENTRY(curr_dir, physical_address);
 	uintptr_t phys_addr_table;
@@ -347,10 +357,6 @@ void paging_install(uint32_t memsize) {
 	/* Allocate the kernel itself (from address 0 to frame_ptr): */
 	for (uintptr_t i = 0; i <= frame_ptr; i += PAGE_SIZE)
 		alloc_page(1, 1);
-	
-	/* VGA Text mode (user mode): */
-	for (uintptr_t i = 0xB8000; i <= 0xBF000; i += PAGE_SIZE)
-		alloc_page(0, 1, i);
 
 	/* Allocate space for the kernel stack: */
 	for(uintptr_t i = KInit::init_esp; i > CPU::read_reg(CPU::ebp) - (PAGE_SIZE * STACK_SIZE); i -= PAGE_SIZE)
@@ -359,6 +365,10 @@ void paging_install(uint32_t memsize) {
 	/* Finally, allocate the kernel heap: */
 	for (uintptr_t i = 0; i <= heap_head; i += PAGE_SIZE)
 		alloc_page(1, 1, i);
+
+	/* VGA Text mode (user mode): */
+	for (uintptr_t i = 0xB8000; i <= 0xBF000; i += PAGE_SIZE)
+		alloc_page(0, 1, i);
 
 	switch_directory(curr_dir);
 	enable_paging();

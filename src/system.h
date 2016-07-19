@@ -31,8 +31,8 @@ enum SEGSEL {
 /* Returns the difference between the end of the kernel binary and the start */
 #define KERNELSIZE() SEGSIZE(kstart, end)
 
-#define USER_STACK_BOTTOM 0xAFF00000
-#define USER_STACK_TOP    0xB0000000
+#define USER_STACK_BOTTOM 0xAF00000 //0xAFF00000
+#define USER_STACK_TOP    0xB000000 //0xB0000000
 #define SHM_START         0xB0000000
 
 #define asm __asm__
@@ -170,9 +170,6 @@ namespace Kernel {
 			void irq_set_mask(uint8_t irq_num);
 			void irq_clear_mask(uint8_t irq_num);
 		}
-
-		/* Enter Ring3 (usermode): */
-		void usermode_enter(uintptr_t location, int argc, char ** argv, uintptr_t stack);
 	}
 
 #ifndef MODULE
@@ -202,6 +199,10 @@ namespace Kernel {
 			char alloc_pages(char is_kernel, char is_writeable, uintptr_t physical_address_start, uintptr_t physical_address_end, uintptr_t virtual_addr_start,  uintptr_t virtual_addr_end);
 			void dealloc_page(page_t * page);
 			void dealloc_page(uintptr_t physical_address);
+
+			void alloc_table(int is_kernel, int is_writeable, uintptr_t physical_address);
+			void realloc_table(int is_kernel, int is_writeable, uintptr_t physical_address);
+			void dealloc_table(uintptr_t virtual_address);
 
 			void invalidate_tables_at(uintptr_t addr);
 			void invalidate_page_tables(void);
@@ -248,6 +249,9 @@ namespace Kernel {
 	namespace Syscall {
 		#define SYSCALL_MAXCALLS 128
 		typedef uint32_t (*syscall_callback_t)(unsigned int, ...);
+
+		/* Enter Ring3 (usermode): */
+		void usermode_enter(uintptr_t location, int argc, char ** argv, uintptr_t stack);
 
 		void syscalls_initialize(void);
 		char syscall_schedule_install(char * syscall_name, int no, uintptr_t syscall_addr);
