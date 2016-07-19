@@ -276,12 +276,12 @@ int exec_elf(char * elfpath, int argc, char ** argv, char ** env, char execution
 				load_dest = (uintptr_t*)shdr->sh_addr;
 
 			/* Set up current_task's image: */
-			if (shdr->sh_addr < current_task->image.entry)
+			if ((uintptr_t)load_dest < current_task->image.entry)
 				/* If this is the lowest entry point, store it for memory reasons */
-				current_task->image.entry = shdr->sh_addr;
-			if (shdr->sh_addr + shdr->sh_size - current_task->image.entry > current_task->image.size)
+				current_task->image.entry = (uintptr_t)load_dest;
+			if ((uintptr_t)load_dest + shdr->sh_size - current_task->image.entry > current_task->image.size)
 				/* We also store the total size of the memory region used by the application */
-				current_task->image.size = shdr->sh_addr + shdr->sh_size - current_task->image.entry;
+				current_task->image.size = (uintptr_t)load_dest + shdr->sh_size - current_task->image.entry;
 
 			/* Allocate the pages for the ELF file first: */
 			for (uintptr_t i = 0; i < shdr->sh_size + 0x2000; i += PAGE_SIZE) {
