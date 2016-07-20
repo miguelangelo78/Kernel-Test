@@ -240,7 +240,7 @@ int exec_elf(char * elfpath, int argc, char ** argv, char ** env, char execution
 	/* Read first 4 bytes first: */
 	fread(elf_file, 0, 4, blob);
 	/* Check if it's an ELF: */
-	if(!elf32_is_elf(blob)) { fclose(elf_file); return EXECR_NOTANELF; }
+	if(!elf32_is_elf(blob)) { free(blob); fclose(elf_file); return EXECR_NOTANELF; }
 	/* It is, now read the rest of the ELF file: */
 	fread(elf_file, 0, elf_file->size, blob);
 	/* Gather the file informations before closing it: */
@@ -258,6 +258,9 @@ int exec_elf(char * elfpath, int argc, char ** argv, char ** env, char execution
 	/* The ELF file is completely safe to run.
 	 * Make all the necessary preparations for the execution: */
 	if(execution_mode == EXECM_USER) {
+		/* Prepare directory: */
+		set_task_environment((task_t*)current_task, clone_directory(curr_dir));
+		switch_directory(curr_dir);
 		release_directory_for_exec(curr_dir);
 		invalidate_page_tables();
 	}
@@ -347,17 +350,20 @@ int exec_elf(char * elfpath, int argc, char ** argv, char ** env, char execution
 
 /* Run exec_elf() in usermode but choose where to load the ELF file: */
 int system(char * path, int argc, char ** argv, uintptr_t relocate_entry) {
+	/* Preliminary checks (we don't want to even try executing if the elf file does not exist): */
+	FILE * elf_file = kopen(path, O_RDONLY);
+	if(!elf_file) return EXECR_NOSUCHELF;
+	fclose(elf_file);
+
 	/* Make a copy of argv first: */
 	char ** argv_ = argv_copy(argc, argv);
 	/* Set empty environment array: */
-	char * env[] = {0};
-	/* Prepare directory: */
-	set_task_environment((task_t*)current_task, clone_directory(curr_dir));
-	switch_directory(curr_dir);
+	char * env[] = { 0 };
 	/* Execute it: */
-	if(exec_elf(path, argc, argv_, env, EXECM_USER, relocate_entry) == EXECR_NOSUCHELF) {
+	int ret;
+	if((ret = exec_elf(path, argc, argv_, env, EXECM_USER, relocate_entry)) != EXECR_BADRET) {
 		argv_free(argc, argv_);
-		return EXECR_NOSUCHELF;
+		return ret;
 	}
 	kexit(EXECR_BADRET);
 	return EXECR_BADRET;
