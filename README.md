@@ -28,7 +28,7 @@ Note: remember to run chmod +x on the linux script in order to run it.
 
 # How to Build and Run
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Access the folder 'toolchain/[Windows | Debian]/' and there you'll find 9 scripts:    
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Access the folder **```toolchain/{Windows|Debian}/```** and there you'll find 9 scripts:    
 
 1- **bindump**: Reads the kernel file with 'readelf' and opens a text editor with the result  
 2- **bootable_usb**: Makes your flash drive bootable with the kernel  
@@ -57,7 +57,7 @@ Please note that there's differences between build and rebuild, also between the
 * If all you want is to test the Kernel, just run **launch_x86_64**
 
 # How to Run on real machines
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If you want a more realistic approach to Kernel Development, you can simply access the folder 'toolchain/Windows' and run the script bootable_usb.bat. It'll ask what drive letter you want to install the kernel to, and you should select the Pendrive's correct letter. Then, simply boot the pendrive on any machine and it should work.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If you want a more realistic approach to Kernel Development, you can simply access the folder **```toolchain/{Windows|Debian}/```** and run the script **```bootable_usb.{bat|sh}```**. It'll ask what drive letter you want to install the kernel to, and you should select the Pendrive's correct letter. Then, simply boot the pendrive on any machine and it should work.
 These scripts were prepared for only Windows for now. Linux will come soon.
 
 # x86 References
