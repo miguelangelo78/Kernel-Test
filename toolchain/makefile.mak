@@ -8,13 +8,13 @@ CXX_LLVM = clang++
 CC_LLVM = clang
 AS = $(TOOLCH)/Windows/Tools/Cross/i686-elf/bin/i686-elf-as
 NAS = $(TOOLCH)/Windows/Tools/NASM/nasm
-CPPFLAGS = -T $(TOOLCH)/$(LINKER) -Itoolchain/Windows/Tools/Cross/i686-elf/lib/gcc/i686-elf/include -Isrc -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions
+CPPFLAGS = -T $(TOOLCH)/$(LINKER) -Isrc -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions
 LLVMCPPFLAGS = -ffreestanding -nostdlib -nodefaultlibs -target i686-pc-none-elf -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions -IC:/llvm/lib/clang/3.8.0/include -Isrc
-CFLAGS = -T $(TOOLCH)/$(LINKER) -Itoolchain/Windows/Tools/Cross/i686-elf/lib/gcc/i686-elf/include -Isrc -g -finline-functions -ffreestanding -fbuiltin -Wall -Wextra
+CFLAGS = -T $(TOOLCH)/$(LINKER) -Isrc -g -finline-functions -ffreestanding -fbuiltin -Wall -Wextra
 LLVMCFLAGS = -ffreestanding -nostdlib -nodefaultlibs -target i686-pc-none-elf -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -fno-exceptions -IC:/llvm/lib/clang/3.8.0/include -Isrc
 ASFLAGS = 
 NASFLAGS = -g -f elf32
-CPPFLAGS_MODS = -Itoolchain/Windows/Tools/Cross/i686-elf/lib/gcc/i686-elf/include -Isrc -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions
+CPPFLAGS_MODS = -Isrc -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions
 
 # Output constants (filenames and paths)
 DISKPATH = iso
@@ -37,6 +37,7 @@ include src/modules/subdir.mk
 include src/modules/clock/subdir.mk
 include src/modules/fs/subdir.mk
 include src/modules/kbd/subdir.mk
+include src/modules/pci/subdir.mk
 include src/ring3/subdir.mk
 include src/task/subdir.mk
 include src/terminal/subdir.mk

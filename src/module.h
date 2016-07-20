@@ -45,8 +45,11 @@ enum MODULE_SCHEDULE_MODE {
 #define module_schedule(run_address) FCASTF(SYF("module_schedule"), char, char, char*, uintptr_t)(MODULE_SCHED_LATE, "", (uintptr_t)&run_address)
 #endif
 
-/* This macro is only used by the genmake script */
-#define MODULE_DEPS(...)
+/* These macros are only used by the genmake script */
+#define $MODULE_DEPS(...)
+#define $LLVMENABLE(enable)
+#define $FLAGS(...)
+#define $INJ(...)
 
 typedef struct {
 	char name[23];

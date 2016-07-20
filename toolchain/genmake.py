@@ -52,7 +52,7 @@ gt.compiler_cpp.execpath = "$(TOOLCH)/"+osp+"/Tools/Cross/i686-elf/bin/i686-elf-
 gt.compiler_cpp.make_flagsym = "CPPFLAGS"
 gt.compiler_cpp.name = "Cross i686-elf GCC Compiler"
 gt.compiler_cpp.is_asm = 0
-gt.compiler_cpp.include_path = "-Itoolchain/"+osp+"/Tools/Cross/i686-elf/lib/gcc/i686-elf/include -Isrc"
+gt.compiler_cpp.include_path = "-Isrc"
 gt.compiler_cpp.flags = "-T $(TOOLCH)/$(LINKER) " + gt.compiler_cpp.include_path + " -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions"
 # Setup C compiler:
 gt.compiler_c.make_sym = "CC"
