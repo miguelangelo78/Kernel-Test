@@ -41,6 +41,21 @@ Note: remember to run chmod +x on the linux script in order to run it.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For a more productive way of development, simply use Eclipse IDE (with CDT plugin) and import this repository into the workspace. The scripts are already set up and ready to be built and run.
 
+# How to use the Scripts
+The development process is pretty simple:
+1. First, you make the changes to the Kernel source code. You can use your favourite text editor or just about any IDE that has support for Makefile projects (I recommend Eclipse CDT).
+2. Next, if you're not using an IDE, simply navigate to ```toolchain/{Windows|Debian} ```. You will test the Kernel continuously on that folder. If you are using an IDE, you can just make the IDE point to the file ``` toolchain/launcher.pyc ``` and give it the proper execution arguments. The Eclipse project that comes with this repo is already prepared for that.
+3. There's at least 6 scripts that you will use pretty much always:
+	**``` build, build_and_run, rebuild, rebuild_and_run, clean and launch_x86_64 ```**
+Please note that there's differences between build and rebuild, also between the run and 'not' run.
+
+**Script usage rules:**
+
+* If you just edited already existing source code, use **build** to ***just*** build, or use **build_and_run** to also run. There is a small difference between the two. **build** ONLY builds the kernel binary. **build_and_run** builds, generates the hard drive image from the ``` hda/ ```  folder (for QEMU) and then it runs the Kernel (on the simulator).
+* If you just added a new source file, use **rebuild** to regenerate the makefile project and then build. That is the only difference between rebuild and build.
+* If you just changed a header file but did not alter the source file, either run **clean**, or update the source file so that it gets recompiled later with the new altered header.
+* If all you want is to test the Kernel, just run **launch_x86_64**
+
 # How to Run on real machines
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If you want a more realistic approach to Kernel Development, you can simply access the folder 'toolchain/Windows' and run the script bootable_usb.bat. It'll ask what drive letter you want to install the kernel to, and you should select the Pendrive's correct letter. Then, simply boot the pendrive on any machine and it should work.
 These scripts were prepared for only Windows for now. Linux will come soon.
