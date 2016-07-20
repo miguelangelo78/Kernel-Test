@@ -94,8 +94,12 @@
 #define fs_readlink(node, buff, size) FCASTF(SYF("fs_readlink"), int, FILE *, char *, size_t)(node, buff, size)
 
 /* Tasking library functions: */
+#define fork() FCASTF(SYF("fork"), uint32_t, void)()
+#define task_clone(new_stack, thread_function, arg) FCASTF(SYF("task_clone"), uint32_t, uintptr_t, uintptr_t, uintptr_t)(new_stack, thread_function, arg)
+#define task_create_tasklet(tasklet, name, argp) FCASTF(SYF("task_create_tasklet"), int, tasklet_t, char *, void *)(tasklet, name, argp)
 #define wakeup_queue(queue) FCASTF(SYF("wakeup_queue"), int, list_t *)(queue)
 #define sleep_on(queue) FCASTF(SYF("sleep_on"), int, list_t *)(queue)
+#define kexit(retval) FCASTF(SYF("kexit"), void, int)(retval)
 
 #endif
 

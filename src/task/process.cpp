@@ -613,6 +613,7 @@ uint32_t fork(void) {
 	IRQ_RES();
 	return new_task->pid;
 }
+EXPORT_SYMBOL(fork);
 
 /*
  * clone the current thread and create a new one in the same
@@ -672,6 +673,7 @@ uint32_t task_clone(uintptr_t new_stack, uintptr_t thread_function, uintptr_t ar
 	IRQ_RES();
 	return new_task->pid;
 }
+EXPORT_SYMBOL(task_clone);
 
 int task_create_tasklet(tasklet_t tasklet, char * name, void * argp) {
 	IRQ_OFF();
@@ -713,6 +715,7 @@ int task_create_tasklet(tasklet_t tasklet, char * name, void * argp) {
 	IRQ_RES();
 	return new_task->pid;
 }
+EXPORT_SYMBOL(task_create_tasklet);
 /***************************************************/
 
 /**********************************/

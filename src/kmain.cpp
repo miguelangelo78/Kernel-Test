@@ -214,21 +214,26 @@ namespace Kernel {
 			"\n\t1.2. Mouse"
 			"\n\t1.3. Speaker"
 			"\n\t1.4. Audio / Sound"
-			"\n\t1.5. Net / rtl8139"
+			"\n\t1.5. Net / RTL8139"
 			"\n\t1.6. USB"
 			"\n\t1.7. Procfs (process filesystem)"
 			"\n\t1.8. Devices (null, zero, random, etc...)"
-			"\n2- Test Fork and Clone"
+			"\n\t1.9. DMA driver"
+			"\n\t1.10. ATAPI (CD-ROM/DVD)"
+			"\n\t1.11. AHCI (SATA)"
+			"\n\t1.12. FDC (Floppy Disk Controller)"
+			"\n\t1.13. ACPI (Power Management)"
+			"\n2- Process / Task Signals"
+			"\n3- Test Fork and Clone (from Userspace and then from Kernel)"
 			"\n4- Improve Panic message handling"
 			"\n5- Shared Memory"
 			"\n6- VM8086 mode"
 			"\n7- Improve symbol table (use hashing functions on it)"
-			"\n8- Run all class constructors/deconstructors"
+			"\n8- Run all class constructors / deconstructors"
 		);
 
 		/* All done! */
 		Log::redirect_log(Log::LOG_VGA_SERIAL);
-
 		kputsc("\nReady", COLOR_GOOD);
 		is_kinit = 1; /* At this point, the Kernel is oficially initialized */
 

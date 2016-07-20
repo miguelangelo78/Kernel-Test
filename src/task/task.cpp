@@ -199,6 +199,7 @@ void kexit(int retval) {
 	task_return_grave(retval);
 	for(;;);
 }
+EXPORT_SYMBOL(kexit);
 /**************************/
 
 /**********************/
