@@ -43,11 +43,11 @@ Note: remember to run chmod +x on the linux script in order to run it.
 
 # How to use the Scripts
 The development process is pretty simple:
-1. First, you make the changes to the Kernel source code. You can use your favourite text editor or just about any IDE that has support for Makefile projects (I recommend Eclipse CDT).
-2. Next, if you're not using an IDE, simply navigate to ```toolchain/{Windows|Debian} ```. You will test the Kernel continuously on that folder. If you are using an IDE, you can just make the IDE point to the file ``` toolchain/launcher.pyc ``` and give it the proper execution arguments. The Eclipse project that comes with this repo is already prepared for that.
+1. First, you make the changes to the Kernel source code. You can use your favourite text editor or just about any IDE that has support for Makefile projects (I recommend Eclipse CDT).  
+2. Next, if you're not using an IDE, simply navigate to ```toolchain/{Windows|Debian} ```. You will test the Kernel continuously on that folder. If you are using an IDE, you can just make the IDE point to the file ``` toolchain/launcher.pyc ``` and give it the proper execution arguments. The Eclipse project that comes with this repo is already prepared for that.  
 3. There's at least 6 scripts that you will use pretty much always:
-	**``` build, build_and_run, rebuild, rebuild_and_run, clean and launch_x86_64 ```**
-Please note that there's differences between build and rebuild, also between the run and 'not' run.
+	**``` build, build_and_run, rebuild, rebuild_and_run, clean and launch_x86_64 ```**  
+Please note that there's differences between build and rebuild, also between the run and 'not' run.  
 
 **Script usage rules:**
 
