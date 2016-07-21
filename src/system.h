@@ -155,7 +155,7 @@ namespace Kernel {
 				IRQ_FREE2, IRQ_FREE3, IRQ_MOUSE, IRQ_FPU, IRQ_PRIM_ATA, IRQ_SEC_ATA
 			};
 
-			typedef int(*irq_handler_t) (CPU::regs_t *); /* Callback type */
+			typedef int(*irq_handler_t)(CPU::regs_t *); /* Callback type */
 
 			void irq_install(void);
 

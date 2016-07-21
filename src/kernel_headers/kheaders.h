@@ -21,6 +21,7 @@
 #define syscall_run_s(syscall_name) FCASTF(SYF("syscall_run_s"), void, char*)(syscall_name)
 #define syscall_run_ss(syscall_name) FCASTF(SYF("syscall_run_s"), void, char*)(# syscall_name)
 
+#define irq_install_handler(irq_num, irq_handler) FCASTF(SYF("irq_install_handler"), void, size_t, irq_handler_t)(irq_num, irq_handler)
 #define irq_ack(irq_num) FCASTF(SYF("irq_ack"), void, size_t)(irq_num)
 
 #define is_kernel_init() FCASTF(SYF("is_kernel_init"), char, void)()
@@ -102,6 +103,8 @@
 #define kexit(retval) FCASTF(SYF("kexit"), void, int)(retval)
 
 #endif
+
+typedef int(*irq_handler_t)(Kernel::CPU::regs_t *);
 
 using namespace Kernel;
 

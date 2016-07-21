@@ -8,6 +8,7 @@
 #include <version/version.h>
 #include <time.h>
 #include <elf.h>
+#include <modules/mouse/mouse.h>
 
 namespace Kernel {
 	namespace KInit {
@@ -210,18 +211,17 @@ namespace Kernel {
 		kputsc("\nTODO:\n", COLOR_WARNING);
 		kputs(
 			"\n1- Make drivers and modules: "
-			"\n\t1.1. Mouse"
-			"\n\t1.2. Speaker"
-			"\n\t1.3. Audio / Sound"
-			"\n\t1.4. Net / RTL8139"
-			"\n\t1.5. USB"
-			"\n\t1.6. Procfs (process filesystem)"
-			"\n\t1.7. Devices (null, zero, random, etc...)"
-			"\n\t1.8. DMA driver"
-			"\n\t1.9. ATAPI (CD-ROM/DVD)"
-			"\n\t1.10. AHCI (SATA)"
-			"\n\t1.11. FDC (Floppy Disk Controller)"
-			"\n\t1.12. ACPI (Power Management)"
+			"\n\t1.1. Speaker"
+			"\n\t1.2. Audio / Sound"
+			"\n\t1.3. Net / RTL8139"
+			"\n\t1.4. USB"
+			"\n\t1.5. Procfs (process filesystem)"
+			"\n\t1.6. Devices (null, zero, random, etc...)"
+			"\n\t1.7. DMA driver"
+			"\n\t1.8. ATAPI (CD-ROM/DVD)"
+			"\n\t1.9. AHCI (SATA)"
+			"\n\t1.10. FDC (Floppy Disk Controller)"
+			"\n\t1.11. ACPI (Power Management)"
 			"\n2- Process / Task Signals"
 			"\n3- Test Fork and Clone (from Userspace and then from Kernel)"
 			"\n4- Improve Panic message handling"
@@ -246,6 +246,11 @@ namespace Kernel {
 		FILE * kbd_file = kopen("/dev/kbd", O_RDONLY);
 		uint8_t * kbd_buff;
 		if(kbd_file) kbd_buff = (uint8_t*)malloc(128);
+
+		FILE * mouse_file = kopen("/dev/mouse", O_RDONLY);
+		uint8_t * mouse_buff;
+		if(mouse_file) mouse_buff = (uint8_t*)malloc(sizeof(mouse_device_packet_t) * MOUSE_PACKETS_IN_PIPE);
+		int x = 0, y = 0;
 
 		FILE * cmos_file   = kopen("/dev/cmos",  O_RDONLY);
 		FILE * pit_file    = kopen("/dev/timer", O_RDONLY);
@@ -283,6 +288,23 @@ namespace Kernel {
 						/*********** Test ELF exec: ***********/
 						system("/runme.o", 0, 0, 0x123456); /* The entry point was chosen randomly for testing purposes */
 					}
+				}
+			}
+
+			/* Show Mouse data: */
+			if(mouse_file) {
+				int size;
+				MOD_IOCTLD("pipe_driver", size, 1, (uintptr_t)mouse_file);
+				if(size) {
+					fread(mouse_file, 0, size, mouse_buff);
+					mouse_device_packet_t * d = (mouse_device_packet_t*)mouse_buff;
+					x += d->x_difference;
+					if(x>80) x=80;
+					if(x<0)  x=0;
+					y += d->y_difference;
+					if(y>86) y=86;
+					if(y<0)  y=0;
+					term.printf_at(55, 22, "Mouse - x: %d y: %d         ", x, 86-y);
 				}
 			}
 

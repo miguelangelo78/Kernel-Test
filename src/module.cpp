@@ -162,18 +162,24 @@ char module_remove(modent_t * mod) {
 
 /* Reschedules module initializations: */
 int modules_scheduled = 0;
+int modules_quick_scheduled = 0;
+
 char module_schedule(char schedule_mode, char * func_name, uintptr_t address) {
 	if(!are_modules_loading) return 0;
 
 	switch(schedule_mode) {
-	case MODULE_SCHED_QUICK:
-		if(hashmap_has(mod_sched_quick, func_name)) return 0;
-		hashmap_set(mod_sched_quick, func_name, (void*)address);
+	case MODULE_SCHED_QUICK: {
+			char sched_key[32];
+			sprintf(sched_key, "%s_%d", func_name, modules_quick_scheduled++);
+			hashmap_set(mod_sched_quick, sched_key, (void*)address);
+			hashmap_set(mod_sched_quick, func_name, 0);
+		}
 		break;
-	case MODULE_SCHED_LATE:
-		char sched_key [5];
-		sprintf(sched_key, "%d", modules_scheduled++);
-		hashmap_set(mod_sched_last, sched_key, (void*)address);
+	case MODULE_SCHED_LATE: {
+			char sched_key[5];
+			sprintf(sched_key, "%d", modules_scheduled++);
+			hashmap_set(mod_sched_last, sched_key, (void*)address);
+		}
 		break;
 	default: return 0;
 	}
@@ -220,7 +226,17 @@ void modules_load(void) {
 				kprintf(" > ret: %d", module_add(modentry, 1));
 				/* Run scheduled initializations: */
 				if(hashmap_has(mod_sched_quick, modentry->name)) {
-					FCASTF(hashmap_get(mod_sched_quick, modentry->name), int, void)();
+					char sched_key[32];
+					/* Try to initialize all scheduled calls (could be more than 1): */
+					for(int i = 0; ; i++) {
+						sprintf(sched_key, "%s_%d", modentry->name, i);
+						if(hashmap_has(mod_sched_quick, sched_key)) {
+							FCASTF(hashmap_get(mod_sched_quick, sched_key), int, void)();
+							hashmap_remove(mod_sched_quick, sched_key);
+						} else {
+							break;
+						}
+					}
 					hashmap_remove(mod_sched_quick, modentry->name);
 				}
 			} else {

@@ -37,6 +37,7 @@ include src/modules/subdir.mk
 include src/modules/clock/subdir.mk
 include src/modules/fs/subdir.mk
 include src/modules/kbd/subdir.mk
+include src/modules/mouse/subdir.mk
 include src/modules/pci/subdir.mk
 include src/ring3/subdir.mk
 include src/task/subdir.mk
