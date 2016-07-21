@@ -222,8 +222,9 @@ static void ext2_create(FILE * parent, char * name, uint16_t permission) {
 	inode->size = 0; /* empty */
 
 	/* Assign it to root */
-	inode->uid = ((task_t*)symbol_find("current_task"))->user;
-	inode->gid = ((task_t*)symbol_find("current_task"))->user;
+	task_t * curr_task = current_task_get();
+	inode->uid = curr_task->user;
+	inode->gid = curr_task->user;
 
 	/* Misc */
 	inode->faddr = 0;
@@ -280,8 +281,9 @@ static void ext2_mkdir(FILE * parent, char * name, uint16_t permission) {
 	inode->size = 0; /* empty */
 
 	/* Assign it to root */
-	inode->uid = ((task_t*)symbol_find("current_task"))->user; /* user */
-	inode->gid = ((task_t*)symbol_find("current_task"))->user;
+	task_t * curr_task = current_task_get();
+	inode->uid = curr_task->user; /* user */
+	inode->gid = curr_task->user;
 
 	/* misc */
 	inode->faddr = 0;
@@ -491,8 +493,9 @@ static void ext2_symlink(FILE * parent, char * target, char * name) {
 	inode->size = 0; /* empty */
 
 	/* Assign it to current user */
-	inode->uid = ((task_t*)symbol_find("current_task"))->user;
-	inode->gid = ((task_t*)symbol_find("current_task"))->user;
+	task_t * curr_task = current_task_get();
+	inode->uid = curr_task->user;
+	inode->gid = curr_task->user;
 
 	/* misc */
 	inode->faddr = 0;

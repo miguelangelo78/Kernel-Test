@@ -144,6 +144,7 @@ void switch_task(status_t new_process_state) {
 		: "%ebx", "%esp", "%eax"
 	);
 }
+EXPORT_SYMBOL(switch_task);
 
 /* PIT Callback: */
 unsigned long * timer_ticks;

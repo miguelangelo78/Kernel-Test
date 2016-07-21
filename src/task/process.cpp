@@ -237,6 +237,7 @@ void sleep_until(task_t * task, unsigned long seconds, unsigned long subseconds)
 	spin_unlock(sleep_lock);
 	IRQ_RES();
 }
+EXPORT_SYMBOL(sleep_until);
 /**************************************/
 
 /*************************************************************/
@@ -336,6 +337,7 @@ uint32_t current_task_getpid(void) {
 task_t * current_task_get(void) {
 	return (task_t*)current_task;
 }
+EXPORT_SYMBOL(current_task_get);
 
 pid_t get_next_pid(char restart_pid) {
 	if(restart_pid) next_pid = 1;

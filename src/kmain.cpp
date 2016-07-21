@@ -9,6 +9,7 @@
 #include <time.h>
 #include <elf.h>
 #include <modules/mouse/mouse.h>
+#include <modules/sound/speaker.h>
 
 namespace Kernel {
 	namespace KInit {
@@ -252,9 +253,16 @@ namespace Kernel {
 		if(mouse_file) mouse_buff = (uint8_t*)malloc(sizeof(mouse_device_packet_t) * MOUSE_PACKETS_IN_PIPE);
 		int x = 0, y = 0;
 
-		FILE * cmos_file   = kopen("/dev/cmos",  O_RDONLY);
-		FILE * pit_file    = kopen("/dev/timer", O_RDONLY);
-		FILE * serial_file = kopen("/dev/com1",  O_RDONLY);
+		FILE * spkr_file   = kopen("/dev/speaker", O_RDONLY);
+		if(spkr_file) {
+			speaker_t d;
+			d.frequency = 1;
+			d.length = 1;
+			fwrite(spkr_file, 0, sizeof(speaker_t), (uint8_t*)&d);
+		}
+		FILE * cmos_file   = kopen("/dev/cmos",    O_RDONLY);
+		FILE * pit_file    = kopen("/dev/timer",   O_RDONLY);
+		FILE * serial_file = kopen("/dev/com1",    O_RDONLY);
 		uint8_t * serial_buff;
 		if(serial_file) serial_buff = (uint8_t*)malloc(SERIAL_CBACK_BUFFER_SIZE);
 
@@ -287,6 +295,14 @@ namespace Kernel {
 					if(kbd_buff[0] == 'r') {
 						/*********** Test ELF exec: ***********/
 						system("/runme.o", 0, 0, 0x123456); /* The entry point was chosen randomly for testing purposes */
+					}
+
+					if(kbd_buff[0] == 'p' && spkr_file) {
+						/*********** Test PC Speaker: ***********/
+						speaker_t d;
+						d.frequency = 1;
+						d.length = 1;
+						fwrite(spkr_file, 0, sizeof(speaker_t), (uint8_t*)&d);
 					}
 				}
 			}

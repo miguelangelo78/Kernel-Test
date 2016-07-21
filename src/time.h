@@ -9,6 +9,7 @@
 #define SRC_TIME_H_
 
 #include <stdint.h>
+#include <module.h>
 
 typedef struct {
 	uint8_t sec, min, hour;
@@ -70,8 +71,6 @@ static inline uint32_t time_secs_of_month(int months, int year) {
 	}
 	return days * 86400;
 }
-
-#include <module.h>
 
 inline uint32_t now() {
 	uint32_t _now;

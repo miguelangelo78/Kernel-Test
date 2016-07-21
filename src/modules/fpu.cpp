@@ -74,7 +74,7 @@ static void switch_fpu(void) {
 static void fpu_inv_op(Kernel::CPU::regs_t * regs) {
 	enable_fpu();
 
-	task_t * current_task = (task_t*)symbol_find("current_task");
+	task_t * current_task = current_task_get();
 	/* If this is the tread that last used the FPU, do nothing: */
 	if(fpu_thread == current_task)
 		return;

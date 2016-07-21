@@ -227,18 +227,21 @@ static int pit_file_ioctl(FILE * fnode, int request, void * argp) {
 	switch(request) {
 	case 1:
 		pit_install_cback((char*)d[0], d[1]);
-		break;
+		return 0;
 	case 2:
 		pit_uninstall_cback((char*)d[0]);
-		break;
+		return 0;
 	case 3:
 		return pit_get_ticks();
 	case 4:
 		return pit_get_subticks();
 	case 5:
 		return (pit_servicing = (char)d[0]);
+	case 6:
+		relative_time((uint32_t)d[0],(uint32_t)d[1],(uint32_t*)d[2],(uint32_t*)d[3]);
+		return 0;
 	}
-	return 0;
+	return IOCTL_NULL;
 }
 
 /* Module ioctl (accessed by the symbol table): */
