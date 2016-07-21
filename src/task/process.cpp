@@ -122,8 +122,8 @@ void wakeup_sleepers(unsigned long seconds, unsigned long subseconds) {
 			task_t * task = proc->task;
 			task->sleep_node.owner = 0;
 			task->timed_sleep_node = 0;
-			if (!task_is_ready(task))
-				make_task_ready(task);
+			//if (!task_is_ready(task))
+			//	make_task_ready(task);
 			free(proc);
 			free(list_dequeue(sleep_queue));
 			if (sleep_queue->length)
@@ -258,7 +258,7 @@ void task_free(task_t * task, int retval) {
 
 	free(task->work_dirpath);
 
-	// TODO: Release shared memory
+	/* TODO: Release shared memory */
 	free(task->shm_mappings);
 
 	if(task->signal_kstack)
@@ -341,6 +341,11 @@ task_t * current_task_get(void) {
 	return (task_t*)current_task;
 }
 EXPORT_SYMBOL(current_task_get);
+
+task_t * main_task_get(void) {
+	return main_task;
+}
+EXPORT_SYMBOL(main_task_get);
 
 pid_t get_next_pid(char restart_pid) {
 	if(restart_pid) next_pid = 1;

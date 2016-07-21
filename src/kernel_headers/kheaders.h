@@ -104,6 +104,7 @@
 #define sleep_until(task, seconds, subseconds) FCASTF(SYF("sleep_until"), void, task_t*, unsigned long, unsigned long)(task, seconds, subseconds)
 #define kexit(retval) FCASTF(SYF("kexit"), void, int)(retval)
 #define current_task_get() FCASTF(SYF("current_task_get"), task_t*, void)()
+#define main_task_get() FCASTF(SYF("main_task_get"), task_t*, void)()
 #define current_task_getpid() FCASTF(SYF("current_task_getpid"), uint32_t, void)()
 
 #define send_signal(task, signal) FCASTF(SYF("send_signal"), int, pid_t, uint32_t)(task, signal)

@@ -313,6 +313,7 @@ static void task1(void * data, char * name) {
 		IRQ_RES();
 		if(ctr1>10000) break;
 	}
+	for(;;);
 	kexit(10);
 }
 
@@ -347,7 +348,7 @@ void tasking_install(void) {
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */
-#if 0
+#if 1
 	task_create_tasklet(task1, "t1", 0);
 	task_create_tasklet(task2, "t2", 0);
 #endif

@@ -254,10 +254,11 @@ namespace Kernel {
 		FILE * spkr_file   = kopen("/dev/speaker", O_RDONLY);
 		if(spkr_file) {
 			speaker_t d;
-			d.frequency = 1;
-			d.length = 1;
+			d.frequency = 1000;
+			d.length = 100;
 			fwrite(spkr_file, 0, sizeof(speaker_t), (uint8_t*)&d);
 		}
+
 		FILE * cmos_file   = kopen("/dev/cmos",    O_RDONLY);
 		FILE * pit_file    = kopen("/dev/timer",   O_RDONLY);
 		FILE * serial_file = kopen("/dev/com1",    O_RDONLY);
@@ -298,8 +299,8 @@ namespace Kernel {
 					if(kbd_buff[0] == 'p' && spkr_file) {
 						/*********** Test PC Speaker: ***********/
 						speaker_t d;
-						d.frequency = 1;
-						d.length = 1;
+						d.frequency = 1000;
+						d.length = 100;
 						fwrite(spkr_file, 0, sizeof(speaker_t), (uint8_t*)&d);
 					}
 				}

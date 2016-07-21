@@ -11,11 +11,16 @@
 #include <fs.h>
 #include <modules/sound/speaker.h>
 
+static spin_lock_t timerlock = { 0 };
+
+static unsigned long * timer_ticks;
+static unsigned long * timer_subticks;
+
 /*******************************************/
 /**** Speaker Implementation Functions: ****/
 /*******************************************/
 static void note(int length, int freq) {
-	uint32_t div = 11931800 / freq;
+	uint32_t div = 1193180 / freq;
 	uint8_t  t;
 
 	/* Configure Timer 2's frequency: */
@@ -24,13 +29,28 @@ static void note(int length, int freq) {
 	outb(0x42, (uint8_t)(div >> 8));
 
 	/* Start the timer: */
-	t = inb(0x61);
-	outb(0x61, t | 0x3);
+ 	t = inb(0x61);
+  	if (t != (t | 3))
+ 		outb(0x61, t | 3);
 
 	unsigned long s, ss;
 	MOD_IOCTL("pit_driver", 6, 0, (uintptr_t)(length * 10), (uintptr_t)(&s), (uintptr_t)(&ss));
-	sleep_until(current_task_get(), s, ss);
-	switch_task(0);
+	task_t * curr_task = current_task_get();
+	if(curr_task == main_task_get()) {
+		/* Delay the main task by blocking it (there's still preemption going on): */
+		while(1) {
+			spin_lock(timerlock);
+			if(*timer_ticks >= s && *timer_subticks >= ss) {
+				spin_unlock(timerlock);
+				break;
+			}
+			spin_unlock(timerlock);
+		}
+	} else {
+		/* Delay for any other task: */
+		sleep_until(curr_task, s, ss);
+		switch_task(0);
+	}
 
 	/* Stop the timer: */
 	t = inb(0x61) & 0xFC;
@@ -64,6 +84,8 @@ static FILE * speaker_device_create(void) {
 /**** Speaker Module Functions: ****/
 /***********************************/
 static int speaker_mod_init(void) {
+	timer_ticks    = (unsigned long*)symbol_find("timer_ticks");
+	timer_subticks = (unsigned long*)symbol_find("timer_subticks");
 	vfs_mount("/dev/speaker", speaker_device_create());
 	return 0;
 }
