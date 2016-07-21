@@ -409,7 +409,9 @@ void page_fault(regs_t * r) {
 	uint32_t faulting_address;
 	asm volatile("mov %%cr2, %0" : "=r"(faulting_address));
 
-	if(r->eip == THREAD_RETURN) {
+	if(r->eip == SIGNAL_RETURN) {
+		return_from_signal_handler();
+	} else if(r->eip == THREAD_RETURN) {
 		return;
 	}
 

@@ -20,6 +20,7 @@ namespace Task {
 #define TASK_STACK_SIZE (PAGE_SIZE * 2)
 #define USER_ROOT_UID ((user_t)0)
 
+#define SIGNAL_RETURN 0xFFFFDEAF
 #define THREAD_RETURN 0xFFFFB00F
 
 typedef signed int    pid_t;
@@ -167,6 +168,8 @@ void task_free(task_t * task_to_free, int retval);
 
 void set_task_environment(task_t * task, paging_directory_t * pagedir);
 
+int task_is_ready(task_t * task);
+
 task_t * spawn_rootproc(void);
 task_t * spawn_childproc(task_t * parent);
 task_t * spawn_proc(task_t * parent, char addtotree, paging_directory_t * pagedir);
@@ -189,6 +192,21 @@ void sleep_until(task_t * task, unsigned long seconds, unsigned long subseconds)
 
 uint32_t task_append_fd(task_t * task, FILE * node);
 uint32_t process_move_fd(task_t * task, int src, int dest);
+
+/******************/
+/* Signal header: */
+/******************/
+typedef struct {
+	uint32_t  signum;
+	uintptr_t handler;
+	regs_t    registers_before;
+} signal_t;
+
+extern void handle_signal(task_t *, signal_t *);
+extern int send_signal(pid_t process, uint32_t signal);
+extern void return_from_signal_handler(void);
+extern void fix_signal_stacks(void);
+
 }
 }
 #endif /* SRC_TASK_H_ */

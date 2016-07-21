@@ -1,5 +1,5 @@
 /*
- * process.cpp
+ * task.cpp
  *
  *      Author: Miguel
  */
@@ -87,7 +87,19 @@ void switch_task(status_t new_process_state) {
 
 	/* Save registers first: */
 	uintptr_t eip = Kernel::CPU::read_eip();
-	if(eip == 0x10000) return;
+	if(eip == 0x10000) {
+		fix_signal_stacks();
+
+		if (!current_task->finished) {
+			if (current_task->signal_queue->length > 0) {
+				node_t * node = list_dequeue(current_task->signal_queue);
+				signal_t * sig = (signal_t*)node->value;
+				free(node);
+				handle_signal((task_t *)current_task, sig);
+			}
+		}
+		return;
+	}
 	current_task->thread.eip = eip;
 	asm volatile("mov %%esp, %0" : "=r" (current_task->thread.esp)); /* Save ESP */
 	asm volatile("mov %%ebp, %0" : "=r" (current_task->thread.ebp)); /* Save EBP */
@@ -117,16 +129,25 @@ void switch_task(status_t new_process_state) {
 		}
 	}
 
+	curr_dir = current_task->thread.page_dir;
+	switch_directory(curr_dir);
+	CPU::TSS::tss_set_kernel_stack(current_task->image.stack);
+
 	if(current_task->started) {
-		// TODO: Signals
+		if (!current_task->signal_kstack) {
+			if (current_task->signal_queue->length > 0) {
+				current_task->signal_kstack  = (char*)malloc(TASK_STACK_SIZE);
+				current_task->signal_state.esp = current_task->thread.esp;
+				current_task->signal_state.eip = current_task->thread.eip;
+				current_task->signal_state.ebp = current_task->thread.ebp;
+				memcpy(current_task->signal_kstack, (void *)(current_task->image.stack - TASK_STACK_SIZE), TASK_STACK_SIZE);
+			}
+		}
 	} else {
 		current_task->started = 1;
 	}
 
 	current_task->running = 1;
-	curr_dir = current_task->thread.page_dir;
-	switch_directory(curr_dir);
-	CPU::TSS::tss_set_kernel_stack(current_task->image.stack);
 
 	/* Acknowledge PIT interrupt: */
 	Kernel::CPU::IRQ::irq_ack(Kernel::CPU::IRQ::IRQ_PIT);

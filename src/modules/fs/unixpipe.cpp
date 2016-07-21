@@ -32,17 +32,15 @@ static uint32_t write_unixpipe(FILE * node, uint32_t offset, uint32_t size, uint
 	while (written < size) {
 		if (self->read_closed) {
 			/* SIGPIPE to current process */
-			/* TODO: SIGNALS
-			signal_t * sig = malloc(sizeof(signal_t));
-			sig->handler = current_process->signals.functions[SIGPIPE];
+			signal_t * sig = (signal_t*)malloc(sizeof(signal_t));
+			task_t * curr_task = current_task_get();
+			sig->handler = curr_task->signals.functions[SIGPIPE];
 			sig->signum  = SIGPIPE;
-			handle_signal((process_t *)current_process, sig);*/
-
+			handle_signal((task_t *)curr_task, sig);
 			return written;
 		}
 		written += ring_buffer_write(self->buffer, 1, buffer + written);
 	}
-
 	return written;
 }
 

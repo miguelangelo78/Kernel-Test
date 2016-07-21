@@ -61,13 +61,15 @@ task_t * fetch_next_task(void) {
 void make_task_ready(task_t * task) {
 	if(task->sleep_node.owner != 0) {
 		if (task->sleep_node.owner == sleep_queue) {
-			IRQ_OFF();
-			spin_lock(sleep_lock);
-			list_delete(sleep_queue, task->timed_sleep_node);
-			spin_unlock(sleep_lock);
-			IRQ_RES();
-			task->sleep_node.owner = 0;
-			free(task->timed_sleep_node->value);
+			if (task->timed_sleep_node) {
+				IRQ_OFF();
+				spin_lock(sleep_lock);
+				list_delete(sleep_queue, task->timed_sleep_node);
+				spin_unlock(sleep_lock);
+				IRQ_RES();
+				task->sleep_node.owner = 0;
+				free(task->timed_sleep_node->value);
+			}
 		} else {
 			task->sleep_interrupted = 1;
 			spin_lock(wait_lock_tmp);
@@ -333,6 +335,7 @@ task_t * task_get_parent(task_t * task) {
 uint32_t current_task_getpid(void) {
 	return current_task->pid;
 }
+EXPORT_SYMBOL(current_task_getpid);
 
 task_t * current_task_get(void) {
 	return (task_t*)current_task;

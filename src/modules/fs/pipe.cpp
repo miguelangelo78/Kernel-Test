@@ -66,7 +66,7 @@ static uint32_t read_pipe(FILE * node, uint32_t offset, uint32_t size, uint8_t *
 	pipe_device_t * pipe = (pipe_device_t *)node->device;
 
 	if (pipe->dead) {
-		//send_signal(getpid(), SIGPIPE); // TODO: SIGNALS
+		send_signal(current_task_getpid(), SIGPIPE);
 		return 0;
 	}
 
@@ -92,7 +92,7 @@ static uint32_t write_pipe(FILE * node, uint32_t offset, uint32_t size, uint8_t 
 	pipe_device_t * pipe = (pipe_device_t *)node->device;
 
 	if (pipe->dead) {
-		//send_signal(getpid(), SIGPIPE); // TODO: SIGNALS
+		send_signal(current_task_getpid(), SIGPIPE);
 		return 0;
 	}
 
