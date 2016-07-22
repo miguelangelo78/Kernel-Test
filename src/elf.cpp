@@ -230,9 +230,13 @@ char * elf_parse(uint8_t * blob, int blobsize) {
 /*************************************/
 
 /* General purpose function for launching ELF files: */
-int exec_elf(char * elfpath, int argc, char ** argv, char ** env, char execution_mode, uintptr_t relocate_entry) {
+int exec_elf(char * elfpath, FILE * file, int argc, char ** argv, char ** env, char execution_mode, uintptr_t relocate_entry) {
 	/* Open ELF file: */
-	FILE * elf_file = kopen(elfpath, O_RDONLY);
+	FILE * elf_file;
+	if(file) elf_file = file;
+	else if(elfpath) elf_file = kopen(elfpath, O_RDONLY);
+	else return EXECR_NOSUCHELF;
+
 	if(!elf_file) return EXECR_NOSUCHELF;
 
 	/* Read program into buffer: */
@@ -361,7 +365,7 @@ int system(char * path, int argc, char ** argv, uintptr_t relocate_entry) {
 	char * env[] = { 0 };
 	/* Execute it: */
 	int ret;
-	if((ret = exec_elf(path, argc, argv_, env, EXECM_USER, relocate_entry)) != EXECR_BADRET) {
+	if((ret = exec_elf(path, 0, argc, argv_, env, EXECM_USER, relocate_entry)) != EXECR_BADRET) {
 		argv_free(argc, argv_);
 		return ret;
 	}
@@ -374,25 +378,68 @@ int system(char * path, int argc, char ** argv) {
 	return system(path, argc, argv, 0);
 }
 
+int system(FILE * elf_file, int argc, char ** argv, uintptr_t relocate_entry) {
+	if(!elf_file) return EXECR_NOSUCHELF;
+
+	/* Make a copy of argv first: */
+	char ** argv_ = argv_copy(argc, argv);
+	/* Set empty environment array: */
+	char * env[] = { 0 };
+	/* Execute it: */
+	int ret;
+	if((ret = exec_elf(0, elf_file, argc, argv_, env, EXECM_USER, relocate_entry)) != EXECR_BADRET) {
+		argv_free(argc, argv_);
+		return ret;
+	}
+	kexit(EXECR_BADRET);
+	return EXECR_BADRET;
+}
+
+int system(FILE * elf_file, int argc, char ** argv) {
+	return system(elf_file, argc, argv, 0);
+}
+
 /* Run exec_elf() in kernel mode but in the same process / task */
 int ksystem(char * path, int argc, char ** argv) {
-	return exec_elf(path, argc, argv, 0, EXECM_KERNEL, 0);
+	return exec_elf(path, 0, argc, argv, 0, EXECM_KERNEL, 0);
 }
 
 /* Run exec_elf() in kernel mode but in the same process / task
  * but choose where to load the ELF file:  */
 int ksystem(char * path, int argc, char ** argv, uintptr_t relocate_entry) {
-	return exec_elf(path, argc, argv, 0, EXECM_KERNEL, relocate_entry);
+	return exec_elf(path, 0, argc, argv, 0, EXECM_KERNEL, relocate_entry);
+}
+
+/* Run exec_elf() in kernel mode but in the same process / task */
+int ksystem(FILE * elf_file, int argc, char ** argv) {
+	return exec_elf(0, elf_file, argc, argv, 0, EXECM_KERNEL, 0);
+}
+
+/* Run exec_elf() in kernel mode but in the same process / task
+ * but choose where to load the ELF file:  */
+int ksystem(FILE * elf_file, int argc, char ** argv, uintptr_t relocate_entry) {
+	return exec_elf(0, elf_file, argc, argv, 0, EXECM_KERNEL, relocate_entry);
 }
 
 /* Run exec_elf() in kernel mode but in a new process / task: */
 int ktsystem(char * path, int argc, char ** argv) {
-	return exec_elf(path, argc, argv, 0, EXECM_KERNEL_TASKLET, 0);
+	return exec_elf(path, 0, argc, argv, 0, EXECM_KERNEL_TASKLET, 0);
 }
 
 /* Run exec_elf() in kernel mode but in a new process / task
  * but choose where to load the ELF file: */
 int ktsystem(char * path, int argc, char ** argv, uintptr_t relocate_entry) {
-	return exec_elf(path, argc, argv, 0, EXECM_KERNEL_TASKLET, relocate_entry);
+	return exec_elf(path, 0, argc, argv, 0, EXECM_KERNEL_TASKLET, relocate_entry);
+}
+
+/* Run exec_elf() in kernel mode but in a new process / task: */
+int ktsystem(FILE * elf_file, int argc, char ** argv) {
+	return exec_elf(0, elf_file, argc, argv, 0, EXECM_KERNEL_TASKLET, 0);
+}
+
+/* Run exec_elf() in kernel mode but in a new process / task
+ * but choose where to load the ELF file: */
+int ktsystem(FILE * elf_file, int argc, char ** argv, uintptr_t relocate_entry) {
+	return exec_elf(0, elf_file, argc, argv, 0, EXECM_KERNEL_TASKLET, relocate_entry);
 }
 

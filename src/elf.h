@@ -356,12 +356,18 @@ extern char elf_load_exec(elf32_ehdr * elf_header);
 extern char elf_load(void * file);
 extern modent_t * elf_find_mod(elf32_ehdr * header);
 
-extern int exec_elf(char * elfpath, int argc, char ** argv, char ** env, char execution_mode, uintptr_t relocate_entry);
+extern int exec_elf(char * elfpath, FILE * file, int argc, char ** argv, char ** env, char execution_mode, uintptr_t relocate_entry);
 extern int system(char * path, int argc, char ** argv);
 extern int system(char * path, int argc, char ** argv, uintptr_t relocate_entry);
+extern int system(FILE * elf_file, int argc, char ** argv);
+extern int system(FILE * elf_file, int argc, char ** argv, uintptr_t relocate_entry);
 extern int ksystem(char * path, int argc, char ** argv);
 extern int ksystem(char * path, int argc, char ** argv, uintptr_t relocate_entry);
+extern int ksystem(FILE * elf_file, int argc, char ** argv);
+extern int ksystem(FILE * elf_file, int argc, char ** argv, uintptr_t relocate_entry);
 extern int ktsystem(char * path, int argc, char ** argv);
 extern int ktsystem(char * path, int argc, char ** argv, uintptr_t relocate_entry);
+extern int ktsystem(FILE * elf_file, int argc, char ** argv);
+extern int ktsystem(FILE * elf_file, int argc, char ** argv, uintptr_t relocate_entry);
 
 #endif /* SRC_ELF_H_ */

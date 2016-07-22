@@ -79,7 +79,7 @@ void test_kernel(void) {
 
 				if(kbd_buff[0] == 'r') {
 					/*********** Test ELF exec: ***********/
-					system("/runme.o", 0, 0);
+					system(initrd_getfile("runme.o"), 0, 0);
 				}
 
 				if(kbd_buff[0] == 'p' && spkr_file) {
