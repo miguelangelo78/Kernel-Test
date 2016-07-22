@@ -10,6 +10,7 @@
 
 #ifndef SRC_TASK_H_
 #define SRC_TASK_H_
+
 namespace Kernel {
 /* Tasking: */
 namespace Task {
@@ -28,13 +29,6 @@ typedef unsigned int  user_t;
 typedef unsigned char status_t;
 
 typedef void (*tasklet_t)(void *, char *);
-
-typedef struct {
-	unsigned int gs, fs, es, ds;
-	unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
-	unsigned int int_no, err_code;
-	unsigned int eip, cs, eflags, useresp, ss;
-} regs_t;
 
 enum task_state {
 	TASKST_CRADLE,
@@ -99,7 +93,7 @@ typedef struct task {
 	char ** cmdline;
 
 	/* Context: */
-	regs_t * syscall_regs;
+	Kernel::CPU::regs_t * syscall_regs;
 	image_t image;
 
 	/* Tasking: */
@@ -197,9 +191,9 @@ uint32_t process_move_fd(task_t * task, int src, int dest);
 /* Signal header: */
 /******************/
 typedef struct {
-	uint32_t  signum;
+	uint32_t signum;
 	uintptr_t handler;
-	regs_t    registers_before;
+	Kernel::CPU::regs_t registers_before;
 	char ringlevel;
 } signal_t;
 

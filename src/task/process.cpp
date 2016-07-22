@@ -494,7 +494,7 @@ task_t * spawn_proc(task_t * parent, char addtotree, paging_directory_t * pagedi
 
 	task_t * task = new task_t;
 	memset(task, 0, sizeof(task_t));
-	task->syscall_regs = new regs_t;
+	task->syscall_regs = new Kernel::CPU::regs_t;
 
 	task->pid = get_next_pid(0);
 	task->group = parent->group;
@@ -598,16 +598,16 @@ uint32_t fork(void) {
 	new_task->thread.page_dir = (paging_directory_t*)dirclone;
 
 	/* Store syscall registers: */
-	regs_t r;
-	memcpy(&r, current_task->syscall_regs, sizeof(regs_t));
+	Kernel::CPU::regs_t r;
+	memcpy(&r, current_task->syscall_regs, sizeof(Kernel::CPU::regs_t));
 	new_task->syscall_regs = &r;
 
 	/* Push normal registers: */
 	uintptr_t esp = new_task->image.stack;
 	uintptr_t ebp = esp;
 	new_task->syscall_regs->eax = 0;
-	esp -= sizeof(regs_t);
-	memcpy((regs_t *) esp, &r, sizeof(regs_t));
+	esp -= sizeof(Kernel::CPU::regs_t);
+	memcpy((Kernel::CPU::regs_t *) esp, &r, sizeof(Kernel::CPU::regs_t));
 
 	new_task->thread.esp = esp;
 	new_task->thread.ebp = ebp;
@@ -642,8 +642,8 @@ uint32_t task_clone(uintptr_t new_stack, uintptr_t thread_function, uintptr_t ar
 	new_task->thread.page_dir = dirclone;
 
 	/* Store syscall registers: */
-	regs_t r;
-	memcpy(&r, current_task->syscall_regs, sizeof(regs_t));
+	Kernel::CPU::regs_t r;
+	memcpy(&r, current_task->syscall_regs, sizeof(Kernel::CPU::regs_t));
 	new_task->syscall_regs = &r;
 
 	uintptr_t esp = new_task->image.stack;
@@ -664,8 +664,8 @@ uint32_t task_clone(uintptr_t new_stack, uintptr_t thread_function, uintptr_t ar
 	new_task->syscall_regs->useresp = new_stack;
 
 	/* Push registers: */
-	esp -= sizeof(regs_t);
-	memcpy((regs_t *) esp, &r, sizeof(regs_t));
+	esp -= sizeof(Kernel::CPU::regs_t);
+	memcpy((Kernel::CPU::regs_t *) esp, &r, sizeof(Kernel::CPU::regs_t));
 
 	new_task->thread.esp = esp;
 	new_task->thread.ebp = ebp;
@@ -696,8 +696,8 @@ int task_create_tasklet(tasklet_t tasklet, char * name, void * argp) {
 
 	/* Store syscall registers: */
 	if(current_task->syscall_regs) {
-		regs_t r;
-		memcpy(&r, current_task->syscall_regs, sizeof(regs_t));
+		Kernel::CPU::regs_t r;
+		memcpy(&r, current_task->syscall_regs, sizeof(Kernel::CPU::regs_t));
 		new_task->syscall_regs = &r;
 	}
 

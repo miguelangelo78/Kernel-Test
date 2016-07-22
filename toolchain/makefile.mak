@@ -41,6 +41,7 @@ include src/modules/mouse/subdir.mk
 include src/modules/pci/subdir.mk
 include src/modules/sound/subdir.mk
 include src/ring3/subdir.mk
+include src/syscall/subdir.mk
 include src/task/subdir.mk
 include src/terminal/subdir.mk
 include src/version/subdir.mk

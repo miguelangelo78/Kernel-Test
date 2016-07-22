@@ -203,7 +203,7 @@ int send_signal_lvl(pid_t task, uint32_t signal, char toring_lvl) {
 	sig->ringlevel = toring_lvl;
 	sig->handler = (uintptr_t)receiver->signals.functions[signal];
 	sig->signum  = signal;
-	memset(&sig->registers_before, 0, sizeof(regs_t));
+	memset(&sig->registers_before, 0, sizeof(Kernel::CPU::regs_t));
 
 	if (!task_is_ready(receiver))
 		make_task_ready(receiver); /* Push the task into the switch queue */

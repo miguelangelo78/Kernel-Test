@@ -141,7 +141,7 @@ namespace Kernel {
 			extern const char *exception_msgs[ISR_COUNT];
 
 			/* Function callback type for ISRs: */
-			typedef void(*isr_handler_t) (CPU::regs_t *);
+			typedef void(*isr_handler_t)(regs_t *);
 
 			void isrs_install(void);
 			void isr_install_handler(size_t isr_num, isr_handler_t handler);
@@ -155,7 +155,7 @@ namespace Kernel {
 				IRQ_FREE2, IRQ_FREE3, IRQ_MOUSE, IRQ_FPU, IRQ_PRIM_ATA, IRQ_SEC_ATA
 			};
 
-			typedef int(*irq_handler_t)(CPU::regs_t *); /* Callback type */
+			typedef int(*irq_handler_t)(regs_t *); /* Callback type */
 
 			void irq_install(void);
 

@@ -38,7 +38,7 @@ bool is_paging_enabled = 0;
 static spin_lock_t frame_alloc_lock = { 0 };
 
 uintptr_t find_new_page(void); /* Function Prototype */
-void page_fault(regs_t * r); /* Function Prototype */
+void page_fault(Kernel::CPU::regs_t * r); /* Function Prototype */
 uintptr_t map_to_physical(uintptr_t virtual_addr); /* Function Prototype */
 
 void kheap_starts(uintptr_t start_addr) {
@@ -405,7 +405,7 @@ void * sbrk(uintptr_t increment) {
 	return address;
 }
 
-void page_fault(regs_t * r) {
+void page_fault(Kernel::CPU::regs_t * r) {
 	uint32_t faulting_address;
 	asm volatile("mov %%cr2, %0" : "=r"(faulting_address));
 

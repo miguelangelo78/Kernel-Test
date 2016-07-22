@@ -9,7 +9,9 @@
 #define SRC_TIME_H_
 
 #include <stdint.h>
+#ifdef __cplusplus
 #include <module.h>
+#endif
 
 typedef struct {
 	uint8_t sec, min, hour;
