@@ -4,6 +4,7 @@ $(BOUT)/elf.o \
 $(BOUT)/error.o \
 $(BOUT)/initrd.o \
 $(BOUT)/kmain.o \
+$(BOUT)/ktest.o \
 $(BOUT)/log.o \
 $(BOUT)/module.o \
 $(BOUT)/serial.o \
@@ -41,6 +42,13 @@ $(BOUT)/initrd.o: src/initrd.cpp
 	@echo ' '
 
 $(BOUT)/kmain.o: src/kmain.cpp 
+	@echo '>> Building file $<'
+	@echo '>> Invoking LLVM C++ Clang++'
+	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  
+	@echo '>> Finished building: $<'
+	@echo ' '
+
+$(BOUT)/ktest.o: src/ktest.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking LLVM C++ Clang++'
 	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  
