@@ -171,7 +171,9 @@ namespace Kernel {
 		/* Move heap up because of modules (DONE EARLY): */
 		kputs("> Relocating heap - "); DEBUGOK();
 		/* Enable paging and heap (DONE EARLY: */
-		kputs("> Installing paging and heap - "); DEBUGOK();
+		kputs("> Installing paging and heap - ");
+			kprintf("(Available - Pages: %d Tables: %d) ", page_count, table_count);
+		DEBUGOK();
 
 		/* Install VFS (with or without initrd): */
 		if(mboot_ptr->mods_count > 0) {
@@ -221,12 +223,11 @@ namespace Kernel {
 			"\n\t1.8. AHCI (SATA)"
 			"\n\t1.9. FDC (Floppy Disk Controller)"
 			"\n\t1.10. ACPI (Power Management)"
-			"\n2- Test Fork and Clone (from Userspace and then from Kernel)"
+			"\n2- Shared Memory"
 			"\n3- Improve Panic message handling"
-			"\n4- Shared Memory"
-			"\n5- VM8086 mode"
-			"\n6- Improve symbol table (use hashing functions on it)"
-			"\n7- Run all class constructors / deconstructors"
+			"\n4- VM8086 mode"
+			"\n5- Improve symbol table (use hashing functions on it)"
+			"\n6- Run all class constructors / deconstructors"
 		);
 
 		/* All done! */

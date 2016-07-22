@@ -54,7 +54,7 @@ typedef struct page_table {
 /* Directory definition: */
 typedef struct page_directory {
 	page_table_entry_t table_entries[TABLES_PER_DIR];
-	page_table_t   * tables[TABLES_PER_DIR]; /* Array of page tables, covers entire memory space */
+	page_table_t     * tables[TABLES_PER_DIR]; /* Array of page tables, covers entire memory space */
 } paging_directory_t;
 
 namespace Kernel {

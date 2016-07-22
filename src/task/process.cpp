@@ -595,7 +595,7 @@ uint32_t fork(void) {
 	/* Spawn child from parent: */
 	task_t * new_task = spawn_childproc(parent);
 	/* Set just the directory: */
-	new_task->thread.page_dir = (paging_directory_t*)dirclone;
+	set_task_environment(new_task, dirclone);
 
 	/* Store syscall registers: */
 	Kernel::CPU::regs_t r;

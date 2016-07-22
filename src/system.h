@@ -33,7 +33,7 @@ enum SEGSEL {
 
 #define USER_STACK_BOTTOM 0xAF00000 //0xAFF00000
 #define USER_STACK_TOP    0xB000000 //0xB0000000
-#define SHM_START         0xB0000000
+#define SHM_START         0xB000000 //0xB0000000
 
 #define asm __asm__
 #define volatile __volatile__
@@ -211,6 +211,9 @@ namespace Kernel {
 			extern paging_directory_t * curr_dir;
 
 			extern uintptr_t frame_ptr;
+
+			extern uintptr_t page_count; /* How many MMU pages in TOTAL */
+			extern uintptr_t table_count; /* How many MMU tables in TOTAL */
 		}
 
 		/* Proper memory allocator to be used after paging and heap are fully installed: */

@@ -21,7 +21,7 @@ copy_page_physical:
     mov 12(%esp), %ebx
     mov 16(%esp), %ecx
 
-    /* Get control register and disable paging*/
+    /* Get control register and disable paging */
     mov %cr0, %edx
     and $dp, %edx
     mov %edx, %cr0

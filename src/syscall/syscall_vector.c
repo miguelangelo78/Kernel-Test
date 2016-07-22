@@ -10,6 +10,9 @@
 #include <time.h>
 #include <utsname.h>
 
+/****************************/
+/* System Calls' Prototypes */
+/****************************/
 int sys_exit(int retval);
 int sys_open(const char * file, int flags, int mode);
 int sys_read(int fd, char * ptr, int len);
@@ -57,8 +60,11 @@ int sys_mount(char * arg, char * mountpoint, char * type, unsigned long flags, v
 int sys_symlink(char * target, char * name);
 int sys_readlink(const char * file, char * ptr, int len);
 int sys_lstat(char * file, uintptr_t st);
+/****************************/
 
-/* System Call Default Vector: */
+/******************************/
+/* System Call Default Vector */
+/******************************/
 int (*syscalls[])() =
 {
 		[SYS_EXT]          = sys_exit,
@@ -111,4 +117,5 @@ int (*syscalls[])() =
 };
 
 uint32_t num_syscalls = sizeof(syscalls) / sizeof(*syscalls);
+/******************************/
 

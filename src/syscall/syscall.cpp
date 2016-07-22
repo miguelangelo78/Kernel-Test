@@ -33,8 +33,8 @@ hashmap_t * syscall_vector_hash;
 char syscall_initialized = 0;
 list_t * syscall_schedule_installs = 0;
 
+/* Handle the System Call from Within the Kernel or from Usermode: */
 void syscall_handler(Kernel::CPU::regs_t * regs) {
-	regs->eax--;
 	if(regs->eax >= SYSCALL_MAXCALLS) return;
 
 	syscall_callback_t cback = syscall_vector[regs->eax];
@@ -51,6 +51,7 @@ void syscall_handler(Kernel::CPU::regs_t * regs) {
 	}
 }
 
+/* Initialize System Calls: */
 void syscalls_initialize(void) {
 	syscall_vector = new syscall_callback_t[SYSCALL_MAXCALLS];
 	memset(syscall_vector, 0, SYSCALL_MAXCALLS);
@@ -78,6 +79,9 @@ void syscalls_initialize(void) {
 	syscall_initialized = 1; /* All ready */
 }
 
+/*******************************************/
+/**** Syscall Installers / Uninstallers ****/
+/*******************************************/
 void syscall_install_s(char * syscall_name, int no, uintptr_t syscall_addr) {
 	syscall_vector[no] = (syscall_callback_t)syscall_addr;
 	hashmap_set(syscall_vector_hash, syscall_name, (void*)no);
@@ -135,16 +139,19 @@ char syscall_schedule_install(char * syscall_name, int no, uintptr_t syscall_add
 	return 0;
 }
 EXPORT_SYMBOL(syscall_schedule_install);
+/*******************************************/
 
+/****************************************************/
+/* Syscall runners (called just within the Kernel): */
+/****************************************************/
 void syscall_run_n(int intno) {
-	intno++;
 	asm volatile("mov %0, %%eax; int $0x7F" : :"m"(intno));
 }
 EXPORT_SYMBOL(syscall_run_n);
 
 void syscall_run_s(char * syscall_name) {
 	if(hashmap_has(syscall_vector_hash, syscall_name)) {
-		int intno = (int)hashmap_get(syscall_vector_hash, syscall_name) + 1;
+		int intno = (int)hashmap_get(syscall_vector_hash, syscall_name);
 		asm volatile("mov %0, %%eax; int $0x7F" : :"m"(intno));
 	}
 }
@@ -193,8 +200,7 @@ SYSDECL(sys_execve, const char * filename, char *const argv[], char *const envp[
 }
 
 SYSDECL(sys_fork, void) {
-
-	return 0;
+	return fork();
 }
 
 SYSDECL(sys_getpid, void) {

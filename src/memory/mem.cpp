@@ -94,18 +94,27 @@ paging_directory_t * clone_directory(paging_directory_t * src) {
 	paging_directory_t * new_dir = (paging_directory_t*)kvmalloc(sizeof(paging_directory_t));
 	memset(new_dir, 0, sizeof(paging_directory_t));
 
+	/* Zero all the table pointers and memory spaces: */
+	memset(&new_dir->table_entries, 0, sizeof(page_table_entry_t) * TABLES_PER_DIR);
+	for(int i = 0; i < TABLES_PER_DIR; i++)
+		new_dir->tables[i] = 0;
+
+	/* Copy all Tables: */
 	for(uint32_t i = 0; i < TABLES_PER_DIR; i++) {
-		if((uintptr_t)&kernel_directory->tables[i] == (uintptr_t)&src->tables[i]) {
+		if(!src->tables[i] || (uintptr_t)src->tables[i] == (uintptr_t)0xFFFFFFFF)
+			continue;
+		if((uintptr_t)&src->tables[i] == (uintptr_t)&kernel_directory->tables[i]) {
+			/* Link the table if the src is the kernel's directory: */
 			new_dir->tables[i] = src->tables[i];
 			new_dir->table_entries[i] = src->table_entries[i];
-		} else if (ALIGNP(i) * PAGES_PER_TABLE < SHM_START) {
+		} else {
 			/* User tables must be cloned: */
 			uintptr_t table_phys_addr;
 			new_dir->tables[i] = clone_table(src->tables[i], &table_phys_addr);
+			*((uint32_t*)&new_dir->table_entries[i]) = (uint32_t)table_phys_addr;
 			new_dir->table_entries[i].present = 1;
 			new_dir->table_entries[i].rw      = 1;
 			new_dir->table_entries[i].user    = 1;
-			new_dir->table_entries[i].table_address = table_phys_addr >> 12;
 		}
 	}
 	return new_dir;
@@ -113,20 +122,22 @@ paging_directory_t * clone_directory(paging_directory_t * src) {
 
 page_table_t * clone_table(page_table_t * src, uintptr_t * physAddr) {
 	page_table_t * new_table = (page_table_t*)kvmalloc_p(sizeof(page_table_t), physAddr);
-	memset(new_table, 0, sizeof(page_table_t));
+	/* Copy all Pages of the given Table: */
 	for (uint32_t i = 0; i < PAGES_PER_TABLE; i++) {
 		/* PHYSICALLY copy ALL pages. This is VERY difficult for the CPU: */
-		if(!(uintptr_t)(*((uintptr_t*)&src->pages[i])))
-			continue; /* If page is zeroed, just continue */
+		if(!src->pages[i].present) {
+			memset(&new_table->pages[i], 0, sizeof(page_t));
+			continue;
+		}
 		/* Allocate new page: */
-		alloc_page(&new_table->pages[i], 0, 0, (last_known_newpage = find_new_page()));
-		last_known_newpage += PAGE_SIZE;
-
-		if (src->pages[i].present)	new_table->pages[i].present  = 1;
-		if (src->pages[i].rw)		new_table->pages[i].rw       = 1;
-		if (src->pages[i].user)		new_table->pages[i].user     = 1;
-		if (src->pages[i].accessed)	new_table->pages[i].accessed = 1;
-		if (src->pages[i].dirty)	new_table->pages[i].dirty    = 1;
+		spin_lock(frame_alloc_lock);
+		new_table->pages[i].phys_addr = src->pages[i].phys_addr;
+		spin_unlock(frame_alloc_lock);
+		new_table->pages[i].present   = src->pages[i].present;
+		new_table->pages[i].rw        = src->pages[i].rw;
+		new_table->pages[i].user      = src->pages[i].user;
+		new_table->pages[i].accessed  = src->pages[i].accessed;
+		new_table->pages[i].dirty     = src->pages[i].dirty;
 
 		/* Finally, physically copy the pages (tough...): */
 		copy_page_physical(ALIGNP(src->pages[i].phys_addr), ALIGNP(new_table->pages[i].phys_addr));
@@ -159,7 +170,7 @@ void release_directory_for_exec(paging_directory_t * dir) {
 		if(kernel_directory->tables[i] != dir->tables[i]) {
 			if(ALIGNP(i) * PAGES_PER_TABLE < USER_STACK_BOTTOM) {
 				for(uint32_t j = 0; j < PAGES_PER_TABLE; j++)
-					if(dir->tables[i]->pages[j].present)
+					if(dir->tables[i]->pages[j].phys_addr)
 						dealloc_page(&dir->tables[i]->pages[j]);
 
 				memset(&dir->table_entries[i], 0, sizeof(page_table_entry_t));
@@ -202,6 +213,7 @@ void switch_directory(paging_directory_t * dir) {
 		:: "r"(dir->table_entries)
 		: "%eax"
 	);
+	enable_paging();
 }
 
 void invalidate_page_tables(void) {
@@ -225,7 +237,8 @@ uintptr_t map_to_physical(uintptr_t virtual_addr) {
 /* Returns the address of the next available (non-present) page: */
 uintptr_t find_new_page(void) {
 	DIR_PAGE_ITADDRST(last_known_newpage) /* Iterate through all pages starting at a given location, in order to find a non-present page */
-		if(!PAGE(curr_dir, page_ctr)->present) return page_ctr; /* Check if it's present. Note: page_ctr is already ALIGNED */
+		if(!PAGE(curr_dir, page_ctr)->present) /* Check if it's not present. Note: page_ctr is already ALIGNED */
+			return page_ctr;
 	return 0;
 }
 
@@ -291,7 +304,7 @@ void alloc_page(char is_kernel, char is_writeable, uintptr_t physical_address) {
 
 /* Allocate page without providing physical address. The function should guess the next page */
 void alloc_page(char is_kernel, char is_writeable) {
-	alloc_page(is_kernel, is_writeable, (last_known_newpage = find_new_page()));
+	alloc_page(is_kernel, is_writeable, (last_known_newpage = find_new_page()) - PAGE_SIZE);
 	last_known_newpage += PAGE_SIZE;
 }
 
@@ -349,6 +362,9 @@ void paging_install(uint32_t memsize) {
 
 	mem_test(1);
 
+	page_count = memsize / 4;
+	table_count = page_count / TABLES_PER_DIR + 1;
+
 	/* Initialize paging directory: */
 	kernel_directory = (paging_directory_t*)kvmalloc(sizeof(paging_directory_t));
 	/* Point current directory to kernel_directory: */
@@ -359,21 +375,12 @@ void paging_install(uint32_t memsize) {
 	for(int i = 0; i < TABLES_PER_DIR; i++)
 		curr_dir->tables[i] = 0;
 
-	page_count = memsize / 4;
-	table_count = page_count / TABLES_PER_DIR + 1;
-
-	kprintf("(Pages: %d Tables: %d) ", page_count, table_count);
-
-	/* Allocate the kernel itself (from address 0 to frame_ptr): */
-	for (uintptr_t i = 0; i <= frame_ptr; i += PAGE_SIZE)
+	/* Allocate the kernel itself (from address 0 to heap_head): */
+	for (uintptr_t i = 0; i <= heap_head; i += PAGE_SIZE)
 		alloc_page(1, 1);
 
 	/* Allocate space for the kernel stack: */
 	for(uintptr_t i = KInit::init_esp; i > CPU::read_reg(CPU::ebp) - (PAGE_SIZE * STACK_SIZE); i -= PAGE_SIZE)
-		alloc_page(1, 1, i);
-
-	/* Finally, allocate the kernel heap: */
-	for (uintptr_t i = 0; i <= heap_head; i += PAGE_SIZE)
 		alloc_page(1, 1, i);
 
 	/* VGA Text mode (user mode): */
@@ -382,7 +389,6 @@ void paging_install(uint32_t memsize) {
 		alloc_page(0, 1, i);
 
 	switch_directory(curr_dir);
-	enable_paging();
 
 	/* Finally, set up heap pointer to the start of the heap:  */
 	heap_install();
