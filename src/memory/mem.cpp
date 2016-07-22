@@ -170,7 +170,7 @@ void release_directory_for_exec(paging_directory_t * dir) {
 		if(kernel_directory->tables[i] != dir->tables[i]) {
 			if(ALIGNP(i) * PAGES_PER_TABLE < USER_STACK_BOTTOM) {
 				for(uint32_t j = 0; j < PAGES_PER_TABLE; j++)
-					if(dir->tables[i]->pages[j].phys_addr)
+					if(dir->tables[i]->pages[j].present)
 						dealloc_page(&dir->tables[i]->pages[j]);
 
 				memset(&dir->table_entries[i], 0, sizeof(page_table_entry_t));
