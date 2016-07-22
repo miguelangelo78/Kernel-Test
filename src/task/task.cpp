@@ -348,7 +348,7 @@ void tasking_install(void) {
 	IRQ_RES(); /* Kickstart tasking */
 
 	/* Test tasking: */
-#if 1
+#if 0
 	task_create_tasklet(task1, "t1", 0);
 	task_create_tasklet(task2, "t2", 0);
 #endif

@@ -254,8 +254,8 @@ namespace Kernel {
 		FILE * spkr_file   = kopen("/dev/speaker", O_RDONLY);
 		if(spkr_file) {
 			speaker_t d;
-			d.frequency = 1000;
-			d.length = 100;
+			d.frequency = 500;
+			d.length = 30;
 			fwrite(spkr_file, 0, sizeof(speaker_t), (uint8_t*)&d);
 		}
 

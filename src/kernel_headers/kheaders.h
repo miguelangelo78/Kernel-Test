@@ -108,6 +108,7 @@
 #define current_task_getpid() FCASTF(SYF("current_task_getpid"), uint32_t, void)()
 
 #define send_signal(task, signal) FCASTF(SYF("send_signal"), int, pid_t, uint32_t)(task, signal)
+#define ksend_signal(task, signal) FCASTF(SYF("ksend_signal"), int, pid_t, uint32_t)(task, signal)
 #define handle_signal(proc, sig) FCASTF(SYF("handle_signal"), void, task_t*, signal_t*)(proc, sig)
 
 #endif

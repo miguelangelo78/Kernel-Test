@@ -89,9 +89,16 @@ void enter_signal_handler(uintptr_t location, int signum, uintptr_t stack) {
 	);
 }
 
+void enter_signal_handler_ring0(uintptr_t location, int signum) {
+	typedef void (*cback_t)(int);
+	cback_t call = (cback_t)location;
+	call(signum);
+}
+
 void handle_signal(task_t * proc, signal_t * sig) {
 	uintptr_t handler = sig->handler;
 	uintptr_t signum  = sig->signum;
+	char ring_level   = sig->ringlevel;
 	free(sig);
 
 	if (proc->finished)
@@ -112,14 +119,19 @@ void handle_signal(task_t * proc, signal_t * sig) {
 	if (handler == 1)
 		return; /* Ignore */
 
-	uintptr_t stack = 0xFFFF0000;
-	if (proc->syscall_regs->useresp < 0x10000100)
-		stack = proc->image.user_stack;
-	else
-		stack = proc->syscall_regs->useresp;
-
 	/* Not marked as ignored, must call signal */
-	enter_signal_handler(handler, signum, stack);
+
+	if(ring_level == 3) {
+		uintptr_t stack = 0xFFFF0000;
+		if (proc->syscall_regs->useresp < 0x10000100)
+			stack = proc->image.user_stack;
+		else
+			stack = proc->syscall_regs->useresp;
+		enter_signal_handler(handler, signum, stack);
+	} else if(ring_level == 0) {
+		/* Just call signal handler in Kernel Mode: */
+		enter_signal_handler_ring0(handler, signum);
+	}
 }
 EXPORT_SYMBOL(handle_signal);
 
@@ -168,7 +180,7 @@ void fix_signal_stacks(void) {
 	}
 }
 
-int send_signal(pid_t task, uint32_t signal) {
+int send_signal_lvl(pid_t task, uint32_t signal, char toring_lvl) {
 	task_t * receiver = task_from_pid(task);
 
 	if (!receiver)
@@ -188,6 +200,7 @@ int send_signal(pid_t task, uint32_t signal) {
 
 	/* Append signal to list */
 	signal_t * sig = (signal_t*)malloc(sizeof(signal_t));
+	sig->ringlevel = toring_lvl;
 	sig->handler = (uintptr_t)receiver->signals.functions[signal];
 	sig->signum  = signal;
 	memset(&sig->registers_before, 0, sizeof(regs_t));
@@ -197,7 +210,17 @@ int send_signal(pid_t task, uint32_t signal) {
 	list_insert(receiver->signal_queue, sig);
 	return 0;
 }
+
+int send_signal(pid_t task, uint32_t signal) {
+	return send_signal_lvl(task, signal, 3);
+}
 EXPORT_SYMBOL(send_signal);
+
+int ksend_signal(pid_t task, uint32_t signal) {
+	return send_signal_lvl(task, signal, 0);
+}
+EXPORT_SYMBOL(ksend_signal);
+
 /******************************/
 
 }

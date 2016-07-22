@@ -34,6 +34,7 @@ static uint32_t write_unixpipe(FILE * node, uint32_t offset, uint32_t size, uint
 			/* SIGPIPE to current process */
 			signal_t * sig = (signal_t*)malloc(sizeof(signal_t));
 			task_t * curr_task = current_task_get();
+			sig->ringlevel = 3;
 			sig->handler = curr_task->signals.functions[SIGPIPE];
 			sig->signum  = SIGPIPE;
 			handle_signal((task_t *)curr_task, sig);

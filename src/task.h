@@ -200,10 +200,12 @@ typedef struct {
 	uint32_t  signum;
 	uintptr_t handler;
 	regs_t    registers_before;
+	char ringlevel;
 } signal_t;
 
 extern void handle_signal(task_t *, signal_t *);
 extern int send_signal(pid_t process, uint32_t signal);
+extern int ksend_signal(pid_t task, uint32_t signal);
 extern void return_from_signal_handler(void);
 extern void fix_signal_stacks(void);
 
