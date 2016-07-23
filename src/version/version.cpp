@@ -14,7 +14,7 @@ char * ver_kernel_version_fmt = (char*)"%d.%d.%d";
 
 int ver_kernel_major = 0;
 int ver_kernel_minor = 0;
-int ver_kernel_lower = 4409;
+int ver_kernel_lower = 4521;
 
 char * ver_kernel_codename = VER_UNKNOWN;
 
