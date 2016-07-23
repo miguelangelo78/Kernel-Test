@@ -224,10 +224,9 @@ namespace Kernel {
 			"\n\t1.9. FDC (Floppy Disk Controller)"
 			"\n\t1.10. ACPI (Power Management)"
 			"\n2- Shared Memory"
-			"\n3- Improve Panic message handling"
-			"\n4- VM8086 mode"
-			"\n5- Improve symbol table (use hashing functions on it)"
-			"\n6- Run all class constructors / deconstructors"
+			"\n3- VM8086 mode"
+			"\n4- Improve symbol table (use hashing functions on it)"
+			"\n5- Run all class constructors / deconstructors"
 		);
 
 		/* All done! */

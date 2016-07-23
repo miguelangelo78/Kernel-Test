@@ -421,8 +421,18 @@ void page_fault(Kernel::CPU::regs_t * r) {
 		return;
 	}
 
-	char msg [50];
-	sprintf(msg, "Page fault at 0x%x", faulting_address);
+	int present  = !(r->err_code & 0x1) ? 1 : 0;
+	int rw       = r->err_code & 0x2    ? 1 : 0;
+	int user     = r->err_code & 0x4    ? 1 : 0;
+	int reserved = r->err_code & 0x8    ? 1 : 0;
+	int id       = r->err_code & 0x10   ? 1 : 0;
+
+	char msg[128];
+	sprintf(
+		msg, "Page fault [present: %d, rw: %d, user: %d, reserved: %d, id: %d]\n> At address 0x%x eip: 0x%x pid: %d group: %d proc: '%s'",
+		present, rw, user, reserved, id, faulting_address, r->eip,
+		current_task->pid, current_task->group, current_task->name
+	);
 	Kernel::Error::panic(msg);
 }
 
