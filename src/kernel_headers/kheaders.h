@@ -58,6 +58,7 @@
 #define isdigit(ch) FCASTF(SYF("isdigit"), int, int)(ch)
 #define isspace(ch) FCASTF(SYF("isspace"), int, int)(ch)
 #define tolower(c) FCASTF(SYF("tolower"), int, int)(c)
+#define toupper(c) FCASTF(SYF("toupper"), int, int)(c)
 
 #define memset(dest, c, n) FCASTF(SYF("memset"), void *, void *, int, size_t)(dest, c, n)
 #define memcpy(dest, src, n) FCASTF(SYF("memcpy"), void *, void *, void *, size_t)(dest, src, n)

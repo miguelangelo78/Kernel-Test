@@ -6,7 +6,6 @@
  */
 
 #include <system.h>
-#include <kernel_headers/kheaders.h>
 #include <libc/slre.h>
 #include <module.h>
 #include "symbol_db.h"
