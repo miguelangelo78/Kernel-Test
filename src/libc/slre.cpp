@@ -24,6 +24,7 @@
 #include <libc.h>
 #include <system.h>
 #include <module.h>
+#include <kernel_headers/kheaders.h>
 
 LIB_DEF(lib_slre_regex);
 
@@ -42,7 +43,7 @@ LIB_DEF(lib_slre_regex);
 #endif
 
 struct bracket_pair {
-  const char *ptr;  /* Points to the first char after '(' in regex  */
+  char *ptr;  /* Points to the first char after '(' in regex  */
   int len;          /* Length of the text between '(' and ')'       */
   int branches;     /* Index in the branches array for this pair    */
   int num_branches; /* Number of '|' in this bracket pair           */
@@ -51,7 +52,7 @@ struct bracket_pair {
 struct branch {
   int bracket_index;    /* index for 'struct bracket_pair brackets' */
                         /* array defined below                      */
-  const char *schlong;  /* points to the '|' character in the regex */
+  char *schlong;  /* points to the '|' character in the regex */
 };
 
 struct regex_info {
@@ -77,16 +78,16 @@ struct regex_info {
   int flags;
 };
 
-static int is_metacharacter(const unsigned char *s) {
-  static const char *metacharacters = "^$().[]*+?|\\Ssdbfnrtv";
+static int is_metacharacter(unsigned char *s) {
+  static char *metacharacters = "^$().[]*+?|\\Ssdbfnrtv";
   return strchr(metacharacters, *s) != NULL;
 }
 
-static int op_len(const char *re) {
+static int op_len(char *re) {
   return re[0] == '\\' && re[1] == 'x' ? 4 : re[0] == '\\' ? 2 : 1;
 }
 
-static int set_len(const char *re, int re_len) {
+static int set_len(char *re, int re_len) {
   int len = 0;
 
   while (len < re_len && re[len] != ']') {
@@ -96,11 +97,11 @@ static int set_len(const char *re, int re_len) {
   return len <= re_len ? len + 1 : -1;
 }
 
-static int get_op_len(const char *re, int re_len) {
+static int get_op_len(char *re, int re_len) {
   return re[0] == '[' ? set_len(re + 1, re_len - 1) + 1 : op_len(re);
 }
 
-static int is_quantifier(const char *re) {
+static int is_quantifier(char *re) {
   return re[0] == '*' || re[0] == '+' || re[0] == '?';
 }
 
@@ -108,11 +109,11 @@ static int toi(int x) {
   return isdigit(x) ? x - '0' : x - 'W';
 }
 
-static int hextoi(const unsigned char *s) {
+static int hextoi(unsigned char *s) {
   return (toi(tolower(s[0])) << 4) | toi(tolower(s[1]));
 }
 
-static int match_op(const unsigned char *re, const unsigned char *s,
+static int match_op(unsigned char *re, unsigned char *s,
                     struct regex_info *info) {
   int result = 0;
   switch (*re) {
@@ -160,7 +161,7 @@ static int match_op(const unsigned char *re, const unsigned char *s,
   return result;
 }
 
-static int match_set(const char *re, int re_len, const char *s,
+static int match_set(char *re, int re_len, char *s,
                      struct regex_info *info) {
   int len = 0, result = -1, invert = re[0] == '^';
 
@@ -182,9 +183,9 @@ static int match_set(const char *re, int re_len, const char *s,
   return (!invert && result > 0) || (invert && result <= 0) ? 1 : -1;
 }
 
-static int doh(const char *s, int s_len, struct regex_info *info, int bi);
+static int doh(char *s, int s_len, struct regex_info *info, int bi);
 
-static int bar(const char *re, int re_len, const char *s, int s_len,
+static int bar(char *re, int re_len, char *s, int s_len,
                struct regex_info *info, int bi) {
   /* i is offset in re, j is offset in s, bi is brackets index */
   int i, j, n, step;
@@ -304,10 +305,10 @@ static int bar(const char *re, int re_len, const char *s, int s_len,
 }
 
 /* Process branch points */
-static int doh(const char *s, int s_len, struct regex_info *info, int bi) {
-  const struct bracket_pair *b = &info->brackets[bi];
+static int doh(char *s, int s_len, struct regex_info *info, int bi) {
+  struct bracket_pair *b = &info->brackets[bi];
   int i = 0, len, result;
-  const char *p;
+  char *p;
 
   do {
     p = i == 0 ? b->ptr : info->branches[b->branches + i - 1].schlong + 1;
@@ -322,7 +323,7 @@ static int doh(const char *s, int s_len, struct regex_info *info, int bi) {
   return result;
 }
 
-static int baz(const char *s, int s_len, struct regex_info *info) {
+static int baz(char *s, int s_len, struct regex_info *info) {
   int i, result = -1, is_anchored = info->brackets[0].ptr[0] == '^';
 
   for (i = 0; i <= s_len; i++) {
@@ -366,8 +367,7 @@ static void setup_branch_points(struct regex_info *info) {
   }
 }
 
-static int foo(const char *re, int re_len, const char *s, int s_len,
-               struct regex_info *info) {
+static int foo(char *re, int re_len, char *s, int s_len, struct regex_info *info) {
   int i, step, depth = 0;
 
   /* First bracket captures everything */
@@ -426,7 +426,7 @@ static int foo(const char *re, int re_len, const char *s, int s_len,
   return baz(s, s_len, info);
 }
 
-int slre_match(const char *regexp, const char *s, int s_len,
+int slre_match(char *regexp, char *s, int s_len,
                struct slre_cap *caps, int num_caps, int flags) {
   struct regex_info info;
 
@@ -440,19 +440,20 @@ int slre_match(const char *regexp, const char *s, int s_len,
   return foo(regexp, (int) strlen(regexp), s, s_len, &info);
 }
 
-char *slre_replace(const char *regex, const char *buf, const char *sub) {
+char *slre_replace(char *regex, char *buf, char *sub) {
   char *s = 0;
   int n, n1, n2, n3, s_len, len = strlen(buf);
   struct slre_cap cap = { 0, 0 };
 
   do {
     s_len = s == NULL ? 0 : strlen(s);
-    if ((n = slre_match(regex, buf, len, &cap, 1, 0)) > 0) {
+    if ((n = slre_match(regex, buf, len, &cap, 1, 0)) > 0 && cap.ptr > 0) {
       n1 = cap.ptr - buf, n2 = strlen(sub),
          n3 = &buf[n] - &cap.ptr[cap.len];
     } else {
       n1 = len, n2 = 0, n3 = 0;
     }
+
     s = (char *) realloc(s, s_len + n1 + n2 + n3 + 1);
     memcpy(s + s_len, buf, n1);
     memcpy(s + s_len + n1, sub, n2);
@@ -462,7 +463,6 @@ char *slre_replace(const char *regex, const char *buf, const char *sub) {
     buf += n > 0 ? n : len;
     len -= n > 0 ? n : len;
   } while (len > 0);
-
   return s;
 }
 

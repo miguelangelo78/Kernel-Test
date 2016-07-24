@@ -12,7 +12,7 @@ unsigned short * memsetw(unsigned short * dest, unsigned short val, int count) {
 void * memcpy(void * __restrict__ dest, const void * __restrict__ src, size_t n) {
 	int8_t * dst8 = (int8_t*)dest;
 	int8_t * src8 = (int8_t*)src;
-	while (n--) *dst8++ = *src8++;
+	while (n-->0) *dst8++ = *src8++;
 	return dest;
 }
 EXPORT_SYMBOL(memcpy);
@@ -115,6 +115,7 @@ char * strdup(const char * s) {
 	size_t l = strlen(s);
 	return (char*)memcpy((void*)malloc((uintptr_t)(l + 1)), s, l + 1);
 }
+EXPORT_SYMBOL(strdup);
 
 char * stpcpy(char * __restrict__ d, const char * __restrict__ s) {
 	size_t * wd;
@@ -188,6 +189,7 @@ char * strchr(const char * s, int c) {
 	char *r = strchrnul(s, c);
 	return *(unsigned char *)r == (unsigned char)c ? r : 0;
 }
+EXPORT_SYMBOL(strchr);
 
 char * strrchr(const char * s, int c) {
 	return (char*)memrchr(s, c, strlen(s) + 1);
@@ -394,6 +396,7 @@ char *strstr(const char * h, const char * n) {
 int isdigit(int ch) {
 	return (unsigned int)ch - '0' < 10;
 }
+EXPORT_SYMBOL(isdigit);
 
 int isxdigit (int ch) {
 	if (ch >= '0' && ch <= '9') return 1;
@@ -401,10 +404,12 @@ int isxdigit (int ch) {
 	if (ch >= 'a' && ch <= 'f') return 1;
 	return 0;
 }
+EXPORT_SYMBOL(isxdigit);
 
 int isspace(int ch) {
 	return ch == ' ' || (unsigned int)ch - '\t' < 5;
 }
+EXPORT_SYMBOL(isspace);
 
 int atoi(const char * s) {
 	int n = 0;
@@ -492,6 +497,7 @@ int tokenize(char * str, char * sep, char **buf) {
 int tolower(int c) {
 	return c >= 'A' && c <= 'Z' ? c + 32 : c;
 }
+EXPORT_SYMBOL(tolower);
 
 int toupper(int c) {
 	return c >= 'a' && c <= 'z' ? c - 32 : c;

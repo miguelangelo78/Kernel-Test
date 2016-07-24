@@ -7,6 +7,7 @@
 #include <libc/string.h>
 #include <system.h>
 #include <libc.h>
+#include <module.h>
 
 char *trim(char *str) {
     size_t len = 0;
@@ -90,12 +91,14 @@ split_t split(char * str, char deli) {
 	}
 	return ret;
 }
+EXPORT_SYMBOL(split);
 
 void free_split(split_t str) {
 	for(int i=0;i<str.wordcount;i++)
 		free(str.str[i]);
 	free(str.str);
 }
+EXPORT_SYMBOL(free_split);
 
 /* str_replace source: http://stackoverflow.com/a/779960 */
 // You must free the result if result is non-NULL.

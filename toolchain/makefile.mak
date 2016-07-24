@@ -14,7 +14,7 @@ CFLAGS = -T $(TOOLCH)/$(LINKER) -Isrc -g -finline-functions -ffreestanding -fbui
 LLVMCFLAGS = -ffreestanding -nostdlib -nodefaultlibs -target i686-pc-none-elf -Wno-format -pedantic -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -fno-exceptions -IC:/llvm/lib/clang/3.8.0/include -Isrc
 ASFLAGS = 
 NASFLAGS = -g -f elf32
-CPPFLAGS_MODS = -Isrc -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions
+CPPFLAGS_MODS = -Isrc -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions
 
 # Output constants (filenames and paths)
 DISKPATH = iso

@@ -19,10 +19,10 @@ $(BOUT)/modules/fpu.mod: src/modules/fpu.cpp
 	@echo '>> Finished building: $<'
 	@echo ' '
 
-$(BOUT)/modules/symbol_db.mod: src/modules/symbol_db.cpp 
+$(BOUT)/modules/symbol_db.mod: src/modules/symbol_db.cpp obj/libc.o obj/libcc.o obj/string.o obj/slre.o 
 	@echo '>> Building file $<'
 	@echo '>> Invoking LLVM C++ Clang++'
-	$(CXX_LLVM) $(LLVMCPPFLAGS) -r -fno-zero-initialized-in-bss -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE -o obj/modules/symbol_db.mod -c $<  
+	$(CXX) $(CPPFLAGS_MODS) -r -fno-zero-initialized-in-bss -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE -o obj/modules/symbol_db.mod  $< obj/libc.o obj/libcc.o obj/string.o obj/slre.o  
 	@echo '>> Finished building: $<'
 	@echo ' '
 

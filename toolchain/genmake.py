@@ -141,6 +141,7 @@ class Metadata_injector():
 	deps = ""
 	misc = ""
 	mods = ""
+	libs = ""
 	disable_llvm = LLVM_ENABLED
 
 # Parses one source file and injects into the makefile some flags, dependencies or something else that the programmer wants
@@ -166,6 +167,12 @@ def parse_injections_sourcefile(source_content):
 		meta.mods = 1
 	else:
 		meta.mods = 0
+
+	match_islib = re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?LIB_DEF\((.+)?\)', source_content, re.M)
+	if match_islib:
+		meta.libs = 1
+	else:
+		meta.libs = 0
 
 	match_llvm_disable = re.search(r'\$LLVMENABLE\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_llvm_disable:
@@ -210,12 +217,16 @@ def parseFileFormat(fileformat):
 
 	return dat
 
-def write_subdir_entry(subdirmk_file, toolchain, file_objname, file_path, customflags, deps, injection, ismod):
+def write_subdir_entry(subdirmk_file, toolchain, file_objname, file_path, customflags, deps, injection, ismod, islib):
 	entry_output_path = "$@"
 	if ismod:
 		customflags += "-r -fno-zero-initialized-in-bss -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE"
 		entry_output_path = toolchain.build_path + "/modules/"+file_objname+".mod"
+	if islib:
+		customflags += "-r -fno-zero-initialized-in-bss -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE"
+		entry_output_path = toolchain.build_path + "/"+file_objname+".o"
 	
+
 	subdirmk_file.write('\n$(BOUT)/'+('modules/' if ismod else '') + file_objname + ('.o' if not ismod else'.mod')+': ' + file_path + ' ' + deps + '\n\
 	@echo \'>> Building file $<\'\n\
 	@echo \'>> Invoking ' + toolchain.toolname + '\'\n\
@@ -287,7 +298,7 @@ def gen_make(tree):
 			# Decide what compiler/assembler/other tool to use for this file:
 			toolchainData = parseFileFormat(ffile[ffile.index('.'):][1:])
 			# Input object entry into the current subdir.mk
-			write_subdir_entry(subdirmk, toolchainData, files[i], ffile, src_file_meta.flags, src_file_meta.deps, src_file_meta.misc, src_file_meta.mods)
+			write_subdir_entry(subdirmk, toolchainData, files[i], ffile, src_file_meta.flags, src_file_meta.deps, src_file_meta.misc, src_file_meta.mods, src_file_meta.libs)
 
 			toggle_llvm(LLVM_ENABLED) # Restore llvm flag to default
 
@@ -313,7 +324,7 @@ LINKER = " + ct.linker_script 		+ "\n\
 " + lt.compiler_c.make_flagsym 		+ " = " + lt.compiler_c.flags 			+ "\n\
 " + ct.assembler_gas.make_flagsym 	+ " = " + ct.assembler_gas.flags 		+ "\n\
 " + ct.assembler_nasm.make_flagsym 	+ " = " + ct.assembler_nasm.flags 		+ "\n\
-CPPFLAGS_MODS = " + gt.compiler_c.include_path + " -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -lgcc -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions\n\
+CPPFLAGS_MODS = " + gt.compiler_c.include_path + " -O2 -finline-functions -fstrength-reduce -ffreestanding -Wno-format -pedantic -fno-omit-frame-pointer -nostdlib -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-unknown-pragmas -std=c++11 -fno-exceptions\n\
 \n\
 # Output constants (filenames and paths)\n\
 DISKPATH = " + ct.runnable_path + "\n\

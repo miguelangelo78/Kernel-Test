@@ -40,6 +40,8 @@
 #define free(ptr) FCASTF(SYF("free"), void, void *)(ptr);
 
 #define list_create() FCASTF(SYF("list_create"), list_t *, void)()
+#define list_insert(list, item) FCASTF(SYF("list_insert"), node_t *, list_t *, void *)(list, item)
+#define list_free(list) FCASTF(SYF("list_free"), void, list_t *)(list)
 
 #define hashmap_create(count) FCASTF(SYF("hashmap_create"), hashmap_t *, int)(count)
 #define hashmap_set(map, key, value) FCASTF(SYF("hashmap_set"), void *, hashmap_t *, void *, void *)(map, key, value)
@@ -49,9 +51,19 @@
 
 #define strlen(str) FCASTF(SYF("strlen"), unsigned long, char*)(str)
 #define strcpy(dst, src) FCASTF(SYF("strcpy"), char*, char*, char*)(dst, src)
+#define strchr(s,c) FCASTF(SYF("strchr"), char*, char*, int)(s, c)
+#define strdup(s) FCASTF(SYF("strdup"), char*, char*)(s)
+
+#define isxdigit(ch) FCASTF(SYF("isxdigit"), int, int)(ch)
+#define isdigit(ch) FCASTF(SYF("isdigit"), int, int)(ch)
+#define isspace(ch) FCASTF(SYF("isspace"), int, int)(ch)
+#define tolower(c) FCASTF(SYF("tolower"), int, int)(c)
 
 #define memset(dest, c, n) FCASTF(SYF("memset"), void *, void *, int, size_t)(dest, c, n)
 #define memcpy(dest, src, n) FCASTF(SYF("memcpy"), void *, void *, void *, size_t)(dest, src, n)
+
+#define split(str, deli) FCASTF(SYF("split"), split_t, char *, char)(str, deli)
+#define free_split(str) FCASTF(SYF("free_split"), void, split_t)(str)
 
 #define sprintf(buf, fmt, ...) FCASTF(SYF("sprintf"), int, char *, char *, ...)(buf, fmt, __VA_ARGS__)
 

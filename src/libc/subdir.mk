@@ -30,7 +30,7 @@ $(BOUT)/libc.o: src/libc/libc.cpp
 $(BOUT)/slre.o: src/libc/slre.cpp 
 	@echo '>> Building file $<'
 	@echo '>> Invoking LLVM C++ Clang++'
-	$(CXX_LLVM) $(LLVMCPPFLAGS)  -o $@ -c $<  
+	$(CXX_LLVM) $(LLVMCPPFLAGS) -r -fno-zero-initialized-in-bss -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -D__KERNEL__ -DMODULE -o obj/slre.o -c $<  
 	@echo '>> Finished building: $<'
 	@echo ' '
 

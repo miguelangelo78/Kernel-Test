@@ -32,15 +32,15 @@ extern "C" {
 #endif
 
 struct slre_cap {
-  const char *ptr;
+  char *ptr;
   int len;
 };
 
-int slre_match(const char *regexp, const char *buf, int buf_len,
+int slre_match(char *regexp, char *buf, int buf_len,
                struct slre_cap *caps, int num_caps, int flags);
 
-char *slre_replace(const char *regex, const char *buf,
-                          const char *sub);
+char *slre_replace(char *regex, char *buf, char *sub);
+
 /* Possible flags for slre_match() */
 enum { SLRE_IGNORE_CASE = 1 };
 

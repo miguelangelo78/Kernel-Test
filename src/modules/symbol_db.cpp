@@ -7,7 +7,11 @@
 
 #include <system.h>
 #include <kernel_headers/kheaders.h>
+#include <libc/slre.h>
+#include <module.h>
 #include "symbol_db.h"
+
+$LIBS(libc.o, libcc.o, string.o, slre.o)
 
 #define MAX_SYMBOLS_PER_TABLE 2048
 

@@ -20,6 +20,7 @@ void list_free(list_t * list) {
 		n = s;
 	}
 }
+EXPORT_SYMBOL(list_free);
 
 void list_append(list_t * list, node_t * node) {
 	//assert(!(node->next || node->prev) && "Node is already in a list.");
@@ -51,6 +52,7 @@ node_t * list_insert(list_t * list, void * item) {
 
 	return node;
 }
+EXPORT_SYMBOL(list_insert);
 
 void list_append_after(list_t * list, node_t * before, node_t * node) {
 	//assert(!(node->next || node->prev) && "Node is already in a list.");
