@@ -51,7 +51,7 @@ include src/version/subdir.mk
 all: kernel-link
 
 # Link all those subdir.mk object files into the whole Kernel:
-kernel-link: $(OBJS) $(MODS)
+kernel-link: $(OBJS) $(MODS) $(LIBRARIES)
 	@echo '----------'
 	@echo 'Toolchain: LLVM Toolchain'
 	@echo '>>>> Linking Kernel <<<<'

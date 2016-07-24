@@ -142,6 +142,12 @@ char * strcpy(char * __restrict__ dest, const char * __restrict__ src) {
 }
 EXPORT_SYMBOL(strcpy);
 
+char * strncpy(char * dest, const char * src, size_t n) {
+	for(uint32_t i = 0; i < n && src[i]; i++)
+		dest[i] = src[i];
+	return dest;
+}
+
 size_t strspn(const char * s, const char * c) {
 	const char * a = s;
 	size_t byteset[32 / sizeof(size_t)] = { 0 };
@@ -385,11 +391,18 @@ char *strstr(const char * h, const char * n) {
 	return strstr_twoway((unsigned char *)h, (unsigned char *)n);
 }
 
-static int isdigit(int ch) {
+int isdigit(int ch) {
 	return (unsigned int)ch - '0' < 10;
 }
 
-static int isspace(int ch) {
+int isxdigit (int ch) {
+	if (ch >= '0' && ch <= '9') return 1;
+	if (ch >= 'A' && ch <= 'F') return 1;
+	if (ch >= 'a' && ch <= 'f') return 1;
+	return 0;
+}
+
+int isspace(int ch) {
 	return ch == ' ' || (unsigned int)ch - '\t' < 5;
 }
 
@@ -474,4 +487,12 @@ int tokenize(char * str, char * sep, char **buf) {
 	}
 	buf[argc] = (char*)NULL;
 	return argc;
+}
+
+int tolower(int c) {
+	return c >= 'A' && c <= 'Z' ? c + 32 : c;
+}
+
+int toupper(int c) {
+	return c >= 'a' && c <= 'z' ? c - 32 : c;
 }

@@ -148,11 +148,11 @@ def parse_injections_sourcefile(source_content):
 	meta = Metadata_injector()
 
 	# Search for flag injection (Format: $PROPERTY(VALUE) , it matches everything + the value and puts on group 1):
-	# Property list: $FLAGS(...), MODULE_DEPS(...), $INJ(...), $LLVMENABLE(1/0)
+	# Property list: $FLAGS(...), MODULE_DEPS(...), $LIBS(...), $INJ(...), $LLVMENABLE(1/0)
 	match_flags = re.search(r'\$FLAGS\(((?:\w|\n)+?)\)', source_content, re.M)
 	if match_flags:
 		meta.flags = match_flags.group(1)
-	match_deps = re.search(r'MODULE_DEPS\(((?:\w|\n|,| |\\|\/|\.)+?)\)', source_content, re.M)
+	match_deps = re.search(r'(?:MODULE_DEPS|\$LIBS)\(((?:\w|\n|,| |\\|\/|\.)+?)\)', source_content, re.M)
 	if match_deps:
 		deps = match_deps.group(1).split(',')
 		for dep in deps:
@@ -238,12 +238,19 @@ def gen_make(tree):
 		subdirmk.write('OBJS +=')
 		files = [] # File without extension nor path
 		modcount = []
+		libcount = []
 		for ffile in dir:
 			files.append(ffile[ffile.rfind('/')+1:ffile.rfind('.')])
 			
 			# Prevent this mod from being linked to the core kernel:
-			if re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?MODULE_(?:DEF|EXT)\((.+)?\)', open(ffile).read(), re.M):
+			srccode = open(ffile).read()
+			if re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?MODULE_(?:DEF|EXT)\((.+)?\)', srccode, re.M):
 				modcount.append(ffile)
+				continue
+
+			# Prevent this library from being linked to the core kernel:
+			if re.search(r'^(?!(?:.+)?(?:\/\/|\/\*))(?:.+)?LIB_DEF\((.+)?\)', srccode, re.M):
+				libcount.append(files[-1])
 				continue
 			
 			# Append objects to $(OBJS):
@@ -252,10 +259,18 @@ def gen_make(tree):
 
 		if len(modcount) > 0:
 			subdirmk.write('MODS +=')
+			# Append modules to $(MODS):
 			for ffile in files:
 				subdirmk.write(' \\\n$(BOUT)/modules/' + ffile + '.mod')
 			subdirmk.write('\n')
 
+		if len(libcount) > 0:
+			subdirmk.write('LIBRARIES +=')
+			# Append libraries to $(LIBS):
+			for ffile in libcount:
+				subdirmk.write(' \\\n$(BOUT)/' + ffile + '.o')
+			subdirmk.write('\n')
+			
 		# Add targets:
 		i = 0
 		for ffile in dir:
@@ -310,7 +325,7 @@ KOUT = " + ct.output_file + "\n\
 ############### Main targets ###############\n\n\
 all: kernel-link\n\n\
 # Link all those subdir.mk object files into the whole Kernel:\n\
-kernel-link: $(OBJS) $(MODS)\n\
+kernel-link: $(OBJS) $(MODS) $(LIBRARIES)\n\
 	@echo '----------'\n\
 	@echo 'Toolchain: " + ct.toolname + "'\n\
 	@echo '>>>> Linking Kernel <<<<'\n\
